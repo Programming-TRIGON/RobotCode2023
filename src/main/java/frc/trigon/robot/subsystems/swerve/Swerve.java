@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -10,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.DoubleSupplier;
 
 public class Swerve extends SubsystemBase {
@@ -54,32 +57,36 @@ public class Swerve extends SubsystemBase {
         selfRelativeDrive(chassisSpeeds);
     }
 
-    private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
-        if(isStill(chassisSpeeds)) {
-            stop();
-            return;
+    /**
+     * @return the swerve module positions
+     */
+    SwerveModulePosition[] getModulePositions() {
+        final List<SwerveModulePosition> swerveModuleStates = new ArrayList<>();
+
+        for (SwerveModule currentModule : SwerveConstants.SWERVE_MODULES) {
+            swerveModuleStates.add(currentModule.getCurrentModulePosition());
         }
-        SwerveModuleState[] swerveModuleStates = SwerveConstants.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
-        setTargetModuleStates(swerveModuleStates);
+
+        return swerveModuleStates.toArray(SwerveModulePosition[]::new);
     }
 
     /**
      * Stops the swerve's motors.
      */
-    public void stop() {
-        for(SwerveModule module : SwerveConstants.SWERVE_MODULES)
+    void stop() {
+        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
             module.stop();
     }
 
     void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
-        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
+        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
             SwerveConstants.SWERVE_MODULES[i].setTargetState(swerveModuleStates[i]);
     }
 
     /**
      * @return the heading of the robot
      */
-    public Rotation2d getHeading() {
+    Rotation2d getHeading() {
         return Rotation2d.fromDegrees(SwerveConstants.gyro.getYaw());
     }
 
@@ -88,7 +95,7 @@ public class Swerve extends SubsystemBase {
      *
      * @param heading the new heading
      */
-    public void setHeading(Rotation2d heading) {
+    void setHeading(Rotation2d heading) {
         SwerveConstants.gyro.setYaw(heading.getDegrees());
     }
 
@@ -97,21 +104,30 @@ public class Swerve extends SubsystemBase {
      *
      * @param brake whether the drive motors should brake or coast
      */
-    public void setBrake(boolean brake) {
-        for(SwerveModule module : SwerveConstants.SWERVE_MODULES)
+    void setBrake(boolean brake) {
+        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
             module.setBrake(brake);
     }
 
     /**
      * @return the robot's current velocity
      */
-    public ChassisSpeeds getCurrentVelocity() {
+    ChassisSpeeds getCurrentVelocity() {
         return SwerveConstants.KINEMATICS.toChassisSpeeds(
                 SwerveConstants.SWERVE_MODULES[0].getCurrentState(),
                 SwerveConstants.SWERVE_MODULES[1].getCurrentState(),
                 SwerveConstants.SWERVE_MODULES[2].getCurrentState(),
                 SwerveConstants.SWERVE_MODULES[3].getCurrentState()
         );
+    }
+
+    private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
+        if (isStill(chassisSpeeds)) {
+            stop();
+            return;
+        }
+        SwerveModuleState[] swerveModuleStates = SwerveConstants.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
+        setTargetModuleStates(swerveModuleStates);
     }
 
     /**
@@ -128,7 +144,7 @@ public class Swerve extends SubsystemBase {
     }
 
     private void putModulesOnDashboard() {
-        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
+        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
             SmartDashboard.putData(
                     getName() + "/" + SwerveModuleConstants.SwerveModules.fromId(i).name(),
                     SwerveConstants.SWERVE_MODULES[i]
@@ -151,7 +167,7 @@ public class Swerve extends SubsystemBase {
          * @param y     the target leftwards velocity
          * @param theta the target theta velocity, CCW+
          */
-        public CommandBase cmdSelfRelativeOpenLoopSupplierDrive(
+        CommandBase cmdSelfRelativeOpenLoopSupplierDrive(
                 DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
             return new FunctionalCommand(
                     () -> setBrake(true),
@@ -181,7 +197,7 @@ public class Swerve extends SubsystemBase {
          * @param y     the target leftwards velocity
          * @param theta the target theta velocity, CCW+
          */
-        public CommandBase cmdFieldRelativeOpenLoopSupplierDrive(
+        CommandBase cmdFieldRelativeOpenLoopSupplierDrive(
                 DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
             return new FunctionalCommand(
                     () -> setBrake(true),

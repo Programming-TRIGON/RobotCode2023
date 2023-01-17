@@ -76,6 +76,8 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api"
     testImplementation "org.junit.jupiter:junit-jupiter-params"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    implementation "com.github.Oblarg:Oblog:5.1.0"
 }
 
 // Simulation configuration (e.g. environment variables).
@@ -93,6 +95,8 @@ jar {
 
 repositories {
     mavenCentral()
+    maven {url 'https://jitpack.io'}
+
 }
 
 // Configure jar and deploy tasks
