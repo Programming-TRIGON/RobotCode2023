@@ -56,9 +56,7 @@ public class SwerveModule implements Sendable {
     }
 
     private void setTargetAngle(double targetAngle) {
-        double targetAngleRevolutions = Conversions.degreesToRevolutions(targetAngle);
-        double offsettedRevolutions = Conversions.offsetWrite(targetAngleRevolutions, encoderOffset);
-        steerMotor.getPIDController().setReference(offsettedRevolutions, ControlType.kPosition);
+        steerMotor.getPIDController().setReference(targetAngle, ControlType.kPosition);
     }
 
     /**
@@ -76,9 +74,7 @@ public class SwerveModule implements Sendable {
      * @return the module's current angle in degrees
      */
     private double getCurrentAngle() {
-        double encoderRotations = steerEncoder.getPosition();
-        double offsettedRotations = Conversions.offsetRead(encoderRotations, encoderOffset);
-        return Conversions.revolutionsToDegrees(offsettedRotations);
+        return steerEncoder.getPosition();
     }
 
     /**
