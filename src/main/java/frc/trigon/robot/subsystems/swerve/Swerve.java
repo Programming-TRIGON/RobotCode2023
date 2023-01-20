@@ -1,5 +1,6 @@
 package frc.trigon.robot.subsystems.swerve;
 
+import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -14,6 +15,7 @@ import java.util.function.DoubleSupplier;
 
 public class Swerve extends SubsystemBase {
     private final static Swerve INSTANCE = new Swerve();
+    public final Commands COMMANDS = new Commands();
 
     private Swerve() {
         putModulesOnDashboard();
@@ -142,7 +144,7 @@ public class Swerve extends SubsystemBase {
                 "Heading", () -> getHeading().getDegrees(), (heading) -> setHeading(Rotation2d.fromDegrees(heading)));
     }
 
-    private class Commands {
+    public class Commands {
         /**
          * Drives the swerve with the given velocities, relative to the robot's frame of reference.
          * All velocities are in percent output from -1 to 1.
@@ -190,7 +192,7 @@ public class Swerve extends SubsystemBase {
                                     x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
                                     y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
                             ),
-                            Rotation2d.fromDegrees(
+                            new Rotation2d(
                                     theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
                             )
                     ),
@@ -202,6 +204,11 @@ public class Swerve extends SubsystemBase {
                     Swerve.this
             );
         }
+    }
+
+    @Override
+    public void periodic() {
+        System.out.println(SwerveModuleConstants.SwerveModules.REAR_RIGHT.swerveModuleConstants.steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle).getPosition());
     }
 }
 
