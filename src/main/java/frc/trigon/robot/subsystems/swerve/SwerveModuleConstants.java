@@ -1,9 +1,9 @@
 package frc.trigon.robot.subsystems.swerve;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.*;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.trigon.robot.utilities.Conversions;
 
 public class SwerveModuleConstants {
     public static final double DRIVE_GEAR_RATIO = 8.14;
@@ -47,14 +47,14 @@ public class SwerveModuleConstants {
             REAR_RIGHT_STEER_MOTOR_ID = REAR_RIGHT_ID + 1;
     private static final boolean STEER_MOTOR_INVERTED = false;
     private static final double
-            STEER_MOTOR_P = 0.7,
+            STEER_MOTOR_P = 0.01,
             STEER_MOTOR_I = 0,
             STEER_MOTOR_D = 0;
     private static final double
-            FRONT_LEFT_ENCODER_OFFSET = 22.9394,
-            FRONT_RIGHT_ENCODER_OFFSET = 216.9141,
-            REAR_LEFT_ENCODER_OFFSET = 230.0977,
-            REAR_RIGHT_ENCODER_OFFSET = 231.2402;
+            FRONT_LEFT_ENCODER_OFFSET = 0,
+            FRONT_RIGHT_ENCODER_OFFSET = 0,
+            REAR_LEFT_ENCODER_OFFSET = 0,
+            REAR_RIGHT_ENCODER_OFFSET = 0;
     private static final CANSparkMax
             FRONT_LEFT_STEER_MOTOR = new CANSparkMax(
             FRONT_LEFT_STEER_MOTOR_ID,
@@ -139,10 +139,17 @@ public class SwerveModuleConstants {
         driveMotor.configClosedloopRamp(DRIVE_CLOSED_LOOP_RAMP_RATE);
 
         //TODO: CAN periods
-
+        steerMotor.setSmartCurrentLimit(10);
         steerMotor.getPIDController().setP(STEER_MOTOR_P);
         steerMotor.getPIDController().setI(STEER_MOTOR_I);
         steerMotor.getPIDController().setD(STEER_MOTOR_D);
+        steerMotor.getPIDController().setPositionPIDWrappingEnabled(true);
+        steerMotor.getPIDController().setPositionPIDWrappingMinInput(0);
+        steerMotor.getPIDController().setPositionPIDWrappingMaxInput(Conversions.DEGREES_PER_REVOLUTIONS);
+        steerMotor.getPIDController().setFeedbackDevice(steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle));
+        steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle).setPositionConversionFactor(Conversions.DEGREES_PER_REVOLUTIONS);
+
+        steerMotor.burnFlash();
     }
 
     public enum SwerveModules {

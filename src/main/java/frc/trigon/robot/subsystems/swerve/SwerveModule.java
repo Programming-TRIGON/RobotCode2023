@@ -6,7 +6,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -16,7 +15,7 @@ public class SwerveModule implements Sendable {
     private final WPI_TalonFX driveMotor;
     private final CANSparkMax steerMotor;
     private final SparkMaxAbsoluteEncoder steerEncoder;
-    private final double encoderOffset;
+    private double encoderOffset;
     private SwerveModuleState targetState = new SwerveModuleState();
 
     public SwerveModule(SwerveModuleConstants moduleConstants) {
@@ -29,7 +28,7 @@ public class SwerveModule implements Sendable {
     /**
      * @return the target state of the module
      */
-    SwerveModuleState getTargetState() {
+    public SwerveModuleState getTargetState() {
         return targetState;
     }
 
@@ -38,7 +37,7 @@ public class SwerveModule implements Sendable {
      *
      * @param targetState the target state
      */
-    void setTargetState(SwerveModuleState targetState) {
+    public void setTargetState(SwerveModuleState targetState) {
         this.targetState = targetState = optimizeState(targetState);
         setTargetAngle(targetState.angle.getDegrees());
         setTargetVelocity(targetState.speedMetersPerSecond);
@@ -47,8 +46,35 @@ public class SwerveModule implements Sendable {
     /**
      * @return the current state of the module
      */
-    SwerveModuleState getCurrentState() {
-        return new SwerveModuleState(getCurrentVelocity(), getCurrentAngle());
+    public SwerveModuleState getCurrentState() {
+        return new SwerveModuleState(getCurrentVelocity(), Rotation2d.fromDegrees(getCurrentAngle()));
+    }
+
+    private void setTargetVelocity(double velocity) {
+        double power = velocity / SwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
+        driveMotor.set(power);
+    }
+
+    private void setTargetAngle(double targetAngle) {
+        steerMotor.getPIDController().setReference(targetAngle, ControlType.kPosition);
+    }
+
+    /**
+     * @return the module's current velocity in mps
+     */
+    private double getCurrentVelocity() {
+        double motorTicksPer100Ms = driveMotor.getSelectedSensorVelocity();
+        double motorRevolutionsPer100Ms = Conversions.falconTicksToRevolutions(motorTicksPer100Ms);
+        double motorRps = Conversions.perHundredMsToPerSecond(motorRevolutionsPer100Ms);
+        double wheelRps = Conversions.motorToSystem(motorRps, SwerveModuleConstants.DRIVE_GEAR_RATIO);
+        return Conversions.revolutionsToDistance(wheelRps, SwerveModuleConstants.WHEEL_DIAMETER_METERS);
+    }
+
+    /**
+     * @return the module's current angle in degrees
+     */
+    private double getCurrentAngle() {
+        return steerEncoder.getPosition();
     }
 
     /**
@@ -56,73 +82,16 @@ public class SwerveModule implements Sendable {
      *
      * @param brake true if the drive motor should brake, false if it should coast
      */
-    void setBrake(boolean brake) {
+    public void setBrake(boolean brake) {
         driveMotor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
     }
 
     /**
      * Stops the module from moving.
      */
-    void stop() {
+    public void stop() {
         driveMotor.disable();
         steerMotor.disable();
-    }
-
-    /**
-     * @return the current position of the swerve module
-     */
-    SwerveModulePosition getCurrentModulePosition() {
-        return new SwerveModulePosition(getCurrentMotorPositionInMeters(), getCurrentAngle());
-    }
-
-    private double getCurrentMotorPositionInMeters() {
-        double
-                motorRotations = driveMotor.getSelectedSensorPosition(),
-                systemRotations = Conversions.motorToSystem(motorRotations, SwerveModuleConstants.DRIVE_GEAR_RATIO);
-
-        return Conversions.revolutionsToDistance(systemRotations, SwerveModuleConstants.WHEEL_DIAMETER_METERS);
-    }
-
-    private void setTargetVelocity(double velocity) {
-        double power = velocity / SwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
-
-        driveMotor.set(power);
-    }
-
-    private void setTargetAngle(double targetAngle) {
-        double targetAngleRevolutions = Conversions.degreesToRevolutions(targetAngle);
-        double offsettedRevolutions = Conversions.offsetWrite(targetAngleRevolutions, encoderOffset);
-
-        steerMotor.getPIDController().setReference(offsettedRevolutions, ControlType.kPosition);
-    }
-
-    /**
-     * @return the module's current velocity in mps
-     */
-    private double getCurrentVelocity() {
-        double
-                motorTicksPer100Ms = driveMotor.getSelectedSensorVelocity(),
-                motorRevolutionsPer100Ms = Conversions.falconTicksToRevolutions(motorTicksPer100Ms);
-        double
-                motorRps = Conversions.perHundredMsToPerSecond(motorRevolutionsPer100Ms),
-                wheelRps = Conversions.motorToSystem(motorRps, SwerveModuleConstants.DRIVE_GEAR_RATIO);
-
-        return Conversions.revolutionsToDistance(wheelRps, SwerveModuleConstants.WHEEL_DIAMETER_METERS);
-    }
-
-    private Rotation2d getCurrentAngle() {
-        return Rotation2d.fromDegrees(getCurrentDegrees());
-    }
-
-    /**
-     * @return the module's current angle in degrees
-     */
-    private double getCurrentDegrees() {
-        double
-                encoderRotations = steerEncoder.getPosition(),
-                offsettedRotations = Conversions.offsetRead(encoderRotations, encoderOffset);
-
-        return Conversions.revolutionsToDegrees(offsettedRotations);
     }
 
     /**
@@ -133,9 +102,8 @@ public class SwerveModule implements Sendable {
      * @param state the target angle for the module
      */
     private SwerveModuleState optimizeState(SwerveModuleState state) {
-        SwerveModuleState optimized = SwerveModuleState.optimize(state, getCurrentAngle());
+        SwerveModuleState optimized = SwerveModuleState.optimize(state, Rotation2d.fromDegrees(getCurrentAngle()));
         optimized.angle = Rotation2d.fromDegrees(scope(optimized.angle.getDegrees()));
-
         return optimized;
     }
 
@@ -147,20 +115,20 @@ public class SwerveModule implements Sendable {
      * @return the scoped angle
      */
     private double scope(double angle) {
-        double rawCurrentAngle = getCurrentDegrees() % 360;
+        double rawCurrentAngle = getCurrentAngle() % 360;
         double rawTargetAngle = angle % 360;
         double difference = rawTargetAngle - rawCurrentAngle;
-        if (difference < -180)
+        if(difference < -180)
             difference += 360;
-        else if (difference > 180)
+        else if(difference > 180)
             difference -= 360;
 
-        return difference + getCurrentDegrees();
+        return difference + getCurrentAngle();
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("angle", this::getCurrentDegrees, null);
+        builder.addDoubleProperty("angle", this::getCurrentAngle, null);
         builder.addDoubleProperty("velocity", this::getCurrentVelocity, null);
         builder.addDoubleProperty("targetAngle", () -> targetState.angle.getDegrees(), this::setTargetAngle);
         builder.addDoubleProperty("targetVelocity", () -> targetState.speedMetersPerSecond, this::setTargetVelocity);
