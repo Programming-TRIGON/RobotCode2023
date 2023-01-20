@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +27,7 @@ public class PoseEstimator extends SubsystemBase {
     private final Field2d field = new Field2d();
 
     public PoseEstimator(AprilTagCamera camera) {
+        this.camera = camera;
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
                 SwerveConstants.KINEMATICS,
                 swerve.getHeading(),
@@ -34,10 +36,9 @@ public class PoseEstimator extends SubsystemBase {
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
-
         addAprilTagsToField();
-
-        this.camera = camera;
+        setDefaultCommand(getUpdatePoseEstimatorCommand());
+        SmartDashboard.putData(field);
     }
 
     /**
@@ -72,7 +73,8 @@ public class PoseEstimator extends SubsystemBase {
      * @return the current pose of the robot
      */
     public Pose2d getCurrentPose() {
-        if (swerveDrivePoseEstimator == null) return new Pose2d();
+        if (swerveDrivePoseEstimator == null)
+            return new Pose2d();
 
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
@@ -85,19 +87,12 @@ public class PoseEstimator extends SubsystemBase {
 
     private void attemptToAddVisionMeasurement() {
         if (!camera.hasNewResult() || !camera.doesHaveGoodTag()) return;
-
+        field.getObject(camera.getName()).setPose(camera.getRobotPose().toPose2d());
         swerveDrivePoseEstimator.addVisionMeasurement(camera.getRobotPose().toPose2d(), Timer.getFPGATimestamp());
     }
 
     private void updatePoseEstimatorStates() {
-        final SwerveModulePosition defaultModulePosition = new SwerveModulePosition(0, new Rotation2d());
-
-        final SwerveModulePosition[] modulePositions = {
-                defaultModulePosition, defaultModulePosition,
-                defaultModulePosition, defaultModulePosition
-        };
-
-        swerveDrivePoseEstimator.update(new Rotation2d(), modulePositions);
+        swerveDrivePoseEstimator.update(swerve.getHeading(), swerve.getModulePositions());
     }
 
     private void addAprilTagsToField() {

@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -15,14 +16,12 @@ public class SwerveModule implements Sendable {
     private final WPI_TalonFX driveMotor;
     private final CANSparkMax steerMotor;
     private final SparkMaxAbsoluteEncoder steerEncoder;
-    private double encoderOffset;
     private SwerveModuleState targetState = new SwerveModuleState();
 
     public SwerveModule(SwerveModuleConstants moduleConstants) {
         this.driveMotor = moduleConstants.driveMotor;
         this.steerMotor = moduleConstants.steerMotor;
         this.steerEncoder = this.steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-        this.encoderOffset = moduleConstants.encoderOffset;
     }
 
     /**
@@ -57,6 +56,16 @@ public class SwerveModule implements Sendable {
 
     private void setTargetAngle(double targetAngle) {
         steerMotor.getPIDController().setReference(targetAngle, ControlType.kPosition);
+    }
+
+    /**
+     * @return the distance the module has traveled in meters
+     */
+    private double getDriveDistance() {
+        double ticks = driveMotor.getSelectedSensorPosition();
+        double motorRevolutions = Conversions.falconTicksToRevolutions(ticks);
+        double wheelRevolutions = Conversions.motorToSystem(motorRevolutions, SwerveModuleConstants.DRIVE_GEAR_RATIO);
+        return Conversions.revolutionsToDistance(wheelRevolutions, SwerveModuleConstants.WHEEL_DIAMETER_METERS);
     }
 
     /**
@@ -134,6 +143,10 @@ public class SwerveModule implements Sendable {
         builder.addDoubleProperty("targetVelocity", () -> targetState.speedMetersPerSecond, this::setTargetVelocity);
         builder.addDoubleProperty(
                 "rawAngleDeg", () -> Conversions.revolutionsToDegrees(steerEncoder.getPosition()), null);
+    }
+
+    public SwerveModulePosition getCurrentPosition() {
+        return new SwerveModulePosition(getDriveDistance(), Rotation2d.fromDegrees(getCurrentAngle()));
     }
 }
 

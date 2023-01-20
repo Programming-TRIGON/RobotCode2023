@@ -6,7 +6,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.trigon.robot.utilities.Conversions;
 
 public class SwerveModuleConstants {
-    public static final double DRIVE_GEAR_RATIO = 8.14;
+    public static final double DRIVE_GEAR_RATIO = 10.8577633008;
     static final double WHEEL_DIAMETER_METERS = 0.1;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
     private static final double VOLTAGE_COMP_SATURATION = 12;
@@ -50,11 +50,6 @@ public class SwerveModuleConstants {
             STEER_MOTOR_P = 0.01,
             STEER_MOTOR_I = 0,
             STEER_MOTOR_D = 0;
-    private static final double
-            FRONT_LEFT_ENCODER_OFFSET = 0,
-            FRONT_RIGHT_ENCODER_OFFSET = 0,
-            REAR_LEFT_ENCODER_OFFSET = 0,
-            REAR_RIGHT_ENCODER_OFFSET = 0;
     private static final CANSparkMax
             FRONT_LEFT_STEER_MOTOR = new CANSparkMax(
             FRONT_LEFT_STEER_MOTOR_ID,
@@ -75,23 +70,19 @@ public class SwerveModuleConstants {
     private static final SwerveModuleConstants
             FRONT_LEFT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
             FRONT_LEFT_DRIVE_MOTOR,
-            FRONT_LEFT_STEER_MOTOR,
-            FRONT_LEFT_ENCODER_OFFSET
+            FRONT_LEFT_STEER_MOTOR
     ),
             FRONT_RIGHT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
                     FRONT_RIGHT_DRIVE_MOTOR,
-                    FRONT_RIGHT_STEER_MOTOR,
-                    FRONT_RIGHT_ENCODER_OFFSET
+                    FRONT_RIGHT_STEER_MOTOR
             ),
             REAR_LEFT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
                     REAR_LEFT_DRIVE_MOTOR,
-                    REAR_LEFT_STEER_MOTOR,
-                    REAR_LEFT_ENCODER_OFFSET
+                    REAR_LEFT_STEER_MOTOR
             ),
             REAR_RIGHT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
                     REAR_RIGHT_DRIVE_MOTOR,
-                    REAR_RIGHT_STEER_MOTOR,
-                    REAR_RIGHT_ENCODER_OFFSET
+                    REAR_RIGHT_STEER_MOTOR
             );
 
     private static final Translation2d
@@ -114,12 +105,10 @@ public class SwerveModuleConstants {
 
     public WPI_TalonFX driveMotor;
     public CANSparkMax steerMotor;
-    public double encoderOffset;
 
-    public SwerveModuleConstants(WPI_TalonFX driveMotor, CANSparkMax steerMotor, double encoderOffset) {
+    public SwerveModuleConstants(WPI_TalonFX driveMotor, CANSparkMax steerMotor) {
         this.driveMotor = driveMotor;
         this.steerMotor = steerMotor;
-        this.encoderOffset = encoderOffset;
 
         initialConfig();
     }

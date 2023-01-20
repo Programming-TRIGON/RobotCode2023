@@ -42,4 +42,9 @@ public interface AprilTagCamera {
      * Sets the previous timestamp.
      */
     void setPreviousTimestamp(double timestamp);
+
+    /**
+     * @return the camera's name
+     */
+    String getName();
 }

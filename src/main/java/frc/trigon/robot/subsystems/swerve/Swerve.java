@@ -1,6 +1,5 @@
 package frc.trigon.robot.subsystems.swerve;
 
-import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -18,7 +17,6 @@ import java.util.function.DoubleSupplier;
 
 public class Swerve extends SubsystemBase {
     private final static Swerve INSTANCE = new Swerve();
-    public final Commands COMMANDS = new Commands();
 
     private Swerve() {
         putModulesOnDashboard();
@@ -65,8 +63,8 @@ public class Swerve extends SubsystemBase {
     SwerveModulePosition[] getModulePositions() {
         final List<SwerveModulePosition> swerveModuleStates = new ArrayList<>();
 
-        for (SwerveModule currentModule : SwerveConstants.SWERVE_MODULES) {
-            swerveModuleStates.add(currentModule.getCurrentModulePosition());
+        for(SwerveModule currentModule : SwerveConstants.SWERVE_MODULES) {
+            swerveModuleStates.add(currentModule.getCurrentPosition());
         }
 
         return swerveModuleStates.toArray(SwerveModulePosition[]::new);
@@ -76,12 +74,12 @@ public class Swerve extends SubsystemBase {
      * Stops the swerve's motors.
      */
     void stop() {
-        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
+        for(SwerveModule module : SwerveConstants.SWERVE_MODULES)
             module.stop();
     }
 
     void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
-        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
+        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
             SwerveConstants.SWERVE_MODULES[i].setTargetState(swerveModuleStates[i]);
     }
 
@@ -97,7 +95,7 @@ public class Swerve extends SubsystemBase {
      *
      * @param heading the new heading
      */
-    void setHeading(Rotation2d heading) {
+    public void setHeading(Rotation2d heading) {
         SwerveConstants.gyro.setYaw(heading.getDegrees());
     }
 
@@ -107,7 +105,7 @@ public class Swerve extends SubsystemBase {
      * @param brake whether the drive motors should brake or coast
      */
     void setBrake(boolean brake) {
-        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
+        for(SwerveModule module : SwerveConstants.SWERVE_MODULES)
             module.setBrake(brake);
     }
 
@@ -124,7 +122,7 @@ public class Swerve extends SubsystemBase {
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
-        if (isStill(chassisSpeeds)) {
+        if(isStill(chassisSpeeds)) {
             stop();
             return;
         }
@@ -146,7 +144,7 @@ public class Swerve extends SubsystemBase {
     }
 
     private void putModulesOnDashboard() {
-        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
+        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
             SmartDashboard.putData(
                     getName() + "/" + SwerveModuleConstants.SwerveModules.fromId(i).name(),
                     SwerveConstants.SWERVE_MODULES[i]
@@ -160,71 +158,66 @@ public class Swerve extends SubsystemBase {
                 "Heading", () -> getHeading().getDegrees(), (heading) -> setHeading(Rotation2d.fromDegrees(heading)));
     }
 
-    public class Commands {
-        /**
-         * Drives the swerve with the given velocities, relative to the robot's frame of reference.
-         * All velocities are in percent output from -1 to 1.
-         *
-         * @param x     the target forwards velocity
-         * @param y     the target leftwards velocity
-         * @param theta the target theta velocity, CCW+
-         */
-        CommandBase cmdSelfRelativeOpenLoopSupplierDrive(
-                DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
-            return new FunctionalCommand(
-                    () -> setBrake(true),
-                    () -> selfRelativeDrive(
-                            new Translation2d(
-                                    x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
-                                    y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
-                            ),
-                            Rotation2d.fromDegrees(
-                                    theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
-                            )
-                    ),
-                    (interrupted) -> {
-                        stop();
-                        setBrake(false);
-                    },
-                    () -> false,
-                    Swerve.this
-            );
-        }
-
-        /**
-         * Drives the swerve with the given velocities, relative to the field's frame of reference.
-         * All velocities are in percent output from -1 to 1.
-         *
-         * @param x     the target forwards velocity
-         * @param y     the target leftwards velocity
-         * @param theta the target theta velocity, CCW+
-         */
-        CommandBase cmdFieldRelativeOpenLoopSupplierDrive(
-                DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
-            return new FunctionalCommand(
-                    () -> setBrake(true),
-                    () -> fieldRelativeDrive(
-                            new Translation2d(
-                                    x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
-                                    y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
-                            ),
-                            new Rotation2d(
-                                    theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
-                            )
-                    ),
-                    (interrupted) -> {
-                        stop();
-                        setBrake(false);
-                    },
-                    () -> false,
-                    Swerve.this
-            );
-        }
+    /**
+     * Drives the swerve with the given velocities, relative to the robot's frame of reference.
+     * All velocities are in percent output from -1 to 1.
+     *
+     * @param x     the target forwards velocity
+     * @param y     the target leftwards velocity
+     * @param theta the target theta velocity, CCW+
+     */
+    public CommandBase selfRelativeOpenLoopSupplierDriveCommand(
+            DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta
+    ) {
+        return new FunctionalCommand(
+                () -> setBrake(true),
+                () -> selfRelativeDrive(
+                        new Translation2d(
+                                x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
+                                y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
+                        ),
+                        new Rotation2d(
+                                theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
+                        )
+                ),
+                (interrupted) -> {
+                    stop();
+                    setBrake(false);
+                },
+                () -> false,
+                Swerve.this
+        );
     }
 
-    @Override
-    public void periodic() {
-        System.out.println(SwerveModuleConstants.SwerveModules.REAR_RIGHT.swerveModuleConstants.steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle).getPosition());
+    /**
+     * Drives the swerve with the given velocities, relative to the field's frame of reference.
+     * All velocities are in percent output from -1 to 1.
+     *
+     * @param x     the target forwards velocity
+     * @param y     the target leftwards velocity
+     * @param theta the target theta velocity, CCW+
+     */
+    public CommandBase fieldRelativeOpenLoopSupplierDriveCommand(
+            DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta
+    ) {
+        return new FunctionalCommand(
+                () -> setBrake(true),
+                () -> fieldRelativeDrive(
+                        new Translation2d(
+                                x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
+                                y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
+                        ),
+                        new Rotation2d(
+                                theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
+                        )
+                ),
+                (interrupted) -> {
+                    stop();
+                    setBrake(false);
+                },
+                () -> false,
+                Swerve.this
+        );
     }
 }
 

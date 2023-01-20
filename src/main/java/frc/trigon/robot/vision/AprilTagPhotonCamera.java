@@ -13,7 +13,7 @@ public class AprilTagPhotonCamera extends PhotonCamera implements AprilTagCamera
     private double previousTimestamp = 0;
 
     @Config
-    private double maximumTagAmbiguity = 0.2;
+    private double maximumTagAmbiguity = 0.1;
 
     public AprilTagPhotonCamera(String cameraName, Transform3d cameraToRobot) {
         super(cameraName);
