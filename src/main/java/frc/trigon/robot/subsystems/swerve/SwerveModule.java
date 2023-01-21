@@ -37,7 +37,7 @@ public class SwerveModule implements Sendable {
      * @param targetState the target state
      */
     public void setTargetState(SwerveModuleState targetState) {
-        this.targetState = targetState = optimizeState(targetState);
+        this.targetState = targetState = SwerveModuleState.optimize(targetState, Rotation2d.fromDegrees(getCurrentAngle()));
         setTargetAngle(targetState.angle.getDegrees());
         setTargetVelocity(targetState.speedMetersPerSecond);
     }
@@ -101,38 +101,6 @@ public class SwerveModule implements Sendable {
     public void stop() {
         driveMotor.disable();
         steerMotor.disable();
-    }
-
-    /**
-     * Minimize the change in the heading the target swerve module state would require
-     * by potentially reversing the direction the wheel spins. Customized from WPILib's
-     * version to include placing in appropriate scope for closed loop control on the motor controller.
-     *
-     * @param state the target angle for the module
-     */
-    private SwerveModuleState optimizeState(SwerveModuleState state) {
-        SwerveModuleState optimized = SwerveModuleState.optimize(state, Rotation2d.fromDegrees(getCurrentAngle()));
-        optimized.angle = Rotation2d.fromDegrees(scope(optimized.angle.getDegrees()));
-        return optimized;
-    }
-
-    /**
-     * Returns an angle that's equivalent to the given angle,
-     * but is within 180 degrees of the reference angle.
-     *
-     * @param angle the angle to scope in degrees
-     * @return the scoped angle
-     */
-    private double scope(double angle) {
-        double rawCurrentAngle = getCurrentAngle() % 360;
-        double rawTargetAngle = angle % 360;
-        double difference = rawTargetAngle - rawCurrentAngle;
-        if(difference < -180)
-            difference += 360;
-        else if(difference > 180)
-            difference -= 360;
-
-        return difference + getCurrentAngle();
     }
 
     @Override
