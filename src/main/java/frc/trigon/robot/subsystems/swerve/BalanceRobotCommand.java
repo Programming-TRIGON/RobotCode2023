@@ -11,13 +11,14 @@ import java.util.function.DoubleSupplier;
 
 public class BalanceRobotCommand extends CommandBase {
 
-    private Swerve swerve = Swerve.getInstance();
-    private Pigeon2 gyro = new Pigeon2(9);
+    private final Swerve swerve = Swerve.getInstance();
+    private final Pigeon2 gyro = new Pigeon2(9);
 
-    private double Kp = 0,
-            Ki = 0,
-            Kd = 0;
-    PIDController balancePidController = new PIDController(Kp, Ki, Kd);
+    private final double P = 0;
+    private final double I = 0;
+    private final double D = 0;
+
+    PIDController balancePidController = new PIDController(P, I, D);
 
     public BalanceRobotCommand() {
         addRequirements(swerve);
@@ -25,26 +26,22 @@ public class BalanceRobotCommand extends CommandBase {
         balancePidController.setSetpoint(0);
     }
 
-    /***
-     * moves the robot back and forth to center the robot
-     */
     private void autoBalance() {
         if (gyro.getPitch() > 1 || gyro.getPitch() <= -1) {
-            FieldRelativeX(() -> calculateOutput());
+            selfBalanceDrive(() -> calculateOutput());
         }
     }
 
-    /***
+    /**
      * @param x moves forward or backwards in meters according to the field
      */
-    private void FieldRelativeX(DoubleSupplier x) {
+    private void selfBalanceDrive(DoubleSupplier x) {
         swerve.selfRelativeDrive(
-                new Translation2d(x.getAsDouble(), 0),
-                new Rotation2d(0));
+                new Translation2d(x.getAsDouble(), 0), new Rotation2d(0));
     }
 
     /**
-     * @return the output in meter(used for centring)
+     * @return the output in meter(used for centering)
      */
     private double calculateOutput() {
         return cmToMeter(100 * balancePidController.
@@ -57,7 +54,9 @@ public class BalanceRobotCommand extends CommandBase {
 
     @Override
     public void initialize() {
-
+        addRequirements(swerve);
+        balancePidController.reset();
+        balancePidController.setSetpoint(0);
     }
 
     @Override
