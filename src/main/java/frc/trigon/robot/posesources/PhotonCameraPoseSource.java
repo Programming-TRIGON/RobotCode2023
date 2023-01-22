@@ -14,7 +14,7 @@ public class PhotonCameraPoseSource extends PhotonCamera implements PoseSource, 
     private double previousTimestamp = 0;
 
     @Config
-    private double maximumTagAmbiguity = 0.2;
+    private double maximumTagAmbiguity = 0.1;
 
     public PhotonCameraPoseSource(String cameraName, Transform3d cameraToRobot) {
         super(cameraName);
