@@ -16,24 +16,21 @@ public class PowerDistributionManager extends SubsystemBase {
     }
 
     private PowerDistribution PD = new PowerDistribution();
-    private double TimerBeforeMaxAmp = 0;
     static ArrayList<PortRequirements> requirements = new ArrayList<>();
 
-    private PowerDistributionManager() {
-    }
-
     public static void setPortRequirements(int port, double second, double maxAMP, Runnable function) {
-        requirements.add(new PortRequirements(port, second, maxAMP, function));
+        double timer = 0, timerBeforeMaxAmp = 0;
+        requirements.add(new PortRequirements(port, second, maxAMP, function, timer, timerBeforeMaxAmp));
     }
 
     private void checkPort(PortRequirements requirements) {
         if (PD.getCurrent(requirements.port) >= requirements.maxAMP) {
-            if (Timer.getFPGATimestamp() >= TimerBeforeMaxAmp + requirements.second) {
+            requirements.timer = Timer.getFPGATimestamp();
+            if (requirements.timer >= requirements.timerBeforeMaxAmp + requirements.second) {
                 requirements.function.run();
             }
         } else {
-            TimerBeforeMaxAmp = Timer.getFPGATimestamp();
-
+            requirements.timerBeforeMaxAmp = Timer.getFPGATimestamp();
         }
     }
 
