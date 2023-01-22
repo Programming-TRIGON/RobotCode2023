@@ -133,6 +133,7 @@ public class Swerve extends SubsystemBase {
             stop();
             return;
         }
+
         SwerveModuleState[] swerveModuleStates = SwerveConstants.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
         setTargetModuleStates(swerveModuleStates);
     }

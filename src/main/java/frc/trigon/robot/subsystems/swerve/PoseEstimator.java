@@ -11,12 +11,13 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.posesources.PoseSource;
 import frc.trigon.robot.posesources.PoseSourceConstants;
+import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 import java.util.List;
 
 
-public class PoseEstimator extends SubsystemBase {
+public class PoseEstimator extends SubsystemBase implements Loggable {
     private final Swerve swerve = Swerve.getInstance();
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
     private final PoseSource[] poseSources;
@@ -86,22 +87,19 @@ public class PoseEstimator extends SubsystemBase {
         for (PoseSource poseSource : poseSources) {
             if (!poseSource.canUpdate()) continue;
 
+            final Pose2d robotPose = poseSource.getRobotPose();
+
             swerveDrivePoseEstimator.addVisionMeasurement(
-                    poseSource.getRobotPose(),
+                    robotPose,
                     poseSource.getTimestampSeconds()
             );
+
+            field.getObject(poseSource.getName()).setPose(robotPose);
         }
     }
 
     private void updatePoseEstimatorStates() {
-        final SwerveModulePosition defaultModulePosition = new SwerveModulePosition(0, new Rotation2d());
-
-        final SwerveModulePosition[] modulePositions = {
-                defaultModulePosition, defaultModulePosition,
-                defaultModulePosition, defaultModulePosition
-        };
-
-        swerveDrivePoseEstimator.update(new Rotation2d(), modulePositions);
+        swerveDrivePoseEstimator.update(swerve.getHeading(), swerve.getModulePositions());
     }
 
     private void addAprilTagsToField() {

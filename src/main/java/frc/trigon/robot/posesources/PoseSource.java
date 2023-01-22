@@ -44,7 +44,7 @@ public interface PoseSource {
     void setPreviousTimestamp(double timestamp);
 
     /**
-     * @return the camera's name
+     * @return the pose source's name
      */
     String getName();
 }

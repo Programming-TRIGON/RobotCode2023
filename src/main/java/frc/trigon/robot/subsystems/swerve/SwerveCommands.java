@@ -1,12 +1,16 @@
 package frc.trigon.robot.subsystems.swerve;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator;
 
 public class SwerveCommands {
     private static final Swerve SWERVE = Swerve.getInstance();
@@ -104,7 +108,7 @@ public class SwerveCommands {
                         x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
                         y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
                 ),
-                Rotation2d.fromDegrees(
+                new Rotation2d(
                         theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
                 )
         );
