@@ -2,11 +2,12 @@ package frc.trigon.robot.subsystems.swerve;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.revrobotics.*;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.trigon.robot.utilities.Conversions;
 
 public class SwerveModuleConstants {
-    public static final double DRIVE_GEAR_RATIO = 10.8577633008;
+    static final double DRIVE_GEAR_RATIO = 10.8577633008;
     static final double WHEEL_DIAMETER_METERS = 0.1;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
     private static final double VOLTAGE_COMP_SATURATION = 12;
@@ -26,10 +27,11 @@ public class SwerveModuleConstants {
     private static final double
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
             DRIVE_CLOSED_LOOP_RAMP_RATE = 0;
+    static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.0001, 0.0001, 0.0001);
     private static final WPI_TalonFX
             FRONT_LEFT_DRIVE_MOTOR = new WPI_TalonFX(
-            FRONT_LEFT_DRIVE_MOTOR_ID
-    ),
+                    FRONT_LEFT_DRIVE_MOTOR_ID
+            ),
             FRONT_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(
                     FRONT_RIGHT_DRIVE_MOTOR_ID
             ),
@@ -52,9 +54,9 @@ public class SwerveModuleConstants {
             STEER_MOTOR_D = 0;
     private static final CANSparkMax
             FRONT_LEFT_STEER_MOTOR = new CANSparkMax(
-            FRONT_LEFT_STEER_MOTOR_ID,
-            CANSparkMaxLowLevel.MotorType.kBrushless
-    ),
+                    FRONT_LEFT_STEER_MOTOR_ID,
+                    CANSparkMaxLowLevel.MotorType.kBrushless
+            ),
             FRONT_RIGHT_STEER_MOTOR = new CANSparkMax(
                     FRONT_RIGHT_STEER_MOTOR_ID,
                     CANSparkMaxLowLevel.MotorType.kBrushless
@@ -69,9 +71,9 @@ public class SwerveModuleConstants {
             );
     private static final SwerveModuleConstants
             FRONT_LEFT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
-            FRONT_LEFT_DRIVE_MOTOR,
-            FRONT_LEFT_STEER_MOTOR
-    ),
+                    FRONT_LEFT_DRIVE_MOTOR,
+                    FRONT_LEFT_STEER_MOTOR
+            ),
             FRONT_RIGHT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
                     FRONT_RIGHT_DRIVE_MOTOR,
                     FRONT_RIGHT_STEER_MOTOR
@@ -87,9 +89,9 @@ public class SwerveModuleConstants {
 
     private static final Translation2d
             FRONT_LEFT_MODULE_LOCATION = new Translation2d(
-            SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
-            SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
-    ),
+                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
+                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
+            ),
             FRONT_RIGHT_MODULE_LOCATION = new Translation2d(
                     SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
                     -SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
@@ -103,8 +105,8 @@ public class SwerveModuleConstants {
                     -SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
             );
 
-    public WPI_TalonFX driveMotor;
-    public CANSparkMax steerMotor;
+    final WPI_TalonFX driveMotor;
+    final CANSparkMax steerMotor;
 
     public SwerveModuleConstants(WPI_TalonFX driveMotor, CANSparkMax steerMotor) {
         this.driveMotor = driveMotor;
@@ -141,7 +143,7 @@ public class SwerveModuleConstants {
         steerMotor.burnFlash();
     }
 
-    public enum SwerveModules {
+    enum SwerveModules {
         FRONT_LEFT(FRONT_LEFT_ID, FRONT_LEFT_SWERVE_MODULE_CONSTANTS, FRONT_LEFT_MODULE_LOCATION),
         FRONT_RIGHT(FRONT_RIGHT_ID, FRONT_RIGHT_SWERVE_MODULE_CONSTANTS, FRONT_RIGHT_MODULE_LOCATION),
         REAR_LEFT(REAR_LEFT_ID, REAR_LEFT_SWERVE_MODULE_CONSTANTS, REAR_LEFT_MODULE_LOCATION),
@@ -157,11 +159,11 @@ public class SwerveModuleConstants {
             this.location = location;
         }
 
-        public static SwerveModules fromId(int id) {
+        static SwerveModules fromId(int id) {
             return values()[id];
         }
 
-        public static int fromModule(SwerveModules module) {
+        static int fromModule(SwerveModules module) {
             return module.id;
         }
     }

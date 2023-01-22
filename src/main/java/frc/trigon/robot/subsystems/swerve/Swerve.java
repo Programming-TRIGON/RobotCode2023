@@ -7,13 +7,10 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.DoubleSupplier;
 
 public class Swerve extends SubsystemBase {
     private final static Swerve INSTANCE = new Swerve();
@@ -24,6 +21,15 @@ public class Swerve extends SubsystemBase {
 
     public static Swerve getInstance() {
         return INSTANCE;
+    }
+
+    /**
+     * Sets the heading of the robot.
+     *
+     * @param heading the new heading
+     */
+    public void setHeading(Rotation2d heading) {
+        SwerveConstants.GYRO.setYaw(heading.getDegrees());
     }
 
     /**
@@ -71,6 +77,16 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
+     * Sets whether the swerve drive should be in closed loop control, or in open loop control.
+     *
+     * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
+     */
+    void setClosedLoop(boolean closedLoop) {
+        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
+            module.setDriveMotorClosedLoop(closedLoop);
+    }
+
+    /**
      * Stops the swerve's motors.
      */
     void stop() {
@@ -78,25 +94,11 @@ public class Swerve extends SubsystemBase {
             module.stop();
     }
 
-    void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
-        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
-            SwerveConstants.SWERVE_MODULES[i].setTargetState(swerveModuleStates[i]);
-    }
-
     /**
      * @return the heading of the robot
      */
     Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(SwerveConstants.gyro.getYaw());
-    }
-
-    /**
-     * Sets the heading of the robot.
-     *
-     * @param heading the new heading
-     */
-    public void setHeading(Rotation2d heading) {
-        SwerveConstants.gyro.setYaw(heading.getDegrees());
+        return Rotation2d.fromDegrees(SwerveConstants.GYRO.getYaw());
     }
 
     /**
@@ -119,6 +121,11 @@ public class Swerve extends SubsystemBase {
                 SwerveConstants.SWERVE_MODULES[2].getCurrentState(),
                 SwerveConstants.SWERVE_MODULES[3].getCurrentState()
         );
+    }
+
+    private void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
+        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
+            SwerveConstants.SWERVE_MODULES[i].setTargetState(swerveModuleStates[i]);
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
@@ -156,68 +163,6 @@ public class Swerve extends SubsystemBase {
         super.initSendable(builder);
         builder.addDoubleProperty(
                 "Heading", () -> getHeading().getDegrees(), (heading) -> setHeading(Rotation2d.fromDegrees(heading)));
-    }
-
-    /**
-     * Drives the swerve with the given velocities, relative to the robot's frame of reference.
-     * All velocities are in percent output from -1 to 1.
-     *
-     * @param x     the target forwards velocity
-     * @param y     the target leftwards velocity
-     * @param theta the target theta velocity, CCW+
-     */
-    public CommandBase selfRelativeOpenLoopSupplierDriveCommand(
-            DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta
-    ) {
-        return new FunctionalCommand(
-                () -> setBrake(true),
-                () -> selfRelativeDrive(
-                        new Translation2d(
-                                x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
-                                y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
-                        ),
-                        new Rotation2d(
-                                theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
-                        )
-                ),
-                (interrupted) -> {
-                    stop();
-                    setBrake(false);
-                },
-                () -> false,
-                Swerve.this
-        );
-    }
-
-    /**
-     * Drives the swerve with the given velocities, relative to the field's frame of reference.
-     * All velocities are in percent output from -1 to 1.
-     *
-     * @param x     the target forwards velocity
-     * @param y     the target leftwards velocity
-     * @param theta the target theta velocity, CCW+
-     */
-    public CommandBase fieldRelativeOpenLoopSupplierDriveCommand(
-            DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta
-    ) {
-        return new FunctionalCommand(
-                () -> setBrake(true),
-                () -> fieldRelativeDrive(
-                        new Translation2d(
-                                x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
-                                y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
-                        ),
-                        new Rotation2d(
-                                theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
-                        )
-                ),
-                (interrupted) -> {
-                    stop();
-                    setBrake(false);
-                },
-                () -> false,
-                Swerve.this
-        );
     }
 }
 

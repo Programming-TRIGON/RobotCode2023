@@ -1,5 +1,7 @@
 package frc.trigon.robot.subsystems.swerve;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.revrobotics.CANSparkMax;
@@ -17,6 +19,7 @@ public class SwerveModule implements Sendable {
     private final CANSparkMax steerMotor;
     private final SparkMaxAbsoluteEncoder steerEncoder;
     private SwerveModuleState targetState = new SwerveModuleState();
+    private boolean driveMotorClosedLoop = false;
 
     public SwerveModule(SwerveModuleConstants moduleConstants) {
         this.driveMotor = moduleConstants.driveMotor;
@@ -27,7 +30,7 @@ public class SwerveModule implements Sendable {
     /**
      * @return the target state of the module
      */
-    public SwerveModuleState getTargetState() {
+    SwerveModuleState getTargetState() {
         return targetState;
     }
 
@@ -36,21 +39,73 @@ public class SwerveModule implements Sendable {
      *
      * @param targetState the target state
      */
-    public void setTargetState(SwerveModuleState targetState) {
+    void setTargetState(SwerveModuleState targetState) {
         this.targetState = targetState = SwerveModuleState.optimize(targetState, Rotation2d.fromDegrees(getCurrentAngle()));
         setTargetAngle(targetState.angle.getDegrees());
         setTargetVelocity(targetState.speedMetersPerSecond);
     }
 
     /**
+     * Sets whether the drive motor should be in closed loop control, or in open loop control.
+     *
+     * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
+     */
+    void setDriveMotorClosedLoop(boolean closedLoop) {
+        driveMotorClosedLoop = closedLoop;
+    }
+
+    /**
      * @return the current state of the module
      */
-    public SwerveModuleState getCurrentState() {
+    SwerveModuleState getCurrentState() {
         return new SwerveModuleState(getCurrentVelocity(), Rotation2d.fromDegrees(getCurrentAngle()));
     }
 
+    /**
+     * Sets whether the drive motor should brake or coast
+     *
+     * @param brake true if the drive motor should brake, false if it should coast
+     */
+    void setBrake(boolean brake) {
+        driveMotor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
+    }
+
+    /**
+     * @return the module position of the module
+     */
+    SwerveModulePosition getCurrentPosition() {
+        return new SwerveModulePosition(getDriveDistance(), Rotation2d.fromDegrees(getCurrentAngle()));
+    }
+
+    /**
+     * Stops the module from moving.
+     */
+    void stop() {
+        driveMotor.disable();
+        steerMotor.disable();
+    }
+
     private void setTargetVelocity(double velocity) {
+        if (driveMotorClosedLoop) {
+            setTargetClosedLoopVelocity(velocity);
+        } else {
+            setTargetOpenLoopVelocity(velocity);
+        }
+    }
+
+    private void setTargetClosedLoopVelocity(double velocity) {
+        final double driveMotorVelocity = Conversions.systemToMotor(velocity, SwerveModuleConstants.DRIVE_GEAR_RATIO);
+        final double feedForward = SwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(driveMotorVelocity);
+
+        driveMotor.set(
+                ControlMode.Velocity, driveMotorVelocity,
+                DemandType.ArbitraryFeedForward, feedForward
+        );
+    }
+
+    private void setTargetOpenLoopVelocity(double velocity) {
         double power = velocity / SwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
+
         driveMotor.set(power);
     }
 
@@ -86,23 +141,6 @@ public class SwerveModule implements Sendable {
         return steerEncoder.getPosition();
     }
 
-    /**
-     * Sets whether the drive motor should brake or coast
-     *
-     * @param brake true if the drive motor should brake, false if it should coast
-     */
-    public void setBrake(boolean brake) {
-        driveMotor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
-    }
-
-    /**
-     * Stops the module from moving.
-     */
-    public void stop() {
-        driveMotor.disable();
-        steerMotor.disable();
-    }
-
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("angle", this::getCurrentAngle, null);
@@ -111,10 +149,6 @@ public class SwerveModule implements Sendable {
         builder.addDoubleProperty("targetVelocity", () -> targetState.speedMetersPerSecond, this::setTargetVelocity);
         builder.addDoubleProperty(
                 "rawAngleDeg", () -> Conversions.revolutionsToDegrees(steerEncoder.getPosition()), null);
-    }
-
-    public SwerveModulePosition getCurrentPosition() {
-        return new SwerveModulePosition(getDriveDistance(), Rotation2d.fromDegrees(getCurrentAngle()));
     }
 }
 

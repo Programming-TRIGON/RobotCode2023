@@ -116,7 +116,7 @@ public class SwerveCommands {
                         x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
                         y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
                 ),
-                Rotation2d.fromDegrees(
+                new Rotation2d(
                         theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
                 )
         );
