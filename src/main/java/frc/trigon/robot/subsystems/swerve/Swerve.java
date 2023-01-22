@@ -84,7 +84,7 @@ public class Swerve extends SubsystemBase {
      * @return the heading of the robot
      */
     Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(SwerveConstants.gyro.getYaw());
+        return Rotation2d.fromDegrees(SwerveConstants.GYRO.getYaw());
     }
 
     /**
@@ -94,7 +94,7 @@ public class Swerve extends SubsystemBase {
      */
     @Log
     void setHeading(Rotation2d heading) {
-        SwerveConstants.gyro.setYaw(heading.getDegrees());
+        SwerveConstants.GYRO.setYaw(heading.getDegrees());
     }
 
     /**
