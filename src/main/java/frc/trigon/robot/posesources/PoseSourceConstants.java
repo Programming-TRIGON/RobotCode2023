@@ -1,4 +1,4 @@
-package frc.trigon.robot.vision;
+package frc.trigon.robot.posesources;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VisionConstants {
+public class PoseSourceConstants {
     public static final List<Pose3d> TAG_POSES = getTagPoses();
 
     private static List<Pose3d> getTagPoses() {

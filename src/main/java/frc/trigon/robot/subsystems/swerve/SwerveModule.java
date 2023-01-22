@@ -1,5 +1,7 @@
 package frc.trigon.robot.subsystems.swerve;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.revrobotics.CANSparkMax;
@@ -17,7 +19,9 @@ public class SwerveModule implements Sendable {
     private final CANSparkMax steerMotor;
     private final SparkMaxAbsoluteEncoder steerEncoder;
     private final double encoderOffset;
+
     private SwerveModuleState targetState = new SwerveModuleState();
+    private boolean driveMotorClosedLoop = false;
 
     public SwerveModule(SwerveModuleConstants moduleConstants) {
         this.driveMotor = moduleConstants.driveMotor;
@@ -75,6 +79,15 @@ public class SwerveModule implements Sendable {
         return new SwerveModulePosition(getCurrentMotorPositionInMeters(), getCurrentAngle());
     }
 
+    /**
+     * Sets whether the drive motor should be in closed loop control, or in open loop control.
+     *
+     * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
+     */
+    void setDriveMotorClosedLoop(boolean closedLoop) {
+        driveMotorClosedLoop = closedLoop;
+    }
+
     private double getCurrentMotorPositionInMeters() {
         double
                 motorRotations = driveMotor.getSelectedSensorPosition(),
@@ -84,6 +97,24 @@ public class SwerveModule implements Sendable {
     }
 
     private void setTargetVelocity(double velocity) {
+        if (driveMotorClosedLoop) {
+            setTargetClosedLoopVelocity(velocity);
+        } else {
+            setTargetOpenLoopVelocity(velocity);
+        }
+    }
+
+    private void setTargetClosedLoopVelocity(double velocity) {
+        final double driveMotorVelocity = Conversions.systemToMotor(velocity, SwerveModuleConstants.DRIVE_GEAR_RATIO);
+        final double feedForward = SwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(driveMotorVelocity);
+
+        driveMotor.set(
+                ControlMode.Velocity, driveMotorVelocity,
+                DemandType.ArbitraryFeedForward, feedForward
+        );
+    }
+
+    private void setTargetOpenLoopVelocity(double velocity) {
         double power = velocity / SwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
 
         driveMotor.set(power);
@@ -163,7 +194,7 @@ public class SwerveModule implements Sendable {
         builder.addDoubleProperty("angle", this::getCurrentDegrees, null);
         builder.addDoubleProperty("velocity", this::getCurrentVelocity, null);
         builder.addDoubleProperty("targetAngle", () -> targetState.angle.getDegrees(), this::setTargetAngle);
-        builder.addDoubleProperty("targetVelocity", () -> targetState.speedMetersPerSecond, this::setTargetVelocity);
+        builder.addDoubleProperty("targetVelocity", () -> targetState.speedMetersPerSecond, this::setTargetOpenLoopVelocity);
         builder.addDoubleProperty(
                 "rawAngleDeg", () -> Conversions.revolutionsToDegrees(steerEncoder.getPosition()), null);
     }

@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class SwerveModuleConstants {
@@ -10,6 +11,10 @@ public class SwerveModuleConstants {
     static final double WHEEL_DIAMETER_METERS = 0.1;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
     private static final double VOLTAGE_COMP_SATURATION = 12;
+
+    private static final double
+            DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
+            DRIVE_CLOSED_LOOP_RAMP_RATE = 0;
 
     private static final int
             FRONT_LEFT_ID = 0,
@@ -23,13 +28,11 @@ public class SwerveModuleConstants {
             REAR_LEFT_DRIVE_MOTOR_ID = REAR_LEFT_ID + 1,
             REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID + 1;
     private static final boolean DRIVE_MOTOR_INVERTED = false;
-    private static final double
-            DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
-            DRIVE_CLOSED_LOOP_RAMP_RATE = 0;
+    static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.0001, 0.0001, 0.0001);
     private static final WPI_TalonFX
             FRONT_LEFT_DRIVE_MOTOR = new WPI_TalonFX(
-            FRONT_LEFT_DRIVE_MOTOR_ID
-    ),
+                    FRONT_LEFT_DRIVE_MOTOR_ID
+            ),
             FRONT_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(
                     FRONT_RIGHT_DRIVE_MOTOR_ID
             ),
@@ -57,9 +60,9 @@ public class SwerveModuleConstants {
             REAR_RIGHT_ENCODER_OFFSET = 231.2402;
     private static final CANSparkMax
             FRONT_LEFT_STEER_MOTOR = new CANSparkMax(
-            FRONT_LEFT_STEER_MOTOR_ID,
-            CANSparkMaxLowLevel.MotorType.kBrushless
-    ),
+                    FRONT_LEFT_STEER_MOTOR_ID,
+                    CANSparkMaxLowLevel.MotorType.kBrushless
+            ),
             FRONT_RIGHT_STEER_MOTOR = new CANSparkMax(
                     FRONT_RIGHT_STEER_MOTOR_ID,
                     CANSparkMaxLowLevel.MotorType.kBrushless
@@ -74,10 +77,10 @@ public class SwerveModuleConstants {
             );
     private static final SwerveModuleConstants
             FRONT_LEFT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
-            FRONT_LEFT_DRIVE_MOTOR,
-            FRONT_LEFT_STEER_MOTOR,
-            FRONT_LEFT_ENCODER_OFFSET
-    ),
+                    FRONT_LEFT_DRIVE_MOTOR,
+                    FRONT_LEFT_STEER_MOTOR,
+                    FRONT_LEFT_ENCODER_OFFSET
+            ),
             FRONT_RIGHT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
                     FRONT_RIGHT_DRIVE_MOTOR,
                     FRONT_RIGHT_STEER_MOTOR,
@@ -96,9 +99,9 @@ public class SwerveModuleConstants {
 
     private static final Translation2d
             FRONT_LEFT_MODULE_LOCATION = new Translation2d(
-            SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
-            SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
-    ),
+                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
+                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
+            ),
             FRONT_RIGHT_MODULE_LOCATION = new Translation2d(
                     SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
                     -SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE

@@ -5,13 +5,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.trigon.robot.vision.AprilTagCamera;
-import frc.trigon.robot.vision.VisionConstants;
+import frc.trigon.robot.posesources.PoseSource;
+import frc.trigon.robot.posesources.PoseSourceConstants;
 import io.github.oblarg.oblog.annotations.Log;
 
 import java.util.List;
@@ -20,12 +19,12 @@ import java.util.List;
 public class PoseEstimator extends SubsystemBase {
     private final Swerve swerve = Swerve.getInstance();
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
-    private final AprilTagCamera camera;
+    private final PoseSource[] poseSources;
 
     @Log
     private final Field2d field = new Field2d();
 
-    public PoseEstimator(AprilTagCamera camera) {
+    public PoseEstimator(PoseSource... poseSources) {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
                 SwerveConstants.KINEMATICS,
                 swerve.getHeading(),
@@ -37,7 +36,7 @@ public class PoseEstimator extends SubsystemBase {
 
         addAprilTagsToField();
 
-        this.camera = camera;
+        this.poseSources = poseSources;
     }
 
     /**
@@ -78,15 +77,20 @@ public class PoseEstimator extends SubsystemBase {
     }
 
     private void updatePoseEstimator() {
-        attemptToAddVisionMeasurement();
+        attemptToUpdateWithPoseSources();
         updatePoseEstimatorStates();
         field.setRobotPose(getCurrentPose());
     }
 
-    private void attemptToAddVisionMeasurement() {
-        if (!camera.hasNewResult() || !camera.doesHaveGoodTag()) return;
+    private void attemptToUpdateWithPoseSources() {
+        for (PoseSource poseSource : poseSources) {
+            if (!poseSource.canUpdate()) continue;
 
-        swerveDrivePoseEstimator.addVisionMeasurement(camera.getRobotPose().toPose2d(), Timer.getFPGATimestamp());
+            swerveDrivePoseEstimator.addVisionMeasurement(
+                    poseSource.getRobotPose(),
+                    poseSource.getTimestampSeconds()
+            );
+        }
     }
 
     private void updatePoseEstimatorStates() {
@@ -101,7 +105,7 @@ public class PoseEstimator extends SubsystemBase {
     }
 
     private void addAprilTagsToField() {
-        final List<Pose3d> tagPoses = VisionConstants.TAG_POSES;
+        final List<Pose3d> tagPoses = PoseSourceConstants.TAG_POSES;
         final int tagsCount = tagPoses.size();
 
         for (int i = 0; i < tagsCount; i++) {
