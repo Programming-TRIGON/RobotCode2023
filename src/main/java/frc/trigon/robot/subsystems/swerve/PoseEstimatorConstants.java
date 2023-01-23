@@ -14,5 +14,5 @@ public class PoseEstimatorConstants {
      */
     static final Vector<N3>
             STATES_AMBIGUITY = VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(0.01)),
-            VISION_CALCULATIONS_AMBIGUITY = VecBuilder.fill(0.3, .3, Units.degreesToRadians(4));
+            VISION_CALCULATIONS_AMBIGUITY = VecBuilder.fill(0.3, 0.3, Units.degreesToRadians(4));
 }
