@@ -9,13 +9,12 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-
 public class PhotonCameraPoseSource extends PhotonCamera implements PoseSource, Loggable {
     private final Transform3d cameraToRobot;
     private double previousTimestamp = 0;
 
     @Config
-    private double maximumTagAmbiguity = 0.2;
+    private double maximumTagAmbiguity = 0.1;
 
     public PhotonCameraPoseSource(String cameraName, Transform3d cameraToRobot) {
         super(cameraName);
@@ -64,9 +63,6 @@ public class PhotonCameraPoseSource extends PhotonCamera implements PoseSource, 
 
     private boolean isCurrentTagGood() {
         final PhotonTrackedTarget bestTag = getLatestResult().getBestTarget();
-
-        if (bestTag == null) return false;
-
         final int tagId = bestTag.getFiducialId();
         final double tagAmbiguity = bestTag.getPoseAmbiguity();
         final int tagsCount = PoseSourceConstants.TAG_POSES.size();
