@@ -26,7 +26,7 @@ public class SwerveModuleConstants {
     private static final boolean DRIVE_MOTOR_INVERTED = false;
     private static final double
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
-            DRIVE_CLOSED_LOOP_RAMP_RATE = 0;
+            DRIVE_CLOSED_LOOP_RAMP_RATE = 0.4;
     static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.0001, 0.0001, 0.0001);
     private static final WPI_TalonFX
             FRONT_LEFT_DRIVE_MOTOR = new WPI_TalonFX(

@@ -12,8 +12,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class PhotonCameraPoseSource extends PhotonCamera implements PoseSource, Loggable {
     private final Transform3d cameraToRobot;
     private double previousTimestamp = 0;
-
-    @Config
     private double maximumTagAmbiguity = 0.05;
 
     public PhotonCameraPoseSource(String cameraName, Transform3d cameraToRobot) {
@@ -26,6 +24,11 @@ public class PhotonCameraPoseSource extends PhotonCamera implements PoseSource, 
         super(cameraName);
 
         this.cameraToRobot = cameraToRobot;
+        this.maximumTagAmbiguity = maximumTagAmbiguity;
+    }
+
+    @Config(defaultValueNumeric = 0.05)
+    public void setMaximumTagAmbiguity(double maximumTagAmbiguity) {
         this.maximumTagAmbiguity = maximumTagAmbiguity;
     }
 
