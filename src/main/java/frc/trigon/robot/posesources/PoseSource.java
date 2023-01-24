@@ -1,15 +1,16 @@
 package frc.trigon.robot.posesources;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 public interface PoseSource {
     /**
-     * @return true if the previous timestamp is not the current timestamp, and if there are results. false otherwise
+     * @return whether there are new results since the last call to this method
      */
     default boolean hasNewResult() {
-        if (getPreviousTimestamp() == getTimestampSeconds()) return false;
+        if (getLastTimestamp() == getTimestampSeconds()) return false;
 
-        setPreviousTimestamp(getTimestampSeconds());
+        setLastTimestamp(getTimestampSeconds());
         return hasResults();
     }
 
@@ -29,19 +30,20 @@ public interface PoseSource {
     double getTimestampSeconds();
 
     /**
-     * @return the robot's pose, or null if there's no result
+     * @param gyroAngle the robot's current gyro angle, so that it would get the best pose relative to the current angle
+     * @return the robot's best estimated pose
      */
-    Pose2d getRobotPose();
+    Pose2d getRobotPose(Rotation2d gyroAngle);
 
     /**
      * @return the previous timestamp in seconds
      */
-    double getPreviousTimestamp();
+    double getLastTimestamp();
 
     /**
      * Sets the previous timestamp.
      */
-    void setPreviousTimestamp(double timestamp);
+    void setLastTimestamp(double timestamp);
 
     /**
      * @return the pose source's name

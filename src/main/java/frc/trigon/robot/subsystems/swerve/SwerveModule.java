@@ -86,11 +86,11 @@ public class SwerveModule implements Sendable {
     }
 
     private void setTargetVelocity(double velocity) {
-        if (driveMotorClosedLoop) {
+        if (driveMotorClosedLoop)
             setTargetClosedLoopVelocity(velocity);
-        } else {
+        else
             setTargetOpenLoopVelocity(velocity);
-        }
+
     }
 
     private void setTargetClosedLoopVelocity(double velocity) {

@@ -2,25 +2,27 @@ package frc.trigon.robot.posesources;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Config;
-import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-public class PhotonCameraPoseSource extends PhotonCamera implements PoseSource, Loggable {
+import java.util.List;
+
+public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseSource, Loggable {
     private final Transform3d cameraToRobot;
-    private double previousTimestamp = 0;
+    private double lastTimestamp = 0;
     private double maximumTagAmbiguity = 0.05;
 
-    public PhotonCameraPoseSource(String cameraName, Transform3d cameraToRobot) {
+    public PhotonCamera(String cameraName, Transform3d cameraToRobot) {
         super(cameraName);
 
         this.cameraToRobot = cameraToRobot;
     }
 
-    public PhotonCameraPoseSource(String cameraName, Transform3d cameraToRobot, double maximumTagAmbiguity) {
+    public PhotonCamera(String cameraName, Transform3d cameraToRobot, double maximumTagAmbiguity) {
         super(cameraName);
 
         this.cameraToRobot = cameraToRobot;
@@ -48,20 +50,41 @@ public class PhotonCameraPoseSource extends PhotonCamera implements PoseSource, 
     }
 
     @Override
-    public Pose2d getRobotPose() {
-        final PhotonTrackedTarget bestTarget = getLatestResult().getBestTarget();
+    public Pose2d getRobotPose(Rotation2d gyroAngle) {
+        final PhotonTrackedTarget bestTag = getCurrentBestTag(gyroAngle);
 
-        return getRobotPoseFromTag(bestTarget);
+        return getRobotPoseFromTag(bestTag);
     }
 
     @Override
-    public double getPreviousTimestamp() {
-        return previousTimestamp;
+    public double getLastTimestamp() {
+        return lastTimestamp;
     }
 
     @Override
-    public void setPreviousTimestamp(double timestamp) {
-        this.previousTimestamp = timestamp;
+    public void setLastTimestamp(double timestamp) {
+        this.lastTimestamp = timestamp;
+    }
+
+    private PhotonTrackedTarget getCurrentBestTag(Rotation2d currentAngle) {
+        final double currentAngleDegrees = currentAngle.getDegrees();
+        final List<PhotonTrackedTarget> tags = getLatestResult().getTargets();
+
+        double lastTagError = 0;
+        PhotonTrackedTarget bestTag = getLatestResult().getBestTarget();
+
+        for (PhotonTrackedTarget currentTag : tags) {
+            final Pose2d tagPose = getRobotPoseFromTag(currentTag);
+            final double poseDegrees = tagPose.getRotation().getDegrees();
+            final double tagError = Math.abs(currentAngleDegrees) - Math.abs(poseDegrees);
+
+            if (tagError > lastTagError) {
+                lastTagError = tagError;
+                bestTag = currentTag;
+            }
+        }
+
+        return bestTag;
     }
 
     private boolean isCurrentTagGood() {

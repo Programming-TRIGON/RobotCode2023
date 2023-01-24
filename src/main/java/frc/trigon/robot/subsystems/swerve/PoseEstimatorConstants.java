@@ -7,12 +7,14 @@ import edu.wpi.first.math.util.Units;
 
 public class PoseEstimatorConstants {
     /**
-     * The vector represents how much the pose estimator can trust the process in each value.
+     * The vector represents how ambiguous is each value.
      * <p>
-     * The first value represents how much it can trust for the x,
-     * the second one for the y, and the third one for the theta (rotation).
+     * The first value represents how ambiguous is the x,
+     * the second one for the y, and the third one is for the theta (rotation).
+     * <p>
+     * Increase these numbers to trust the estimate less.
      */
     static final Vector<N3>
-            STATES_AMBIGUITY = VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(0.01)),
+            STATES_AMBIGUITY = VecBuilder.fill(0.005, 0.005, 0.0005),
             VISION_CALCULATIONS_AMBIGUITY = VecBuilder.fill(0.3, 0.3, Units.degreesToRadians(4));
 }

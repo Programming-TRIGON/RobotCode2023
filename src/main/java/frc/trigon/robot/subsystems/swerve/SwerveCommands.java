@@ -1,16 +1,12 @@
 package frc.trigon.robot.subsystems.swerve;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonPoseEstimator;
 
 public class SwerveCommands {
     private static final Swerve SWERVE = Swerve.getInstance();
@@ -27,7 +23,7 @@ public class SwerveCommands {
     public static CommandBase getFieldRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitialize(true),
+                getDriveInitializeRunnable(true),
                 getFieldRelativeRunnable(x, y, theta),
                 getDriveStopConsumer(),
                 () -> false,
@@ -47,14 +43,14 @@ public class SwerveCommands {
     public static CommandBase getSelfRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitialize(true),
+                getDriveInitializeRunnable(true),
                 getSelfRelativeRunnable(x, y, theta),
                 getDriveStopConsumer(),
                 () -> false,
                 SWERVE
         );
     }
-    
+
     /**
      * Drives the swerve with the given velocities, relative to the robot's frame of reference, in open loop mode.
      * All velocities are in percent output from -1 to 1.
@@ -67,7 +63,7 @@ public class SwerveCommands {
     public static CommandBase getSelfRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitialize(false),
+                getDriveInitializeRunnable(false),
                 getSelfRelativeRunnable(x, y, theta),
                 getDriveStopConsumer(),
                 () -> false,
@@ -87,7 +83,7 @@ public class SwerveCommands {
     public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitialize(false),
+                getDriveInitializeRunnable(false),
                 getFieldRelativeRunnable(x, y, theta),
                 getDriveStopConsumer(),
                 () -> false,
@@ -95,7 +91,7 @@ public class SwerveCommands {
         );
     }
 
-    private static Runnable getDriveInitialize(boolean closedLoop) {
+    private static Runnable getDriveInitializeRunnable(boolean closedLoop) {
         return () -> {
             SWERVE.setBrake(true);
             SWERVE.setClosedLoop(closedLoop);

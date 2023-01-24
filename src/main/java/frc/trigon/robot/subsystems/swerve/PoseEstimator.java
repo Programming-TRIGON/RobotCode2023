@@ -33,13 +33,13 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
 
-        addAprilTagsToField();
+        addAprilTagsToFieldWidget();
 
         this.poseSources = poseSources;
     }
 
     /**
-     * @return a command that updates the pose estimator and runs when the robot is disabled
+     * @return a command that updates the pose estimator. Runs when disabled
      */
     public Command getUpdatePoseEstimatorCommand() {
         return new RunCommand(this::updatePoseEstimator, this).ignoringDisable(true);
@@ -48,11 +48,12 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     /**
      * Resets the pose estimator to the given pose, and the gyro to the given pose's heading.
      *
-     * @param startingPose the pose to reset to
+     * @param currentPose the pose to reset to
      */
-    public void resetPose(Pose2d startingPose) {
-        swerve.setHeading(startingPose.getRotation());
+    public void resetPose(Pose2d currentPose) {
+        swerve.setHeading(currentPose.getRotation());
 
+        // Wait for gyro to update
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -62,17 +63,15 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         swerveDrivePoseEstimator.resetPosition(
                 swerve.getHeading(),
                 swerve.getModulePositions(),
-                startingPose
+                currentPose
         );
     }
 
     /**
-     * @return the current pose of the robot
+     * @return the current estimated pose of the robot
      */
     public Pose2d getCurrentPose() {
-        if (swerveDrivePoseEstimator == null) return new Pose2d();
-
-        return swerveDrivePoseEstimator.getEstimatedPosition();
+        return swerveDrivePoseEstimator == null ? new Pose2d() : swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
     private void updatePoseEstimator() {
@@ -85,22 +84,26 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         for (PoseSource poseSource : poseSources) {
             if (!poseSource.canUpdate()) continue;
 
-            final Pose2d robotPose = poseSource.getRobotPose();
-
-            swerveDrivePoseEstimator.addVisionMeasurement(
-                    robotPose,
-                    poseSource.getTimestampSeconds()
-            );
-
-            field.getObject(poseSource.getName()).setPose(robotPose);
+            updateWithPoseSource(poseSource);
         }
+    }
+
+    private void updateWithPoseSource(PoseSource poseSource) {
+        final Pose2d robotPose = poseSource.getRobotPose(swerve.getHeading());
+
+        swerveDrivePoseEstimator.addVisionMeasurement(
+                robotPose,
+                poseSource.getTimestampSeconds()
+        );
+
+        field.getObject(poseSource.getName()).setPose(robotPose);
     }
 
     private void updatePoseEstimatorStates() {
         swerveDrivePoseEstimator.update(swerve.getHeading(), swerve.getModulePositions());
     }
 
-    private void addAprilTagsToField() {
+    private void addAprilTagsToFieldWidget() {
         final List<Pose3d> tagPoses = PoseSourceConstants.TAG_POSES;
         final int tagsCount = tagPoses.size();
 

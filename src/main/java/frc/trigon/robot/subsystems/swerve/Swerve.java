@@ -24,15 +24,6 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
-     * Sets the heading of the robot.
-     *
-     * @param heading the new heading
-     */
-    public void setHeading(Rotation2d heading) {
-        SwerveConstants.GYRO.setYaw(heading.getDegrees());
-    }
-
-    /**
      * Drives the swerve with the given velocities, relative to the robot's frame of reference.
      *
      * @param translation the target x and y velocities in m/s
@@ -64,12 +55,12 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
-     * @return the swerve module positions
+     * @return the swerve's module's positions
      */
     SwerveModulePosition[] getModulePositions() {
         final List<SwerveModulePosition> swerveModuleStates = new ArrayList<>();
 
-        for(SwerveModule currentModule : SwerveConstants.SWERVE_MODULES) {
+        for (SwerveModule currentModule : SwerveConstants.SWERVE_MODULES) {
             swerveModuleStates.add(currentModule.getCurrentPosition());
         }
 
@@ -90,7 +81,7 @@ public class Swerve extends SubsystemBase {
      * Stops the swerve's motors.
      */
     void stop() {
-        for(SwerveModule module : SwerveConstants.SWERVE_MODULES)
+        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
             module.stop();
     }
 
@@ -102,12 +93,21 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
+     * Sets the heading of the robot.
+     *
+     * @param heading the new heading
+     */
+    public void setHeading(Rotation2d heading) {
+        SwerveConstants.GYRO.setYaw(heading.getDegrees());
+    }
+
+    /**
      * Sets whether the drive motors should brake or coast.
      *
      * @param brake whether the drive motors should brake or coast
      */
     void setBrake(boolean brake) {
-        for(SwerveModule module : SwerveConstants.SWERVE_MODULES)
+        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
             module.setBrake(brake);
     }
 
@@ -124,12 +124,12 @@ public class Swerve extends SubsystemBase {
     }
 
     private void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
-        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
+        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
             SwerveConstants.SWERVE_MODULES[i].setTargetState(swerveModuleStates[i]);
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
-        if(isStill(chassisSpeeds)) {
+        if (isStill(chassisSpeeds)) {
             stop();
             return;
         }
@@ -152,7 +152,7 @@ public class Swerve extends SubsystemBase {
     }
 
     private void putModulesOnDashboard() {
-        for(int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
+        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
             SmartDashboard.putData(
                     getName() + "/" + SwerveModuleConstants.SwerveModules.fromId(i).name(),
                     SwerveConstants.SWERVE_MODULES[i]
