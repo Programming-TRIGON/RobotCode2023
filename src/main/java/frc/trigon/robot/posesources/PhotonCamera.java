@@ -4,11 +4,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import frc.trigon.robot.utilities.Maths;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Config;
 import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseSource, Loggable {
@@ -51,9 +53,14 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     @Override
     public Pose2d getRobotPose(Rotation2d gyroAngle) {
-        final PhotonTrackedTarget bestTag = getCurrentBestTag(gyroAngle);
+        final List<PhotonTrackedTarget> visibleTags = getLatestResult().getTargets();
+        final List<Pose2d> tagPoses = new ArrayList<>();
 
-        return getRobotPoseFromTag(bestTag);
+        for (PhotonTrackedTarget currentTag : visibleTags) {
+            tagPoses.add(getBestPoseFromTag(currentTag, gyroAngle));
+        }
+
+        return getAveragePose(tagPoses);
     }
 
     @Override
@@ -66,24 +73,16 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         this.lastTimestamp = timestamp;
     }
 
-    private PhotonTrackedTarget getCurrentBestTag(Rotation2d currentAngle) {
-        final List<PhotonTrackedTarget> tags = getLatestResult().getTargets();
+    private Pose2d getBestPoseFromTag(PhotonTrackedTarget tag, Rotation2d gyroAngle) {
+        final Pose2d
+                bestPose = getRobotPoseFromTag(tag, false),
+                alternatePose = getRobotPoseFromTag(tag, true);
 
-        double minTagError = 0;
-        PhotonTrackedTarget bestTag = getLatestResult().getBestTarget();
+        final double
+                bestPoseError = Math.abs(gyroAngle.minus(bestPose.getRotation()).getDegrees()),
+                alternatePoseError = Math.abs(gyroAngle.minus(alternatePose.getRotation()).getDegrees());
 
-        for (PhotonTrackedTarget currentTag : tags) {
-            final Pose2d currentTagPose = getRobotPoseFromTag(currentTag);
-            final Rotation2d currentTagRotation = currentTagPose.getRotation();
-            final double tagError = Math.abs(currentAngle.minus(currentTagRotation).getDegrees());
-
-            if (tagError > minTagError) {
-                minTagError = tagError;
-                bestTag = currentTag;
-            }
-        }
-
-        return bestTag;
+        return bestPoseError <= alternatePoseError ? bestPose : alternatePose;
     }
 
     private boolean isCurrentTagGood() {
@@ -98,9 +97,9 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         return tagId >= 0 && tagId < tagsCount && tagAmbiguity <= maximumTagAmbiguity;
     }
 
-    private Pose2d getRobotPoseFromTag(PhotonTrackedTarget tag) {
+    private Pose2d getRobotPoseFromTag(PhotonTrackedTarget tag, boolean isAlternate) {
         final int tagId = tag.getFiducialId();
-        final Transform3d cameraToTag = tag.getBestCameraToTarget();
+        final Transform3d cameraToTag = isAlternate ? tag.getAlternateCameraToTarget() : tag.getBestCameraToTarget();
         final Pose3d tagPose = PoseSourceConstants.TAG_POSES.get(tagId);
 
         return PhotonUtils.estimateFieldToRobotAprilTag(
@@ -108,6 +107,26 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
                 tagPose,
                 cameraToRobot
         ).toPose2d();
+    }
+
+    private Pose2d getAveragePose(List<Pose2d> poses) {
+        final List<Double>
+                xValues = new ArrayList<>(),
+                yValues = new ArrayList<>(),
+                degreeValues = new ArrayList<>();
+
+        for (Pose2d currentPose : poses) {
+            xValues.add(currentPose.getTranslation().getX());
+            yValues.add(currentPose.getTranslation().getY());
+            degreeValues.add(currentPose.getRotation().getDegrees());
+        }
+
+        final double
+                averageX = Maths.average(xValues),
+                averageY = Maths.average(yValues),
+                averageDegrees = Maths.average(degreeValues);
+
+        return new Pose2d(averageX, averageY, Rotation2d.fromDegrees(averageDegrees));
     }
 
 }
