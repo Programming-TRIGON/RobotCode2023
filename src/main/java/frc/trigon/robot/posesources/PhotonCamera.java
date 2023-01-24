@@ -67,19 +67,18 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     private PhotonTrackedTarget getCurrentBestTag(Rotation2d currentAngle) {
-        final double currentAngleDegrees = currentAngle.getDegrees();
         final List<PhotonTrackedTarget> tags = getLatestResult().getTargets();
 
-        double lastTagError = 0;
+        double minTagError = 0;
         PhotonTrackedTarget bestTag = getLatestResult().getBestTarget();
 
         for (PhotonTrackedTarget currentTag : tags) {
-            final Pose2d tagPose = getRobotPoseFromTag(currentTag);
-            final double poseDegrees = tagPose.getRotation().getDegrees();
-            final double tagError = Math.abs(currentAngleDegrees - poseDegrees);
+            final Pose2d currentTagPose = getRobotPoseFromTag(currentTag);
+            final Rotation2d currentTagRotation = currentTagPose.getRotation();
+            final double tagError = Math.abs(currentAngle.minus(currentTagRotation).getDegrees());
 
-            if (tagError > lastTagError) {
-                lastTagError = tagError;
+            if (tagError > minTagError) {
+                minTagError = tagError;
                 bestTag = currentTag;
             }
         }
