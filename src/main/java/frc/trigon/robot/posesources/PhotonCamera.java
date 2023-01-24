@@ -76,7 +76,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         for (PhotonTrackedTarget currentTag : tags) {
             final Pose2d tagPose = getRobotPoseFromTag(currentTag);
             final double poseDegrees = tagPose.getRotation().getDegrees();
-            final double tagError = Math.abs(currentAngleDegrees) - Math.abs(poseDegrees);
+            final double tagError = Math.abs(currentAngleDegrees - poseDegrees);
 
             if (tagError > lastTagError) {
                 lastTagError = tagError;
