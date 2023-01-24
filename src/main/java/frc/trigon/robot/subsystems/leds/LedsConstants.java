@@ -5,6 +5,6 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
 public class LedsConstants {
     static final AddressableLED LED = new AddressableLED(9);
-    static final int LEDS_LENGTH = 40;
+    static final int LEDS_LENGTH = 50;
 
 }
