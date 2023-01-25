@@ -61,7 +61,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         final List<Pose2d> tagPoses = new ArrayList<>();
 
         for (PhotonTrackedTarget currentTag : visibleTags) {
-            tagPoses.add(getBestEstimatedRobotPoseFromTag(currentTag));
+            tagPoses.add(getEstimatedRobotPoseFromTag(currentTag));
         }
 
         return getAveragePose(tagPoses);
@@ -77,10 +77,10 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         this.lastTimestamp = timestamp;
     }
 
-    private Pose2d getBestEstimatedRobotPoseFromTag(PhotonTrackedTarget tag) {
+    private Pose2d getEstimatedRobotPoseFromTag(PhotonTrackedTarget tag) {
         final Pose2d
-                bestPose = getRobotPoseFromTag(tag, false),
-                alternatePose = getRobotPoseFromTag(tag, true);
+                bestPose = getBestRobotPoseFromTag(tag),
+                alternatePose = getAlternateRobotPoseFromTag(tag);
 
         final Rotation2d gyroRotation = gyroRotationSupplier.get();
 
@@ -89,6 +89,30 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
                 alternatePoseError = Math.abs(gyroRotation.minus(alternatePose.getRotation()).getDegrees());
 
         return bestPoseError <= alternatePoseError ? bestPose : alternatePose;
+    }
+
+    private Pose2d getAlternateRobotPoseFromTag(PhotonTrackedTarget tag) {
+        final int tagId = tag.getFiducialId();
+        final Transform3d cameraToTag = tag.getAlternateCameraToTarget();
+        final Pose3d tagPose = PoseSourceConstants.TAG_POSES.get(tagId);
+
+        return PhotonUtils.estimateFieldToRobotAprilTag(
+                cameraToTag,
+                tagPose,
+                cameraToRobot
+        ).toPose2d();
+    }
+
+    private Pose2d getBestRobotPoseFromTag(PhotonTrackedTarget tag) {
+        final int tagId = tag.getFiducialId();
+        final Transform3d cameraToTag = tag.getBestCameraToTarget();
+        final Pose3d tagPose = PoseSourceConstants.TAG_POSES.get(tagId);
+
+        return PhotonUtils.estimateFieldToRobotAprilTag(
+                cameraToTag,
+                tagPose,
+                cameraToRobot
+        ).toPose2d();
     }
 
     private boolean isCurrentTagGood() {
@@ -101,18 +125,6 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         final int tagsCount = PoseSourceConstants.TAG_POSES.size();
 
         return tagId >= 0 && tagId < tagsCount && tagAmbiguity <= maximumTagAmbiguity;
-    }
-
-    private Pose2d getRobotPoseFromTag(PhotonTrackedTarget tag, boolean isAlternate) {
-        final int tagId = tag.getFiducialId();
-        final Transform3d cameraToTag = isAlternate ? tag.getAlternateCameraToTarget() : tag.getBestCameraToTarget();
-        final Pose3d tagPose = PoseSourceConstants.TAG_POSES.get(tagId);
-
-        return PhotonUtils.estimateFieldToRobotAprilTag(
-                cameraToTag,
-                tagPose,
-                cameraToRobot
-        ).toPose2d();
     }
 
     private Pose2d getAveragePose(List<Pose2d> poses) {

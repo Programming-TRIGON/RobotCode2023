@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -51,15 +52,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      * @param currentPose the pose to reset to
      */
     public void resetPose(Pose2d currentPose) {
-        swerve.setHeading(currentPose.getRotation());
-
-        // Wait for gyro to update
-        // TODO: Check the lowest ms this requires
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        setGyroHeadingAndWaitForUpdate(currentPose.getRotation());
 
         swerveDrivePoseEstimator.resetPosition(
                 swerve.getHeading(),
@@ -112,6 +105,16 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
             final Pose3d tagPose = tagPoses.get(i);
 
             field.getObject("Tag " + i).setPose(tagPose.toPose2d());
+        }
+    }
+
+    private void setGyroHeadingAndWaitForUpdate(Rotation2d heading) {
+        swerve.setHeading(heading);
+
+        try {
+            Thread.sleep(PoseEstimatorConstants.GYRO_UPDATE_DELAY_MS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
