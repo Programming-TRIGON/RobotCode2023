@@ -1,7 +1,6 @@
 package frc.trigon.robot.posesources;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 
 public interface PoseSource {
     /**
@@ -30,10 +29,9 @@ public interface PoseSource {
     double getTimestampSeconds();
 
     /**
-     * @param gyroAngle the robot's current gyro angle, so that it would get the best pose relative to the current angle
-     * @return the robot's best estimated pose
+     * @return the robot's best estimated pose, according to the pose source
      */
-    Pose2d getRobotPose(Rotation2d gyroAngle);
+    Pose2d getRobotPose();
 
     /**
      * @return the previous timestamp in seconds

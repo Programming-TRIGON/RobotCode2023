@@ -54,6 +54,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         swerve.setHeading(currentPose.getRotation());
 
         // Wait for gyro to update
+        // TODO: Check the lowest ms this requires
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
@@ -71,7 +72,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      * @return the current estimated pose of the robot
      */
     public Pose2d getCurrentPose() {
-        return swerveDrivePoseEstimator == null ? new Pose2d() : swerveDrivePoseEstimator.getEstimatedPosition();
+        return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
     private void updatePoseEstimator() {
@@ -89,7 +90,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     private void updateWithPoseSource(PoseSource poseSource) {
-        final Pose2d robotPose = poseSource.getRobotPose(swerve.getHeading());
+        final Pose2d robotPose = poseSource.getRobotPose();
 
         swerveDrivePoseEstimator.addVisionMeasurement(
                 robotPose,

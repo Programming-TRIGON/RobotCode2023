@@ -12,22 +12,26 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseSource, Loggable {
     private final Transform3d cameraToRobot;
+    private final Supplier<Rotation2d> gyroRotationSupplier;
     private double lastTimestamp = 0;
     private double maximumTagAmbiguity = 0.05;
 
-    public PhotonCamera(String cameraName, Transform3d cameraToRobot) {
+    public PhotonCamera(String cameraName, Transform3d cameraToRobot, Supplier<Rotation2d> gyroRotationSupplier) {
         super(cameraName);
 
         this.cameraToRobot = cameraToRobot;
+        this.gyroRotationSupplier = gyroRotationSupplier;
     }
 
-    public PhotonCamera(String cameraName, Transform3d cameraToRobot, double maximumTagAmbiguity) {
+    public PhotonCamera(String cameraName, Transform3d cameraToRobot, Supplier<Rotation2d> gyroRotationSupplier, double maximumTagAmbiguity) {
         super(cameraName);
 
         this.cameraToRobot = cameraToRobot;
+        this.gyroRotationSupplier = gyroRotationSupplier;
         this.maximumTagAmbiguity = maximumTagAmbiguity;
     }
 
@@ -52,12 +56,12 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     @Override
-    public Pose2d getRobotPose(Rotation2d gyroAngle) {
+    public Pose2d getRobotPose() {
         final List<PhotonTrackedTarget> visibleTags = getLatestResult().getTargets();
         final List<Pose2d> tagPoses = new ArrayList<>();
 
         for (PhotonTrackedTarget currentTag : visibleTags) {
-            tagPoses.add(getBestPoseFromTag(currentTag, gyroAngle));
+            tagPoses.add(getBestEstimatedRobotPoseFromTag(currentTag));
         }
 
         return getAveragePose(tagPoses);
@@ -73,14 +77,16 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         this.lastTimestamp = timestamp;
     }
 
-    private Pose2d getBestPoseFromTag(PhotonTrackedTarget tag, Rotation2d gyroAngle) {
+    private Pose2d getBestEstimatedRobotPoseFromTag(PhotonTrackedTarget tag) {
         final Pose2d
                 bestPose = getRobotPoseFromTag(tag, false),
                 alternatePose = getRobotPoseFromTag(tag, true);
 
+        final Rotation2d gyroRotation = gyroRotationSupplier.get();
+
         final double
-                bestPoseError = Math.abs(gyroAngle.minus(bestPose.getRotation()).getDegrees()),
-                alternatePoseError = Math.abs(gyroAngle.minus(alternatePose.getRotation()).getDegrees());
+                bestPoseError = Math.abs(gyroRotation.minus(bestPose.getRotation()).getDegrees()),
+                alternatePoseError = Math.abs(gyroRotation.minus(alternatePose.getRotation()).getDegrees());
 
         return bestPoseError <= alternatePoseError ? bestPose : alternatePose;
     }
