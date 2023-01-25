@@ -93,6 +93,15 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
+     *
+     * @return the pitch of the robot
+     */
+    public double getPitch()
+    {
+        return SwerveConstants.gyro.getPitch();
+    }
+
+    /**
      * Sets whether the drive motors should brake or coast.
      *
      * @param brake whether the drive motors should brake or coast
