@@ -11,6 +11,21 @@ public class ArmConstants {
     final static WPI_TalonFX MOTOR1 = new WPI_TalonFX(MOTOR_ID1);
     final static WPI_TalonFX MOTOR2 = new WPI_TalonFX(MOTOR_ID2);
 
+    final static int velocity = 0;
+    final static int acceleration = 0;
+    enum ArmPosition {
+        start,
+        cone,
+        cube;
+    }
+    
+    final static double
+            kP = 0,
+            kI = 0,
+            kD = 0,
+            kF = 0,
+            percentOutput = 0;
+
 }
 
 
