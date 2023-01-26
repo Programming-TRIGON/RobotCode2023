@@ -137,8 +137,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
         final double
                 x = alternateCameraToTargetPose.getX(),
-                y = alternateCameraToTargetPose.getY(),
-                theta = alternateCameraToTargetPose.getRotation().getDegrees();
+                y = alternateCameraToTargetPose.getY();
 
         return Math.abs(x) > PoseSourceConstants.POSE_TOLERANCE ||
                 Math.abs(y) > PoseSourceConstants.POSE_TOLERANCE;
