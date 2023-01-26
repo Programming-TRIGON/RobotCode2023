@@ -11,6 +11,7 @@ import java.util.List;
 
 public class PoseSourceConstants {
     public static final List<Pose3d> TAG_POSES = getTagPoses();
+    static final double POSE_TOLERANCE = 0.5;
 
     private static List<Pose3d> getTagPoses() {
         try {

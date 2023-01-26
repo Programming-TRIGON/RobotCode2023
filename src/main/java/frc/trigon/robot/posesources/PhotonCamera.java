@@ -78,6 +78,10 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     private Pose2d getEstimatedRobotPoseFromTag(PhotonTrackedTarget tag) {
+        if (!doesHaveAlternatePose(tag)) {
+            return getBestRobotPoseFromTag(tag);
+        }
+
         final Pose2d
                 bestPose = getBestRobotPoseFromTag(tag),
                 alternatePose = getAlternateRobotPoseFromTag(tag);
@@ -125,6 +129,19 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         final int tagsCount = PoseSourceConstants.TAG_POSES.size();
 
         return tagId >= 0 && tagId < tagsCount && tagAmbiguity <= maximumTagAmbiguity;
+    }
+
+    private boolean doesHaveAlternatePose(PhotonTrackedTarget tag) {
+        final Transform3d alternateCameraToTarget = tag.getAlternateCameraToTarget();
+        final Pose2d alternateCameraToTargetPose = new Pose3d().transformBy(alternateCameraToTarget).toPose2d();
+
+        final double
+                x = alternateCameraToTargetPose.getX(),
+                y = alternateCameraToTargetPose.getY(),
+                theta = alternateCameraToTargetPose.getRotation().getDegrees();
+
+        return Math.abs(x) > PoseSourceConstants.POSE_TOLERANCE ||
+                Math.abs(y) > PoseSourceConstants.POSE_TOLERANCE;
     }
 
     private Pose2d getAveragePose(List<Pose2d> poses) {
