@@ -16,8 +16,8 @@ public class Arm extends SubsystemBase {
     }
 
     private Arm() {
-        motor1.set(TalonFXControlMode.MotionMagic, ArmConstants.position);
-        motor2.set(TalonFXControlMode.MotionMagic, ArmConstants.position);
+        motor1.set(TalonFXControlMode.MotionMagic, ArmConstants.ArmPosition.START.compareTo());
+        motor2.set(TalonFXControlMode.MotionMagic,ArmConstants.ArmPosition.START.compareTo());
 
         motor1.config_kP(0, ArmConstants.kP);
         motor1.config_kI(0, ArmConstants.kI);

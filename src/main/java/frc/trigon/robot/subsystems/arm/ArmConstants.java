@@ -14,9 +14,21 @@ public class ArmConstants {
     final static int velocity = 0;
     final static int acceleration = 0;
     enum ArmPosition {
-        start,
-        cone,
-        cube;
+        START,
+        CONE,
+        CUBE;
+        public int compareTo() {
+            switch (this) {
+                case START:
+                    return 0;
+                case CONE:
+                    return 0;
+                case CUBE:
+                    return 0;
+                default:
+                    return 0;
+            }
+        }
     }
     
     final static double
