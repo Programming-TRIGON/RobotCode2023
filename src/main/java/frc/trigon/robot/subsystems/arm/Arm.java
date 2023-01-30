@@ -19,5 +19,13 @@ public class Arm extends SubsystemBase {
     private Arm() {
 
     }
+
+    private void setPosition(ArmConstants.ArmPosition armPosition)
+    {
+        switch (armPosition){
+            case PLACE_HYBRID_HIGH:
+
+        }
+    }
 }
 
