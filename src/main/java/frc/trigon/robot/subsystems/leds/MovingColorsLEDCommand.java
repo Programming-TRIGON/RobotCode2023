@@ -16,7 +16,7 @@ public class MovingColorsLEDCommand extends CommandBase {
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;
         this.cycleTime = cycleTime;
-        this.amountOfMovingLeds =amountOfMovingLeds - 1;
+        this.amountOfMovingLeds = amountOfMovingLeds - 1;
     }
 
     @Override
@@ -31,10 +31,11 @@ public class MovingColorsLEDCommand extends CommandBase {
         int lastInMovingRange = firstInMovingRange + amountOfMovingLeds;
 
         for (int i = 0; i < LedsConstants.LEDS_LENGTH; i++)
-            colors[i] = (i >= firstInMovingRange && i <= lastInMovingRange) ||
-                    (i >= lastInMovingRange % LedsConstants.LEDS_LENGTH - amountOfMovingLeds &&
-                            i <= lastInMovingRange % LedsConstants.LEDS_LENGTH)
-                    ? primeColor : backgroundColor;
+            if (shouldBePrimeColor(firstInMovingRange, lastInMovingRange, i)) {
+                colors[i] = primeColor;
+            } else {
+                colors[i] = backgroundColor;
+            }
 
         Leds.getInstance().setLedsColors(colors);
     }
@@ -44,4 +45,15 @@ public class MovingColorsLEDCommand extends CommandBase {
         return true;
     }
 
+    private boolean shouldBePrimeColor(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
+        boolean result;
+        if ((positionInLED >= firstInMovingRange && positionInLED <= lastInMovingRange) ||
+                (positionInLED >= lastInMovingRange % LedsConstants.LEDS_LENGTH - amountOfMovingLeds &&
+                        positionInLED <= lastInMovingRange % LedsConstants.LEDS_LENGTH)) {
+            result = true;
+        } else {
+            result = false;
+        }
+        return result;
+    }
 }
