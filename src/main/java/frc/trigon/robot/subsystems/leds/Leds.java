@@ -25,13 +25,18 @@ public class Leds extends SubsystemBase {
     }
 
     private Color rgbToGrb(Color color) {
-    if (Robot.isReal() == true)
+    if (Robot.isReal())
         return new Color(color.green, color.red, color.blue);
     else{return color;}
     }
+
+    private Color brightness(Color color, double brightness){
+        return new Color(color.red * brightness , color.green * brightness , color.blue * brightness);
+    }
+
     public void setLedsColors(Color[] ledBuffer){
         for (int i = 0; i < ledBuffer.length; i++){
-            LED_BUFFER.setLED(i,rgbToGrb(ledBuffer[i]));
+            LED_BUFFER.setLED(i,rgbToGrb(brightness(ledBuffer[i], 0.1)));
         }
         leds.setData(LED_BUFFER);
     }
