@@ -18,7 +18,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     private final Transform3d cameraToRobot;
     private final Supplier<Rotation2d> gyroRotationSupplier;
     private double lastTimestamp = 0;
-    private double maximumTagAmbiguity = 0.05;
+    private double maximumTagAmbiguity = 0.2;
 
     public PhotonCamera(String cameraName, Transform3d cameraToRobot, Supplier<Rotation2d> gyroRotationSupplier) {
         super(cameraName);
@@ -35,14 +35,14 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         this.maximumTagAmbiguity = maximumTagAmbiguity;
     }
 
-    @Config(defaultValueNumeric = 0.05)
+    @Config(defaultValueNumeric = 0.2)
     public void setMaximumTagAmbiguity(double maximumTagAmbiguity) {
         this.maximumTagAmbiguity = maximumTagAmbiguity;
     }
 
     @Override
     public boolean canUpdate() {
-        return hasNewResult() && isCurrentTagGood();
+        return hasNewResult() && (isGoodTag(getLatestResult().getBestTarget()) || getLatestResult().getTargets().size() > 1);
     }
 
     @Override
@@ -57,11 +57,19 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     @Override
     public Pose2d getRobotPose() {
+        if (!hasResults()) return new Pose2d();
+
         final List<PhotonTrackedTarget> visibleTags = getLatestResult().getTargets();
+        if (visibleTags.size() == 0) return new Pose2d();
+
         final List<Pose2d> tagPoses = new ArrayList<>();
 
         for (PhotonTrackedTarget currentTag : visibleTags) {
-            tagPoses.add(getEstimatedRobotPoseFromTag(currentTag));
+            final Pose2d estimatedPoseFromTag = getEstimatedRobotPoseFromTag(currentTag);
+
+            if (estimatedPoseFromTag == null) continue;
+
+            tagPoses.add(estimatedPoseFromTag);
         }
 
         return getAveragePose(tagPoses);
@@ -78,13 +86,16 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     private Pose2d getEstimatedRobotPoseFromTag(PhotonTrackedTarget tag) {
-        if (!doesHaveAlternatePose(tag)) {
-            return getBestRobotPoseFromTag(tag);
-        }
+        if (!doesHaveWantedId(tag)) return null;
+
+        if (!doesHaveAlternatePose(tag)) return getBestRobotPoseFromTag(tag);
 
         final Pose2d
                 bestPose = getBestRobotPoseFromTag(tag),
                 alternatePose = getAlternateRobotPoseFromTag(tag);
+
+        if (alternatePose == null) return bestPose;
+        if (bestPose == null) return alternatePose;
 
         final Rotation2d gyroRotation = gyroRotationSupplier.get();
 
@@ -98,6 +109,9 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     private Pose2d getAlternateRobotPoseFromTag(PhotonTrackedTarget tag) {
         final int tagId = tag.getFiducialId();
         final Transform3d cameraToTag = tag.getAlternateCameraToTarget();
+
+        if (tagId > PoseSourceConstants.TAG_POSES.size()) return null;
+
         final Pose3d tagPose = PoseSourceConstants.TAG_POSES.get(tagId);
 
         return PhotonUtils.estimateFieldToRobotAprilTag(
@@ -110,6 +124,9 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     private Pose2d getBestRobotPoseFromTag(PhotonTrackedTarget tag) {
         final int tagId = tag.getFiducialId();
         final Transform3d cameraToTag = tag.getBestCameraToTarget();
+
+        if (tagId > PoseSourceConstants.TAG_POSES.size()) return null;
+
         final Pose3d tagPose = PoseSourceConstants.TAG_POSES.get(tagId);
 
         return PhotonUtils.estimateFieldToRobotAprilTag(
@@ -119,16 +136,19 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         ).toPose2d();
     }
 
-    private boolean isCurrentTagGood() {
-        final PhotonTrackedTarget bestTag = getLatestResult().getBestTarget();
+    private boolean isGoodTag(PhotonTrackedTarget tag) {
+        if (tag == null) return false;
 
-        if (bestTag == null) return false;
+        final double tagAmbiguity = tag.getPoseAmbiguity();
 
-        final int tagId = bestTag.getFiducialId();
-        final double tagAmbiguity = bestTag.getPoseAmbiguity();
+        return doesHaveWantedId(tag) && tagAmbiguity <= maximumTagAmbiguity;
+    }
+
+    private boolean doesHaveWantedId(PhotonTrackedTarget tag) {
+        final int tagId = tag.getFiducialId();
         final int tagsCount = PoseSourceConstants.TAG_POSES.size();
 
-        return tagId >= 0 && tagId < tagsCount && tagAmbiguity <= maximumTagAmbiguity;
+        return tagId > 0 && tagId < tagsCount;
     }
 
     private boolean doesHaveAlternatePose(PhotonTrackedTarget tag) {
@@ -139,8 +159,9 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
                 x = alternateCameraToTargetPose.getX(),
                 y = alternateCameraToTargetPose.getY();
 
-        return Math.abs(x) > PoseSourceConstants.POSE_TOLERANCE ||
-                Math.abs(y) > PoseSourceConstants.POSE_TOLERANCE;
+        return
+                (Math.abs(x) > PoseSourceConstants.POSE_TOLERANCE ||
+                        Math.abs(y) > PoseSourceConstants.POSE_TOLERANCE);
     }
 
     private Pose2d getAveragePose(List<Pose2d> poses) {

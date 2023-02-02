@@ -220,16 +220,16 @@ public class Conversions {
         return revolutions * wheelDiameter * Math.PI;
     }
 
+    /**
+     * Converts a target output voltage to a percentage output when voltage compensation is enabled.
+     * The voltage compensation saturation determines what voltage represents 100% output.
+     * The compensated power is the voltage represented by a percentage of the saturation voltage.
+     *
+     * @param voltage    the target voltage output
+     * @param saturation the configured saturation which represents 100% output
+     * @return the percentage output to achieve the target voltage
+     */
     public static double voltageToCompensatedPower(double voltage, double saturation) {
-        /**
-         * Converts a target output voltage to a percentage output when voltage compensation is enabled.
-         * The voltage compensation saturation determines what voltage represents 100% output.
-         * The compensated power is the voltage represented by a percentage of the saturation voltage.
-         *
-         * @param voltage    the target voltage output
-         * @param saturation the configured saturation which represents 100% output
-         * @return the percentage output to achieve the target voltage
-         */
         return voltage / saturation;
     }
 }

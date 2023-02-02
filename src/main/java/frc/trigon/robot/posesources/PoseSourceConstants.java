@@ -25,6 +25,8 @@ public class PoseSourceConstants {
                 }
             }
 
+            tagPoses.add(0, null);
+
             return tagPoses;
         } catch (IOException e) {
             throw new RuntimeException(e);

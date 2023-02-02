@@ -24,14 +24,14 @@ public interface PoseSource {
     boolean hasResults();
 
     /**
-     * @return the current timestamp in seconds
-     */
-    double getTimestampSeconds();
-
-    /**
      * @return the robot's best estimated pose, according to the pose source
      */
     Pose2d getRobotPose();
+
+    /**
+     * @return the current timestamp in seconds
+     */
+    double getTimestampSeconds();
 
     /**
      * @return the previous timestamp in seconds

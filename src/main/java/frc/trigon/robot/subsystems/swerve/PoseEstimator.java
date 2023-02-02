@@ -40,6 +40,13 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     /**
+     * @return the field widget with the estimated robot pose, tags, and pose sources poses
+     */
+    public Field2d getFieldWidget() {
+        return field;
+    }
+
+    /**
      * @return a command that updates the pose estimator. Runs when disabled
      */
     public Command getUpdatePoseEstimatorCommand() {

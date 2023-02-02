@@ -2,6 +2,7 @@ package frc.trigon.robot.subsystems.swerve;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
+import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
@@ -30,6 +31,9 @@ public class SwerveConstants {
             new SwerveModule(SwerveModuleConstants.SwerveModules.fromId(3).swerveModuleConstants)
     };
     static SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
+    static final PIDConstants
+            TRANSLATION_PID_CONSTANTS = new PIDConstants(7, 0, 0),
+            ROTATION_PID_CONSTANTS = new PIDConstants(9, 0, 0);
 
     static {
         GYRO.configFactoryDefault();

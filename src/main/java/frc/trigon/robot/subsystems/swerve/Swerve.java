@@ -24,6 +24,22 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
+     * @return the heading of the robot
+     */
+    public Rotation2d getHeading() {
+        return Rotation2d.fromDegrees(SwerveConstants.GYRO.getYaw());
+    }
+
+    /**
+     * Sets the heading of the robot.
+     *
+     * @param heading the new heading
+     */
+    public void setHeading(Rotation2d heading) {
+        SwerveConstants.GYRO.setYaw(heading.getDegrees());
+    }
+
+    /**
      * Drives the swerve with the given velocities, relative to the robot's frame of reference.
      *
      * @param translation the target x and y velocities in m/s
@@ -86,22 +102,6 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
-     * @return the heading of the robot
-     */
-    public Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(SwerveConstants.GYRO.getYaw());
-    }
-
-    /**
-     * Sets the heading of the robot.
-     *
-     * @param heading the new heading
-     */
-    public void setHeading(Rotation2d heading) {
-        SwerveConstants.GYRO.setYaw(heading.getDegrees());
-    }
-
-    /**
      * Sets whether the drive motors should brake or coast.
      *
      * @param brake whether the drive motors should brake or coast
@@ -123,7 +123,7 @@ public class Swerve extends SubsystemBase {
         );
     }
 
-    private void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
+    void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
         for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
             SwerveConstants.SWERVE_MODULES[i].setTargetState(swerveModuleStates[i]);
     }

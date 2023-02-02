@@ -1,10 +1,18 @@
 package frc.trigon.robot.subsystems.swerve;
 
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.trigon.robot.RobotContainer;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
@@ -12,7 +20,64 @@ public class SwerveCommands {
     private static final Swerve SWERVE = Swerve.getInstance();
 
     /**
-     * Drives the swerve with the given velocities, relative to the field's frame of reference, in closed loop mode.
+     * Creates a command that will drive the robot using the given path group and event map.
+     *
+     * @param pathGroup the path group to follow
+     * @param eventMap the event map to use
+     * @param useAllianceColor whether to use the alliance color
+     * @return the command
+     */
+    public static Command getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
+        final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
+                RobotContainer.POSE_ESTIMATOR::getCurrentPose,
+                (pose2d) -> {},
+                SwerveConstants.KINEMATICS,
+                SwerveConstants.TRANSLATION_PID_CONSTANTS,
+                SwerveConstants.ROTATION_PID_CONSTANTS,
+                SWERVE::setTargetModuleStates,
+                eventMap,
+                useAllianceColor,
+                SWERVE
+        );
+
+        return swerveAutoBuilder.fullAuto(pathGroup);
+    }
+
+    /**
+     * Creates a command that will drive the robot using the given path and event map.
+     *
+     * @param path the path group to follow
+     * @param useAllianceColor whether to use the alliance color
+     * @return the command
+     */
+    public static Command getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
+        final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
+                RobotContainer.POSE_ESTIMATOR::getCurrentPose,
+                (pose2d) -> {},
+                SwerveConstants.KINEMATICS,
+                SwerveConstants.TRANSLATION_PID_CONSTANTS,
+                SwerveConstants.ROTATION_PID_CONSTANTS,
+                SWERVE::setTargetModuleStates,
+                new HashMap<>(),
+                useAllianceColor,
+                SWERVE
+        );
+
+        return swerveAutoBuilder.followPath(path);
+    }
+
+    /**
+     * Creates a command that sets whether the drive motors should brake or coast.
+     *
+     * @param brake whether the drive motors should brake or coast
+     * @return the command
+     */
+    public static CommandBase getSetSwerveBrakeCommand(boolean brake) {
+        return new InstantCommand(() -> SWERVE.setBrake(brake), SWERVE);
+    }
+
+    /**
+     * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in closed loop mode.
      * All velocities are in percent output from -1 to 1.
      *
      * @param x     the target forwards velocity
@@ -32,7 +97,7 @@ public class SwerveCommands {
     }
 
     /**
-     * Drives the swerve with the given velocities, relative to the robot's frame of reference, in closed loop mode.
+     * Creates a command that drives the swerve with the given velocities, relative to the robot's frame of reference, in closed loop mode.
      * All velocities are in percent output from -1 to 1.
      *
      * @param x     the target forwards velocity
@@ -52,7 +117,7 @@ public class SwerveCommands {
     }
 
     /**
-     * Drives the swerve with the given velocities, relative to the robot's frame of reference, in open loop mode.
+     * Creates a command that drives the swerve with the given velocities, relative to the robot's frame of reference, in open loop mode.
      * All velocities are in percent output from -1 to 1.
      *
      * @param x     the target forwards velocity
@@ -72,7 +137,7 @@ public class SwerveCommands {
     }
 
     /**
-     * Drives the swerve with the given velocities, relative to the field's frame of reference, in open loop mode.
+     * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in open loop mode.
      * All velocities are in percent output from -1 to 1.
      *
      * @param x     the target forwards velocity
