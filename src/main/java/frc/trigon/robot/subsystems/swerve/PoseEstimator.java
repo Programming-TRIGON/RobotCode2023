@@ -108,9 +108,8 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         final List<Pose3d> tagPoses = PoseSourceConstants.TAG_POSES;
         final int tagsCount = tagPoses.size();
 
-        for (int i = 0; i < tagsCount; i++) {
+        for (int i = 1; i < tagsCount; i++) {
             final Pose3d tagPose = tagPoses.get(i);
-
             field.getObject("Tag " + i).setPose(tagPose.toPose2d());
         }
     }
