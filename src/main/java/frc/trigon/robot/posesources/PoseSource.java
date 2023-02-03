@@ -14,6 +14,10 @@ public interface PoseSource {
     }
 
     /**
+     * @return the last "real" pose provided by the pose source. Real meaning a pose that wasn't null or defaulted.
+     */
+    Pose2d getLastRealPose();
+    /**
      * @return true if the pose source is ready to provide a pose, false otherwise
      */
     boolean canUpdate();

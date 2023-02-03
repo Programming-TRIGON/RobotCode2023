@@ -19,6 +19,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     private final Supplier<Rotation2d> gyroRotationSupplier;
     private double lastTimestamp = 0;
     private double maximumTagAmbiguity = 0.2;
+    private Pose2d lastRealPose = new Pose2d();
 
     public PhotonCamera(String cameraName, Transform3d cameraToRobot, Supplier<Rotation2d> gyroRotationSupplier) {
         super(cameraName);
@@ -38,6 +39,11 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     @Config(defaultValueNumeric = 0.2)
     public void setMaximumTagAmbiguity(double maximumTagAmbiguity) {
         this.maximumTagAmbiguity = maximumTagAmbiguity;
+    }
+
+    @Override
+    public Pose2d getLastRealPose() {
+        return lastRealPose;
     }
 
     @Override
@@ -72,7 +78,10 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
             tagPoses.add(estimatedPoseFromTag);
         }
 
-        return getAveragePose(tagPoses);
+        final Pose2d averagePose = getAveragePose(tagPoses);
+        lastRealPose = averagePose;
+
+        return averagePose;
     }
 
     @Override

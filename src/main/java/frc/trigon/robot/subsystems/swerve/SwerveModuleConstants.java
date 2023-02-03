@@ -1,5 +1,6 @@
 package frc.trigon.robot.subsystems.swerve;
 
+import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.revrobotics.*;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -23,7 +24,7 @@ public class SwerveModuleConstants {
             FRONT_RIGHT_DRIVE_MOTOR_ID = FRONT_RIGHT_ID + 1,
             REAR_LEFT_DRIVE_MOTOR_ID = REAR_LEFT_ID + 1,
             REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID + 1;
-    private static final boolean DRIVE_MOTOR_INVERTED = false;
+    private static final boolean DRIVE_MOTOR_INVERTED = true;
     private static final double
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
             DRIVE_CLOSED_LOOP_RAMP_RATE = 0.4;
@@ -128,6 +129,8 @@ public class SwerveModuleConstants {
 
         driveMotor.configOpenloopRamp(DRIVE_OPEN_LOOP_RAMP_RATE);
         driveMotor.configClosedloopRamp(DRIVE_CLOSED_LOOP_RAMP_RATE);
+
+        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 10);
 
         //TODO: CAN periods
         steerMotor.setSmartCurrentLimit(10);

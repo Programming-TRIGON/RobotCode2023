@@ -10,10 +10,11 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
 @SuppressWarnings("unused")
-public class Limelight implements PoseSource{
+public class Limelight implements PoseSource {
     private final String hostname;
     private final NetworkTableEntry tv, tx, ty, ta, botPose, json, ledMode, driverCam, pipeline, snapshot;
     private double lastTimestamp = 0;
+    private Pose2d lastRealPose = new Pose2d();
 
     /**
      * Constructs a new Limelight.
@@ -37,6 +38,11 @@ public class Limelight implements PoseSource{
     }
 
     @Override
+    public Pose2d getLastRealPose() {
+        return lastRealPose;
+    }
+
+    @Override
     public boolean canUpdate() {
         return hasNewResult() && getRobotPose() != null;
     }
@@ -54,14 +60,17 @@ public class Limelight implements PoseSource{
 
         if (robotPoseArray.length != 6) return null;
 
-        return robotPoseArrayToPose2d(robotPoseArray);
+        final Pose2d robotPose = robotPoseArrayToPose2d(robotPoseArray);
+        lastRealPose = robotPose;
+
+        return robotPose;
     }
 
     @Override
     public double getTimestampSeconds() {
         final String jsonString = json.getString("");
         final LimelightJsonOutput limelightJsonOutput = JsonHandler.parseJsonStringToObject(
-                json.getString(""),
+                jsonString,
                 LimelightJsonOutput.class
         );
 
