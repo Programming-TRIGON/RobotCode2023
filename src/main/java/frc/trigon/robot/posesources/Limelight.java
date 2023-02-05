@@ -39,11 +39,6 @@ public class Limelight implements PoseSource {
     }
 
     @Override
-    public boolean canUpdate() {
-        return hasNewResult() && getRobotPose() != null;
-    }
-
-    @Override
     public boolean hasResults() {
         return tv.getDouble(0) > 0;
     }

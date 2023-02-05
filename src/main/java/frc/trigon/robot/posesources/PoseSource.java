@@ -22,11 +22,6 @@ public interface PoseSource {
     Pose2d getLastRealPose();
 
     /**
-     * @return true if the pose source is ready to provide a pose, false otherwise
-     */
-    boolean canUpdate();
-
-    /**
      * @return true if the pose source has results, false otherwise
      */
     boolean hasResults();

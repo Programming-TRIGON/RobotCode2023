@@ -47,13 +47,6 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     @Override
-    public boolean canUpdate() {
-        return hasNewResult() &&
-                (isGoodTag(getLatestResult().getBestTarget()) ||
-                getLatestResult().getTargets().size() > 1);
-    }
-
-    @Override
     public double getTimestampSeconds() {
         return getLatestResult().getTimestampSeconds();
     }
@@ -65,10 +58,10 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     @Override
     public Pose2d getRobotPose() {
-        if (!canUpdate()) return new Pose2d();
+        if (!canUpdate()) return null;
 
         final List<PhotonTrackedTarget> visibleTags = getLatestResult().getTargets();
-        if (visibleTags.size() == 0) return new Pose2d();
+        if (visibleTags.size() == 0) return null;
 
         final Pose2d averagePose = getVisibleTagsPoseAverage();
         lastRealPose = averagePose;
@@ -123,6 +116,12 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
                 tagPose,
                 cameraToRobot
         ).toPose2d();
+    }
+
+    private boolean canUpdate() {
+        return hasNewResult() &&
+                (isGoodTag(getLatestResult().getBestTarget()) ||
+                        getLatestResult().getTargets().size() > 1);
     }
 
     private Pose2d getBestRobotPoseFromTag(PhotonTrackedTarget tag) {
