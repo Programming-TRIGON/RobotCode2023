@@ -48,7 +48,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     @Override
     public boolean canUpdate() {
-        return hasNewResult() && 
+        return hasNewResult() &&
                 (isGoodTag(getLatestResult().getBestTarget()) ||
                 getLatestResult().getTargets().size() > 1);
     }
@@ -65,22 +65,12 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     @Override
     public Pose2d getRobotPose() {
-        if (!hasResults()) return new Pose2d();
+        if (!canUpdate()) return new Pose2d();
 
         final List<PhotonTrackedTarget> visibleTags = getLatestResult().getTargets();
         if (visibleTags.size() == 0) return new Pose2d();
 
-        final List<Pose2d> tagPoses = new ArrayList<>();
-
-        for (PhotonTrackedTarget currentTag : visibleTags) {
-            final Pose2d estimatedPoseFromTag = getEstimatedRobotPoseFromTag(currentTag);
-
-            if (estimatedPoseFromTag == null) continue;
-
-            tagPoses.add(estimatedPoseFromTag);
-        }
-
-        final Pose2d averagePose = getAveragePose(tagPoses);
+        final Pose2d averagePose = getVisibleTagsPoseAverage();
         lastRealPose = averagePose;
 
         return averagePose;
@@ -98,7 +88,6 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     private Pose2d getEstimatedRobotPoseFromTag(PhotonTrackedTarget tag) {
         if (!doesHaveWantedId(tag)) return null;
-
         if (!doesHaveAlternatePose(tag)) return getBestRobotPoseFromTag(tag);
 
         final Pose2d
@@ -108,6 +97,10 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         if (alternatePose == null) return bestPose;
         if (bestPose == null) return alternatePose;
 
+        return getBestPoseRelativeToGyroHeading(bestPose, alternatePose);
+    }
+
+    private Pose2d getBestPoseRelativeToGyroHeading(Pose2d bestPose, Pose2d alternatePose) {
         final Rotation2d gyroRotation = gyroRotationSupplier.get();
 
         final double
@@ -173,6 +166,20 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         return
                 (Math.abs(x) > PoseSourceConstants.POSE_TOLERANCE ||
                         Math.abs(y) > PoseSourceConstants.POSE_TOLERANCE);
+    }
+
+    private Pose2d getVisibleTagsPoseAverage() {
+        final List<PhotonTrackedTarget> visibleTags = getLatestResult().getTargets();
+        final List<Pose2d> tagPoses = new ArrayList<>();
+
+        for (PhotonTrackedTarget currentTag : visibleTags) {
+            final Pose2d estimatedPoseFromTag = getEstimatedRobotPoseFromTag(currentTag);
+            if (estimatedPoseFromTag == null) continue;
+
+            tagPoses.add(estimatedPoseFromTag);
+        }
+
+        return getAveragePose(tagPoses);
     }
 
     private Pose2d getAveragePose(List<Pose2d> poses) {
