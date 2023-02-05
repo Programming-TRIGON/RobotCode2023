@@ -17,7 +17,7 @@ public interface PoseSource {
     }
 
     /**
-     * @return the last "real" pose provided by the pose source. Real meaning a pose that wasn't null or defaulted.
+     * @return the last robot pose the pose source has provided, that went through pose validation checks
      */
     Pose2d getLastRealPose();
 
