@@ -12,6 +12,22 @@ public class FilesHandler {
     public static final String DEPLOY_PATH = Filesystem.getDeployDirectory().getPath() + "/";
 
     /**
+     * Sets the permission level of the deploy folder.
+     *
+     * @param permissionLevel the permission level to set the deploy folder to
+     * @throws InterruptedException if the current thread is interrupted by another thread while it is waiting,
+     *                              then the wait is ended and an InterruptedException is thrown.
+     * @throws IOException          if the method failed to set the permission level of the deploy folder
+     */
+    public static void setDeployFolderPermissionLevel(int permissionLevel) throws InterruptedException, IOException {
+        final String deployFolder = DEPLOY_PATH.substring(0, DEPLOY_PATH.length() - 1);
+
+        System.out.println(deployFolder);
+
+        Runtime.getRuntime().exec("chmod " + permissionLevel + " " + deployFolder).waitFor();
+    }
+
+    /**
      * Deletes the given file.
      *
      * @param absolutePath the file's absolute path
@@ -19,7 +35,7 @@ public class FilesHandler {
      */
     public static void deleteFile(String absolutePath) throws IOException {
         File file = new File(absolutePath);
-        if(!file.delete())
+        if (!file.delete())
             throw new IOException("Failed to delete the file \"" + absolutePath + "\".");
     }
 
@@ -46,7 +62,7 @@ public class FilesHandler {
     public static void renameFile(String absolutePath, String newName) throws IOException {
         File file = new File(absolutePath);
         String newAbsolutePath = extractPathFromAbsolutePath(absolutePath) + newName;
-        if(!file.renameTo(new File(newAbsolutePath)))
+        if (!file.renameTo(new File(newAbsolutePath)))
             throw new IOException("Failed to rename file " + absolutePath + " to " + newName);
     }
 
@@ -62,13 +78,13 @@ public class FilesHandler {
      * @throws IOException if the method failed to safe write the file
      */
     public static void safeWrite(String absolutePath, String str) throws IOException {
-        if(fileExists(absolutePath + ".tmp"))
+        if (fileExists(absolutePath + ".tmp"))
             deleteFile(absolutePath + ".tmp");
         writeStringToFile(absolutePath + ".tmp", str);
-        if(fileExists(absolutePath))
+        if (fileExists(absolutePath))
             renameFile(absolutePath, extractFileNameFromAbsolutePath(absolutePath) + ".bak");
         renameFile(absolutePath + ".tmp", extractFileNameFromAbsolutePath(absolutePath));
-        if(fileExists(absolutePath + ".bak"))
+        if (fileExists(absolutePath + ".bak"))
             deleteFile(absolutePath + ".bak");
     }
 
@@ -82,8 +98,8 @@ public class FilesHandler {
      */
     public static String readFile(String absolutePath) throws IOException {
         String newPath = !fileExists(absolutePath) && fileExists(absolutePath + ".tmp") ?
-                         absolutePath + ".tmp" :
-                         absolutePath;
+                absolutePath + ".tmp" :
+                absolutePath;
         return Files.readString(Path.of(newPath));
     }
 
