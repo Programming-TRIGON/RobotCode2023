@@ -1,9 +1,6 @@
 package frc.trigon.robot.posesources;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -59,7 +56,7 @@ public class Limelight implements PoseSource {
 
         if (robotPoseArray.length != 6) return null;
 
-        final Pose2d robotPose = robotPoseArrayToPose2d(robotPoseArray);
+        final Pose2d robotPose = robotPoseArrayToPose2d(robotPoseArray).toPose2d();
         lastRealPose = robotPose;
 
         return robotPose;
@@ -164,19 +161,20 @@ public class Limelight implements PoseSource {
         snapshot.setNumber(1);
     }
 
-    private Pose2d robotPoseArrayToPose2d(double[] robotPoseArray) {
-        final Translation2d robotTranslation = new Translation2d(
+    private Pose3d robotPoseArrayToPose2d(double[] robotPoseArray) {
+        final Translation3d robotTranslation = new Translation3d(
                 robotPoseArray[0],
-                robotPoseArray[1]
+                robotPoseArray[1],
+                robotPoseArray[2]
         );
 
-        final Rotation2d robotRotation = new Rotation3d(
+        final Rotation3d robotRotation = new Rotation3d(
                 robotPoseArray[3],
                 robotPoseArray[4],
                 robotPoseArray[5]
-        ).toRotation2d();
+        );
 
-        return new Pose2d(robotTranslation, robotRotation);
+        return new Pose3d(robotTranslation, robotRotation);
     }
 
     private LimelightJsonOutput getJsonOutput() {
