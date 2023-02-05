@@ -112,10 +112,10 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     private Pose2d getAlternateRobotPoseFromTag(PhotonTrackedTarget tag) {
         final int tagId = tag.getFiducialId();
-        final Transform3d cameraToTag = tag.getAlternateCameraToTarget();
 
         if (tagId > PoseSourceConstants.TAG_POSES.size()) return null;
 
+        final Transform3d cameraToTag = tag.getAlternateCameraToTarget();
         final Pose3d tagPose = PoseSourceConstants.TAG_POSES.get(tagId);
 
         return PhotonUtils.estimateFieldToRobotAprilTag(

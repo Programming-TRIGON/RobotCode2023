@@ -2,6 +2,9 @@ package frc.trigon.robot.posesources;
 
 import edu.wpi.first.math.geometry.Pose2d;
 
+/**
+ * A pose source is a class that provides the robot's pose.
+ */
 public interface PoseSource {
     /**
      * @return whether there are new results since the last call to this method
