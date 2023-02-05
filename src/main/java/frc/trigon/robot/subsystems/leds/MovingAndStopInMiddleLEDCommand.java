@@ -9,12 +9,14 @@ public class MovingAndStopInMiddleLEDCommand extends CommandBase {
     Color primeColor;
     double cycleTime;
     int amountOfMovingLeds;
+    private final LedStrip ledStrip;
 
-    public MovingAndStopInMiddleLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds){
+    public MovingAndStopInMiddleLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip){
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;
         this.cycleTime = cycleTime;
         this.amountOfMovingLeds = amountOfMovingLeds -1;
+        this.ledStrip = ledStrip;
     }
 
     @Override
@@ -23,25 +25,25 @@ public class MovingAndStopInMiddleLEDCommand extends CommandBase {
 
     @Override
     public void execute() {
-        Color[] colors = new Color[LedsConstants.LEDS_LENGTH];
-        int firstInMovingRange = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % (LedsConstants.LEDS_LENGTH / 2);
-        int lastInMovingRange = (firstInMovingRange + amountOfMovingLeds) % LedsConstants.LEDS_LENGTH;
+        Color[] colors = new Color[ledStrip.getLength()];
+        int firstInMovingRange = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % (ledStrip.getLength() / 2);
+        int lastInMovingRange = (firstInMovingRange + amountOfMovingLeds) % ledStrip.getLength();
 
-        for (int i = 0; i < LedsConstants.LEDS_LENGTH; i++) {
+        for (int i = 0; i < ledStrip.getLength(); i++) {
 
             if ((i >= firstInMovingRange && i <= lastInMovingRange) ||
-                    (i >= lastInMovingRange % LedsConstants.LEDS_LENGTH - amountOfMovingLeds &&
-                            i <= lastInMovingRange % LedsConstants.LEDS_LENGTH) || ((LedsConstants.LEDS_LENGTH - i) >= firstInMovingRange && (LedsConstants.LEDS_LENGTH - i) <= lastInMovingRange) ||
-                    ((LedsConstants.LEDS_LENGTH - i) >= lastInMovingRange % LedsConstants.LEDS_LENGTH - amountOfMovingLeds &&
-                            (LedsConstants.LEDS_LENGTH - i) <= lastInMovingRange % LedsConstants.LEDS_LENGTH)){
-                colors[(LedsConstants.LEDS_LENGTH - i) % LedsConstants.LEDS_LENGTH] = primeColor;
+                    (i >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
+                            i <= lastInMovingRange % ledStrip.getLength()) || ((ledStrip.getLength() - i) >= firstInMovingRange && (LedsConstants.LEDS_LENGTH - i) <= lastInMovingRange) ||
+                    ((ledStrip.getLength() - i) >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
+                            (ledStrip.getLength() - i) <= lastInMovingRange % ledStrip.getLength())){
+                colors[(ledStrip.getLength() - i) % ledStrip.getLength()] = primeColor;
                 colors[i] = primeColor;
             }else {
-                colors[(LedsConstants.LEDS_LENGTH - i) % LedsConstants.LEDS_LENGTH] = backgroundColor;
+                colors[(ledStrip.getLength() - i) % ledStrip.getLength()] = backgroundColor;
                 colors[i] = backgroundColor;
             }
         }
-        Leds.getInstance().setLedsColors(colors);
+        ledStrip.setLedsColors(colors);
 
     }
 

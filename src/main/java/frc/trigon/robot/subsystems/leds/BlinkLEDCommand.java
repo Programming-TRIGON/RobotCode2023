@@ -9,24 +9,24 @@ import java.util.Arrays;
 public class BlinkLEDCommand extends CommandBase {
     private final Color color1;
     private final Color color2;
-
     private final double cycleTime;
-
-    public BlinkLEDCommand(Color color1, Color color2, double cycleTime){
+    private final LedStrip ledStrip;
+    public BlinkLEDCommand(Color color1, Color color2, double cycleTime, LedStrip ledStrip){
         this.color1 = color1;
         this.color2 = color2;
         this.cycleTime = cycleTime;
+        this.ledStrip = ledStrip;
     }
 
     @Override
     public void execute() {
-        Color[] colors = new Color[LedsConstants.LEDS_LENGTH];
+        Color[] colors = new Color[ledStrip.getLength()];
         if ((Timer.getFPGATimestamp() / cycleTime)% 1 <= 0.5) {
             Arrays.fill(colors, color1);
         } else {
             Arrays.fill(colors, color2);
         }
-        Leds.getInstance().setLedsColors(colors);
+        ledStrip.setLedsColors(colors);
     }
 
     @Override

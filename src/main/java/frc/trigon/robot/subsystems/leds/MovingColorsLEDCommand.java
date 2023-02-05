@@ -6,17 +6,18 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 
 public class MovingColorsLEDCommand extends CommandBase {
-
     Color backgroundColor;
     Color primeColor;
     double cycleTime;
     int amountOfMovingLeds;
+    private final LedStrip ledStrip;
 
-    public MovingColorsLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds) {
+    public MovingColorsLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;
         this.cycleTime = cycleTime;
         this.amountOfMovingLeds = amountOfMovingLeds - 1;
+        this.ledStrip = ledStrip;
     }
 
     @Override
@@ -26,18 +27,17 @@ public class MovingColorsLEDCommand extends CommandBase {
 
     @Override
     public void execute() {
-        Color[] colors = new Color[LedsConstants.LEDS_LENGTH];
-        int firstInMovingRange = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % LedsConstants.LEDS_LENGTH;
+        Color[] colors = new Color[ledStrip.getLength()];
+        int firstInMovingRange = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % ledStrip.getLength();
         int lastInMovingRange = firstInMovingRange + amountOfMovingLeds;
-
-        for (int i = 0; i < LedsConstants.LEDS_LENGTH; i++)
+        for (int i = 0; i < ledStrip.getLength(); i++)
             if (shouldBePrimeColor(firstInMovingRange, lastInMovingRange, i)) {
                 colors[i] = primeColor;
             } else {
                 colors[i] = backgroundColor;
             }
 
-        Leds.getInstance().setLedsColors(colors);
+        ledStrip.setLedsColors(colors);
     }
 
     @Override
@@ -48,8 +48,8 @@ public class MovingColorsLEDCommand extends CommandBase {
     private boolean shouldBePrimeColor(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
         boolean result;
         if ((positionInLED >= firstInMovingRange && positionInLED <= lastInMovingRange) ||
-                (positionInLED >= lastInMovingRange % LedsConstants.LEDS_LENGTH - amountOfMovingLeds &&
-                        positionInLED <= lastInMovingRange % LedsConstants.LEDS_LENGTH)) {
+                (positionInLED >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
+                        positionInLED <= lastInMovingRange % ledStrip.getLength())) {
             result = true;
         } else {
             result = false;
