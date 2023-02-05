@@ -90,7 +90,6 @@ public class SwerveModule implements Sendable {
             setTargetClosedLoopVelocity(velocity);
         else
             setTargetOpenLoopVelocity(velocity);
-
     }
 
     private void setTargetClosedLoopVelocity(double velocity) {
@@ -105,7 +104,6 @@ public class SwerveModule implements Sendable {
 
     private void setTargetOpenLoopVelocity(double velocity) {
         double power = velocity / SwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
-
         driveMotor.set(power);
     }
 

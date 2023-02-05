@@ -9,16 +9,14 @@ public class Maths {
 
     public static double average(double... values) {
         final double sum = sum(values);
-
         return sum / values.length;
     }
 
     public static double sum(double... values) {
         double sum = 0;
 
-        for (double value : values) {
+        for (double value : values)
             sum += value;
-        }
 
         return sum;
     }
