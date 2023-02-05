@@ -9,9 +9,6 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Swerve extends SubsystemBase {
     private final static Swerve INSTANCE = new Swerve();
 
@@ -74,13 +71,12 @@ public class Swerve extends SubsystemBase {
      * @return the swerve's module's positions
      */
     SwerveModulePosition[] getModulePositions() {
-        final List<SwerveModulePosition> swerveModuleStates = new ArrayList<>();
+        final SwerveModulePosition[] swerveModuleStates = new SwerveModulePosition[4];
 
-        for (SwerveModule currentModule : SwerveConstants.SWERVE_MODULES) {
-            swerveModuleStates.add(currentModule.getCurrentPosition());
-        }
+        for (int i = 0; i < 4; i++)
+            swerveModuleStates[i] = SwerveConstants.SWERVE_MODULES[i].getCurrentPosition();
 
-        return swerveModuleStates.toArray(SwerveModulePosition[]::new);
+        return swerveModuleStates;
     }
 
     /**

@@ -90,7 +90,7 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 getDriveInitializeRunnable(true),
                 getFieldRelativeRunnable(x, y, theta),
-                getDriveStopConsumer(),
+                getStopDriveConsumer(),
                 () -> false,
                 SWERVE
         );
@@ -110,7 +110,7 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 getDriveInitializeRunnable(true),
                 getSelfRelativeRunnable(x, y, theta),
-                getDriveStopConsumer(),
+                getStopDriveConsumer(),
                 () -> false,
                 SWERVE
         );
@@ -130,7 +130,7 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 getDriveInitializeRunnable(false),
                 getSelfRelativeRunnable(x, y, theta),
-                getDriveStopConsumer(),
+                getStopDriveConsumer(),
                 () -> false,
                 SWERVE
         );
@@ -150,7 +150,7 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 getDriveInitializeRunnable(false),
                 getFieldRelativeRunnable(x, y, theta),
-                getDriveStopConsumer(),
+                getStopDriveConsumer(),
                 () -> false,
                 SWERVE
         );
@@ -187,7 +187,7 @@ public class SwerveCommands {
         );
     }
 
-    private static Consumer<Boolean> getDriveStopConsumer() {
+    private static Consumer<Boolean> getStopDriveConsumer() {
         return (interrupted) -> {
             SWERVE.stop();
             SWERVE.setBrake(false);
