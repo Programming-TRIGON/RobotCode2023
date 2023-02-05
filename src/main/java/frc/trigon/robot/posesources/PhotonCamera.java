@@ -36,7 +36,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         this.maximumTagAmbiguity = maximumTagAmbiguity;
     }
 
-    @Config(defaultValueNumeric = 0.2)
+    @Config(name = "maximum tag ambiguity", defaultValueNumeric = 0.2)
     public void setMaximumTagAmbiguity(double maximumTagAmbiguity) {
         this.maximumTagAmbiguity = maximumTagAmbiguity;
     }
@@ -48,7 +48,9 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
 
     @Override
     public boolean canUpdate() {
-        return hasNewResult() && (isGoodTag(getLatestResult().getBestTarget()) || getLatestResult().getTargets().size() > 1);
+        return hasNewResult() && 
+                (isGoodTag(getLatestResult().getBestTarget()) ||
+                getLatestResult().getTargets().size() > 1);
     }
 
     @Override
