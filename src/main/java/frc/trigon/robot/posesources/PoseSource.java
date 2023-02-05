@@ -7,9 +7,9 @@ public interface PoseSource {
      * @return whether there are new results since the last call to this method
      */
     default boolean hasNewResult() {
-        if (getLastTimestamp() == getTimestampSeconds()) return false;
+        if (getLastUpdatedTimestamp() == getTimestampSeconds()) return false;
 
-        setLastTimestamp(getTimestampSeconds());
+        setLastUpdatedTimestamp(getTimestampSeconds());
         return hasResults();
     }
 
@@ -17,6 +17,7 @@ public interface PoseSource {
      * @return the last "real" pose provided by the pose source. Real meaning a pose that wasn't null or defaulted.
      */
     Pose2d getLastRealPose();
+
     /**
      * @return true if the pose source is ready to provide a pose, false otherwise
      */
@@ -40,12 +41,12 @@ public interface PoseSource {
     /**
      * @return the previous timestamp in seconds
      */
-    double getLastTimestamp();
+    double getLastUpdatedTimestamp();
 
     /**
      * Sets the previous timestamp.
      */
-    void setLastTimestamp(double timestamp);
+    void setLastUpdatedTimestamp(double timestamp);
 
     /**
      * @return the pose source's name

@@ -97,7 +97,6 @@ jar {
 repositories {
     mavenCentral()
     maven {url 'https://jitpack.io'}
-
 }
 
 // Configure jar and deploy tasks

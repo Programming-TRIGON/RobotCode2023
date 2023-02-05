@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseSource, Loggable {
     private final Transform3d cameraToRobot;
     private final Supplier<Rotation2d> gyroRotationSupplier;
-    private double lastTimestamp = 0;
+    private double lastUpdatedTimestamp = 0;
     private double maximumTagAmbiguity = 0.2;
     private Pose2d lastRealPose = new Pose2d();
 
@@ -85,13 +85,13 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     @Override
-    public double getLastTimestamp() {
-        return lastTimestamp;
+    public double getLastUpdatedTimestamp() {
+        return lastUpdatedTimestamp;
     }
 
     @Override
-    public void setLastTimestamp(double timestamp) {
-        this.lastTimestamp = timestamp;
+    public void setLastUpdatedTimestamp(double timestamp) {
+        this.lastUpdatedTimestamp = timestamp;
     }
 
     private Pose2d getEstimatedRobotPoseFromTag(PhotonTrackedTarget tag) {

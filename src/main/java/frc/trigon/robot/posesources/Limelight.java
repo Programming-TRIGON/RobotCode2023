@@ -9,11 +9,13 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
+import java.util.Objects;
+
 @SuppressWarnings("unused")
 public class Limelight implements PoseSource {
     private final String hostname;
-    private final NetworkTableEntry tv, tx, ty, ta, botPose, json, ledMode, driverCam, pipeline, snapshot;
-    private double lastTimestamp = 0;
+    private final NetworkTableEntry tv, botPose, json, ledMode, driverCam, pipeline, snapshot;
+    private double lastUpdatedTimestamp = 0;
     private Pose2d lastRealPose = new Pose2d();
 
     /**
@@ -26,9 +28,6 @@ public class Limelight implements PoseSource {
         final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
         tv = networkTable.getEntry("tv");
-        tx = networkTable.getEntry("tx");
-        ty = networkTable.getEntry("ty");
-        ta = networkTable.getEntry("ta");
         botPose = networkTable.getEntry("botpose_wpiblue");
         json = networkTable.getEntry("json");
         ledMode = networkTable.getEntry("ledMode");
@@ -49,7 +48,7 @@ public class Limelight implements PoseSource {
 
     @Override
     public boolean hasResults() {
-        return tv.getDouble(0) == 1;
+        return tv.getDouble(0) > 0;
     }
 
     @Override
@@ -68,24 +67,17 @@ public class Limelight implements PoseSource {
 
     @Override
     public double getTimestampSeconds() {
-        final String jsonString = json.getString("");
-        final LimelightJsonOutput limelightJsonOutput = JsonHandler.parseJsonStringToObject(
-                jsonString,
-                LimelightJsonOutput.class
-        );
-
-
-        return limelightJsonOutput.Results.ts;
+        return getJsonOutput().Results.ts;
     }
 
     @Override
-    public double getLastTimestamp() {
-        return lastTimestamp;
+    public double getLastUpdatedTimestamp() {
+        return lastUpdatedTimestamp;
     }
 
     @Override
-    public void setLastTimestamp(double timestamp) {
-        lastTimestamp = timestamp;
+    public void setLastUpdatedTimestamp(double timestamp) {
+        lastUpdatedTimestamp = timestamp;
     }
 
     @Override
@@ -94,24 +86,27 @@ public class Limelight implements PoseSource {
     }
 
     /**
+     * @param id the target april tag's id
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
-    public double getTy() {
-        return ty.getDouble(0);
+    public double getTy(int id) {
+        return Objects.requireNonNullElse(getJsonOutput().Results.getFiducialFromId(id), new LimelightJsonOutput.Results.Fiducial()).ty;
     }
 
     /**
+     * @param id the target april tag's id
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
-    public double getTx() {
-        return tx.getDouble(0);
+    public double getTx(int id) {
+        return Objects.requireNonNullElse(getJsonOutput().Results.getFiducialFromId(id), new LimelightJsonOutput.Results.Fiducial()).tx;
     }
 
     /**
-     * @return target's area (0% of image to 100% of image)
+     * @param id the target april tag's id
+     * @return target's area (from 0% of the image to 100% of the image)
      */
-    public double getTa() {
-        return ta.getDouble(0);
+    public double getTa(int id) {
+        return Objects.requireNonNullElse(getJsonOutput().Results.getFiducialFromId(id), new LimelightJsonOutput.Results.Fiducial()).ta;
     }
 
     /**
@@ -122,11 +117,11 @@ public class Limelight implements PoseSource {
     }
 
     /**
-     * Sets the driver camera mode.
+     * Sets the camera mode.
      *
      * @param useDriverCam true for driver camera, false for vision processing
      */
-    public void setDriverCam(boolean useDriverCam) {
+    public void setCam(boolean useDriverCam) {
         driverCam.setNumber(useDriverCam ? 1 : 0);
     }
 
@@ -184,27 +179,12 @@ public class Limelight implements PoseSource {
         return new Pose2d(robotTranslation, robotRotation);
     }
 
-    private static class LimelightJsonOutput {
-        private Results Results;
-
-        private static class Results {
-            private double[] Classifier;
-            private double[] Detector;
-            private Fiducial[] Fiducial;
-            private double[] retro;
-            private double[] botpose, botpose_wpiblue, botpose_wpired;
-            private double pID, tl, ts, v;
-
-            private static class Fiducial {
-                private int fID;
-                private String fam;
-                private double[] pts;
-                private double[] skew;
-                private double[] t6c_ts, t6r_fs, t6r_ts, t6t_cs, t6t_rs;
-                private double ta, tx, txp, ty, typ;
-
-            }
-        }
+    private LimelightJsonOutput getJsonOutput() {
+        final String jsonString = json.getString("");
+        return JsonHandler.parseJsonStringToObject(
+                jsonString,
+                LimelightJsonOutput.class
+        );
     }
 
     public enum LedMode {
@@ -226,12 +206,43 @@ public class Limelight implements PoseSource {
          * @return the LedMode with the given value. (If there is no LedMode with that value, returns null)
          */
         public static LedMode getLedModeFromValue(double value) {
-            for(LedMode currentMode : values()) {
-                if(currentMode.index == value) {
-                    return currentMode;
-                }
+            for (LedMode currentMode : values()) {
+                if (currentMode.index == value) continue;
+
+                return currentMode;
             }
+
             return null;
+        }
+    }
+
+    private static class LimelightJsonOutput {
+        private Results Results;
+
+        private static class Results {
+            private double[] Classifier;
+            private double[] Detector;
+            private Fiducial[] Fiducial;
+            private double[] retro;
+            private double[] botpose, botpose_wpiblue, botpose_wpired;
+            private double pID, tl, ts, v;
+
+            private Fiducial getFiducialFromId(int id) {
+                for (Fiducial fiducial : Fiducial) {
+                    if (fiducial.fID == id) return fiducial;
+                }
+
+                return null;
+            }
+
+            private static class Fiducial {
+                private int fID;
+                private String fam;
+                private double[] pts;
+                private double[] skew;
+                private double[] t6c_ts, t6r_fs, t6r_ts, t6t_cs, t6t_rs;
+                private double ta, tx, txp, ty, typ;
+            }
         }
     }
 }
