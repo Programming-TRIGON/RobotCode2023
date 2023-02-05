@@ -5,8 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.posesources.PoseSource;
 import frc.trigon.robot.posesources.PoseSourceConstants;
@@ -39,11 +37,9 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         this.poseSources = poseSources;
     }
 
-    /**
-     * @return a command that updates the pose estimator. Runs when disabled
-     */
-    public Command getUpdatePoseEstimatorCommand() {
-        return new RunCommand(this::updatePoseEstimator, this).ignoringDisable(true);
+    @Override
+    public void periodic() {
+        updatePoseEstimator();
     }
 
     /**
