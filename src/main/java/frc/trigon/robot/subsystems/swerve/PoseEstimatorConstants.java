@@ -2,10 +2,24 @@ package frc.trigon.robot.subsystems.swerve;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
+import frc.trigon.robot.posesources.PhotonCamera;
+import frc.trigon.robot.posesources.PoseSource;
+
+import java.util.List;
 
 public class PoseEstimatorConstants {
+    private static final Transform3d PHOTON_CAMERA_TO_ROBOT_CENTER = new Transform3d(
+            new Translation3d(0, 0, 0),
+            new Rotation3d(0, 0, 0)
+    );
     static final int GYRO_UPDATE_DELAY_MS = 15;
+    static final List<PoseSource> POSE_SOURCES = List.of(
+            new PhotonCamera("PhotonCamera", PHOTON_CAMERA_TO_ROBOT_CENTER, Swerve.getInstance()::getHeading)
+    );
 
     /**
      * The vector represents how ambiguous is each value.

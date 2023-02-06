@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.trigon.robot.RobotContainer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,19 +17,21 @@ import java.util.function.DoubleSupplier;
 
 public class SwerveCommands {
     private static final Swerve SWERVE = Swerve.getInstance();
+    private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     /**
      * Creates a command that will drive the robot using the given path group and event map.
      *
-     * @param pathGroup the path group to follow
-     * @param eventMap the event map to use
+     * @param pathGroup        the path group to follow
+     * @param eventMap         the event map to use
      * @param useAllianceColor whether to use the alliance color
      * @return the command
      */
     public static Command getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
-                RobotContainer.POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {},
+                POSE_ESTIMATOR::getCurrentPose,
+                (pose2d) -> {
+                },
                 SwerveConstants.KINEMATICS,
                 SwerveConstants.TRANSLATION_PID_CONSTANTS,
                 SwerveConstants.ROTATION_PID_CONSTANTS,
@@ -46,14 +47,15 @@ public class SwerveCommands {
     /**
      * Creates a command that will drive the robot using the given path and event map.
      *
-     * @param path the path group to follow
+     * @param path             the path group to follow
      * @param useAllianceColor whether to use the alliance color
      * @return the command
      */
     public static Command getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
-                RobotContainer.POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {},
+                POSE_ESTIMATOR::getCurrentPose,
+                (pose2d) -> {
+                },
                 SwerveConstants.KINEMATICS,
                 SwerveConstants.TRANSLATION_PID_CONSTANTS,
                 SwerveConstants.ROTATION_PID_CONSTANTS,

@@ -15,14 +15,15 @@ import java.util.List;
 
 
 public class PoseEstimator extends SubsystemBase implements Loggable {
+    private final static PoseEstimator INSTANCE = new PoseEstimator();
+
     private final Swerve swerve = Swerve.getInstance();
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
-    private final PoseSource[] poseSources;
 
     @Log
     private final Field2d field = new Field2d();
 
-    public PoseEstimator(PoseSource... poseSources) {
+    private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
                 SwerveConstants.KINEMATICS,
                 swerve.getHeading(),
@@ -33,9 +34,12 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         );
 
         addAprilTagsToFieldWidget();
-
-        this.poseSources = poseSources;
     }
+
+    public static PoseEstimator getInstance() {
+        return INSTANCE;
+    }
+
 
     @Override
     public void periodic() {
@@ -71,10 +75,8 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     private void attemptToUpdateWithPoseSources() {
-        for (PoseSource poseSource : poseSources) {
-            final Pose2d robotPose = poseSource.getRobotPose();
-
-            if (robotPose == null) continue;
+        for (PoseSource poseSource : PoseEstimatorConstants.POSE_SOURCES) {
+            if (poseSource.getRobotPose() == null) continue;
 
             updateWithPoseSource(poseSource);
         }
