@@ -31,7 +31,8 @@ public class Robot extends TimedRobot {
     public void disabledInit() {
         SwerveCommands.getSetSwerveBrakeCommand(true)
                 .andThen(new WaitCommand(1.5))
-                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false)).schedule();
+                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
+                .schedule();
     }
 
     @Override

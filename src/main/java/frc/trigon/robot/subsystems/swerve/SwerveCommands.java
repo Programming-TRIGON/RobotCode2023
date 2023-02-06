@@ -30,8 +30,7 @@ public class SwerveCommands {
     public static Command getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {
-                },
+                (pose2d) -> {},
                 SwerveConstants.KINEMATICS,
                 SwerveConstants.TRANSLATION_PID_CONSTANTS,
                 SwerveConstants.ROTATION_PID_CONSTANTS,
@@ -54,8 +53,7 @@ public class SwerveCommands {
     public static Command getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {
-                },
+                (pose2d) -> {},
                 SwerveConstants.KINEMATICS,
                 SwerveConstants.TRANSLATION_PID_CONSTANTS,
                 SwerveConstants.ROTATION_PID_CONSTANTS,
