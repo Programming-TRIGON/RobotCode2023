@@ -30,7 +30,7 @@ public class JsonHandler {
     public static <T> T parseJsonFileToObject(String fileName, Class<T> type) {
         try {
             return GSON.fromJson(FilesHandler.readFile(FilesHandler.DEPLOY_PATH + fileName), type);
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
@@ -40,7 +40,7 @@ public class JsonHandler {
      * Parses a JSON string to an object.
      *
      * @param jsonString the json string to parse
-     * @param type     the class to parse JSON to
+     * @param type       the class to parse JSON to
      * @return the parsed JSON as the class
      */
     public static <T> T parseJsonStringToObject(String jsonString, Class<T> type) {
