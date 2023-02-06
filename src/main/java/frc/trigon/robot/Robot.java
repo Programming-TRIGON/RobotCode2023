@@ -4,7 +4,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
+import frc.trigon.robot.utilities.FilesHandler;
 import io.github.oblarg.oblog.Logger;
+
+import java.io.IOException;
 
 public class Robot extends TimedRobot {
     private RobotContainer robotContainer;
@@ -14,6 +17,8 @@ public class Robot extends TimedRobot {
         robotContainer = new RobotContainer();
 
         Logger.configureLoggingAndConfig(robotContainer, false);
+
+        setDeployFolderToMaxPermissionLevel();
     }
 
     @Override
@@ -56,5 +61,13 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testPeriodic() {
+    }
+
+    private void setDeployFolderToMaxPermissionLevel() {
+        try {
+            FilesHandler.setDeployFolderPermissionLevel(777);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
