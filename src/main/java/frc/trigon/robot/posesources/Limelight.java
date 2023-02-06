@@ -85,7 +85,10 @@ public class Limelight implements PoseSource {
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
     public double getTy(int id) {
-        return Objects.requireNonNullElse(getJsonOutput().Results.getFiducialFromId(id), new LimelightJsonOutput.Results.Fiducial()).ty;
+        return Objects.requireNonNullElse(
+                getJsonOutput().Results.getFiducialFromId(id),
+                new LimelightJsonOutput.Results.Fiducial()
+        ).ty;
     }
 
     /**
@@ -93,7 +96,10 @@ public class Limelight implements PoseSource {
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
     public double getTx(int id) {
-        return Objects.requireNonNullElse(getJsonOutput().Results.getFiducialFromId(id), new LimelightJsonOutput.Results.Fiducial()).tx;
+        return Objects.requireNonNullElse(
+                getJsonOutput().Results.getFiducialFromId(id),
+                new LimelightJsonOutput.Results.Fiducial()
+        ).tx;
     }
 
     /**
@@ -101,7 +107,10 @@ public class Limelight implements PoseSource {
      * @return target's area (from 0% of the image to 100% of the image)
      */
     public double getTa(int id) {
-        return Objects.requireNonNullElse(getJsonOutput().Results.getFiducialFromId(id), new LimelightJsonOutput.Results.Fiducial()).ta;
+        return Objects.requireNonNullElse(
+                getJsonOutput().Results.getFiducialFromId(id),
+                new LimelightJsonOutput.Results.Fiducial()
+        ).ta;
     }
 
     /**
