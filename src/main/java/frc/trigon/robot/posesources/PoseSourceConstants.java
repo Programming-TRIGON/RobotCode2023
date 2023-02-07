@@ -12,8 +12,8 @@ import java.util.List;
 
 public class PoseSourceConstants {
     public static final List<Pose3d> TAG_POSES = new ArrayList<>();
-    static AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = null;
     static final PhotonPoseEstimator.PoseStrategy POSE_STRATEGY = PhotonPoseEstimator.PoseStrategy.AVERAGE_BEST_TARGETS;
+    static AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = null;
 
     static {
         try {

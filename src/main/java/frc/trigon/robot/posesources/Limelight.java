@@ -12,7 +12,7 @@ import frc.trigon.robot.utilities.JsonHandler;
 @SuppressWarnings("unused")
 public class Limelight implements PoseSource {
     private final String hostname;
-    private final NetworkTableEntry tv, botPose, json, ledMode, driverCam, pipeline, snapshot;
+    private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
     private double lastUpdatedTimestamp = 0;
     private Pose2d lastRealPose = new Pose2d();
 
@@ -26,7 +26,6 @@ public class Limelight implements PoseSource {
         final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
         tv = networkTable.getEntry("tv");
-        botPose = networkTable.getEntry("botpose_wpiblue");
         json = networkTable.getEntry("json");
         ledMode = networkTable.getEntry("ledMode");
         driverCam = networkTable.getEntry("camMode");

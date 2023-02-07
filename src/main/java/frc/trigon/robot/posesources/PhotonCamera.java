@@ -1,7 +1,6 @@
 package frc.trigon.robot.posesources;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import io.github.oblarg.oblog.Loggable;
 import org.photonvision.EstimatedRobotPose;
@@ -46,7 +45,7 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
         if (estimatedRobotPose.isEmpty())
             return null;
 
-        lastRealPose = estimatedRobotPose.get().estimatedPose.toPose2d();;
+        lastRealPose = estimatedRobotPose.get().estimatedPose.toPose2d();
         return lastRealPose;
     }
 
