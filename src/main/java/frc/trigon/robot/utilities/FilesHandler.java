@@ -26,8 +26,7 @@ public class FilesHandler {
      */
     public static void setDeployFolderPermissionLevel(int permissionLevel) throws InterruptedException, IOException {
         final String deployFolder = DEPLOY_PATH.substring(0, DEPLOY_PATH.length() - 1);
-
-        System.out.println(deployFolder);
+        // TODO: Make this not use the chmod command
 
         Runtime.getRuntime().exec("chmod " + permissionLevel + " " + deployFolder).waitFor();
     }
@@ -74,23 +73,22 @@ public class FilesHandler {
     /**
      * Creates a file using a safe method of writing.
      * This method will write the string to a temporary file,
-     * rename the existing file to its name.bak,
-     * rename the temporary file to the desired name,
-     * and delete the .bak file.
+     * delete the original file,
+     * and rename the temporary file to the desired name.
      *
      * @param absolutePath the file's absolute path
      * @param str          the string to write to the file
      * @throws IOException if the method failed to safe write the file
      */
     public static void safeWrite(String absolutePath, String str) throws IOException {
+        final String fileName = extractFileNameFromAbsolutePath(absolutePath);
+
         if (fileExists(absolutePath + ".tmp"))
             deleteFile(absolutePath + ".tmp");
+
         writeStringToFile(absolutePath + ".tmp", str);
-        if (fileExists(absolutePath))
-            renameFile(absolutePath, extractFileNameFromAbsolutePath(absolutePath) + ".bak");
-        renameFile(absolutePath + ".tmp", extractFileNameFromAbsolutePath(absolutePath));
-        if (fileExists(absolutePath + ".bak"))
-            deleteFile(absolutePath + ".bak");
+        deleteFile(absolutePath);
+        renameFile(absolutePath + ".tmp", fileName);
     }
 
     /**
@@ -113,10 +111,23 @@ public class FilesHandler {
     }
 
     private static String extractPathFromAbsolutePath(String absolutePath) {
-        return absolutePath.substring(0, absolutePath.lastIndexOf("/") + 1);
+        if (!absolutePath.contains("/"))
+            return absolutePath + "/";
+
+        int lastSlashIndex = absolutePath.lastIndexOf("/");
+        if (absolutePath.endsWith("/"))
+            lastSlashIndex = absolutePath.lastIndexOf("/", lastSlashIndex - 1);
+
+        return absolutePath.substring(0, lastSlashIndex + 1);
     }
 
     private static String extractFileNameFromAbsolutePath(String absolutePath) {
-        return absolutePath.substring(absolutePath.lastIndexOf("/") + 1);
+        int slashIndex = absolutePath.lastIndexOf("/");
+
+        if (absolutePath.endsWith("/")){
+            slashIndex = absolutePath.lastIndexOf("/", slashIndex - 1);
+        }
+
+        return absolutePath.substring(slashIndex + 1).replace("/", "");
     }
 }
