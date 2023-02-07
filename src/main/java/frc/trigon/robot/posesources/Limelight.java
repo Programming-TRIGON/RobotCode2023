@@ -9,8 +9,6 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
-import java.util.Objects;
-
 @SuppressWarnings("unused")
 public class Limelight implements PoseSource {
     private final String hostname;
@@ -48,14 +46,12 @@ public class Limelight implements PoseSource {
 
     @Override
     public Pose2d getRobotPose() {
-        final double[] robotPoseArray = botPose.getDoubleArray(new double[0]);
-        if (robotPoseArray.length != 6)
+        final Pose3d robotPose = getRobotPoseFromJsonDump();
+        if (robotPose == null)
             return null;
 
-        final Pose2d robotPose = robotPoseArrayToPose2d(robotPoseArray).toPose2d();
-        lastRealPose = robotPose;
-
-        return robotPose;
+        lastRealPose = robotPose.toPose2d();
+        return robotPose.toPose2d();
     }
 
     @Override
@@ -79,36 +75,45 @@ public class Limelight implements PoseSource {
     }
 
     /**
+     * Gets the ty value of the target with the given id, from the json dump.
+     *
      * @param id the target april tag's id
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
     public double getTy(int id) {
-        return Objects.requireNonNullElse(
-                getJsonOutput().Results.getFiducialFromId(id),
-                new LimelightJsonOutput.Results.Fiducial()
-        ).ty;
+        final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        if (fiducial == null)
+            return 0;
+
+        return fiducial.ty;
     }
 
     /**
+     * Gets the tx value of the target with the given id, from the json dump.
+     *
      * @param id the target april tag's id
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
     public double getTx(int id) {
-        return Objects.requireNonNullElse(
-                getJsonOutput().Results.getFiducialFromId(id),
-                new LimelightJsonOutput.Results.Fiducial()
-        ).tx;
+        final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        if (fiducial == null)
+            return 0;
+
+        return fiducial.tx;
     }
 
     /**
+     * Gets the ta value of the target with the given id, from the json dump.
+     *
      * @param id the target april tag's id
      * @return target's area (from 0% of the image to 100% of the image)
      */
     public double getTa(int id) {
-        return Objects.requireNonNullElse(
-                getJsonOutput().Results.getFiducialFromId(id),
-                new LimelightJsonOutput.Results.Fiducial()
-        ).ta;
+        final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        if (fiducial == null)
+            return 0;
+
+        return fiducial.ta;
     }
 
     /**
@@ -164,6 +169,14 @@ public class Limelight implements PoseSource {
      */
     public void takeSnapshot() {
         snapshot.setNumber(1);
+    }
+
+    private Pose3d getRobotPoseFromJsonDump() {
+        final double[] robotPoseArray = getJsonOutput().Results.botpose_wpiblue;
+        if (robotPoseArray.length != 6)
+            return null;
+
+        return robotPoseArrayToPose2d(robotPoseArray);
     }
 
     private Pose3d robotPoseArrayToPose2d(double[] robotPoseArray) {
