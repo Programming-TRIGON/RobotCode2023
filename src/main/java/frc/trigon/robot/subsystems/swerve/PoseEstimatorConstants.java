@@ -18,7 +18,7 @@ public class PoseEstimatorConstants {
     );
     static final int GYRO_UPDATE_DELAY_MS = 15;
     static final List<PoseSource> POSE_SOURCES = List.of(
-            new PhotonCamera("PhotonCamera", PHOTON_CAMERA_TO_ROBOT_CENTER, Swerve.getInstance()::getHeading)
+            new PhotonCamera("limelime", PHOTON_CAMERA_TO_ROBOT_CENTER)
     );
 
     /**

@@ -17,18 +17,21 @@ public class FilesHandler {
     public static final String DEPLOY_PATH = Filesystem.getDeployDirectory().getPath() + "/";
 
     /**
-     * Sets the permission level of the deploy folder.
+     * Sets the permissions of the deploy folder.
      *
-     * @param permissionLevel the permission level to set the deploy folder to
-     * @throws InterruptedException if the current thread is interrupted by another thread while it is waiting,
-     *                              then the wait is ended and an InterruptedException is thrown.
-     * @throws IOException          if the method failed to set the permission level of the deploy folder
+     * @param isReadable  whether the deploy folder should be readable
+     * @param isWriteable whether the deploy folder should be writeable
+     * @param isExecutable whether the deploy folder should be executable
      */
-    public static void setDeployFolderPermissionLevel(int permissionLevel) throws InterruptedException, IOException {
-        final String deployFolder = DEPLOY_PATH.substring(0, DEPLOY_PATH.length() - 1);
-        // TODO: Make this not use the chmod command
+    public static void setDeployFolderPermissions(boolean isReadable, boolean isWriteable, boolean isExecutable) throws IOException{
+        final File deployFolder = Filesystem.getDeployDirectory();
 
-        Runtime.getRuntime().exec("chmod " + permissionLevel + " " + deployFolder).waitFor();
+        if (!deployFolder.setReadable(isReadable))
+            throw new IOException("Failed to set the deploy folder's readable permission to " + isReadable + ".");
+        if (!deployFolder.setWritable(isWriteable))
+            throw new IOException("Failed to set the deploy folder's writeable permission to " + isWriteable + ".");
+        if (!deployFolder.setExecutable(isExecutable))
+            throw new IOException("Failed to set the deploy folder's executable permission to " + isExecutable + ".");
     }
 
     /**

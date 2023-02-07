@@ -52,7 +52,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      * @param currentPose the pose to reset to
      */
     public void resetPose(Pose2d currentPose) {
-        setGyroHeadingAndWaitForUpdate(currentPose.getRotation());
+        setGyroHeadingAndWaitUntilUpdate(currentPose.getRotation());
 
         swerveDrivePoseEstimator.resetPosition(
                 swerve.getHeading(),
@@ -106,9 +106,12 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
             field.getObject("Tag " + i).setPose(tagPoses.get(i).toPose2d());
     }
 
-    private void setGyroHeadingAndWaitForUpdate(Rotation2d heading) {
+    private void setGyroHeadingAndWaitUntilUpdate(Rotation2d heading) {
         swerve.setHeading(heading);
+        waitUntilGyroUpdate();
+    }
 
+    private void waitUntilGyroUpdate() {
         try {
             Thread.sleep(PoseEstimatorConstants.GYRO_UPDATE_DELAY_MS);
         } catch (InterruptedException e) {

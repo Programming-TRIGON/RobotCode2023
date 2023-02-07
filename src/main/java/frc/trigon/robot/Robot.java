@@ -17,8 +17,7 @@ public class Robot extends TimedRobot {
         robotContainer = new RobotContainer();
 
         Logger.configureLoggingAndConfig(robotContainer, false);
-
-        setDeployFolderToMaxPermissionLevel();
+        setDeployFolderToMaxPermissions();
     }
 
     @Override
@@ -64,10 +63,10 @@ public class Robot extends TimedRobot {
     public void testPeriodic() {
     }
 
-    private void setDeployFolderToMaxPermissionLevel() {
+    private void setDeployFolderToMaxPermissions() {
         try {
-            FilesHandler.setDeployFolderPermissionLevel(777);
-        } catch (IOException | InterruptedException e) {
+            FilesHandler.setDeployFolderPermissions(true, true, true);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

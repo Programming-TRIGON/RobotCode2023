@@ -39,7 +39,6 @@ public class SwerveCommands {
                 useAllianceColor,
                 SWERVE
         );
-
         return swerveAutoBuilder.fullAuto(pathGroup);
     }
 
@@ -62,7 +61,6 @@ public class SwerveCommands {
                 useAllianceColor,
                 SWERVE
         );
-
         return swerveAutoBuilder.followPath(path);
     }
 
