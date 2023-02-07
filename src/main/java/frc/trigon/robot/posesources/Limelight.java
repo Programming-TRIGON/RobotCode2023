@@ -185,7 +185,6 @@ public class Limelight implements PoseSource {
                 robotPoseArray[1],
                 robotPoseArray[2]
         );
-
         final Rotation3d robotRotation = new Rotation3d(
                 robotPoseArray[3],
                 robotPoseArray[4],
@@ -216,13 +215,13 @@ public class Limelight implements PoseSource {
         }
 
         /**
-         * Returns what LedMode has the given value.
+         * Returns what LedMode has the given index.
          *
-         * @param value the value of the LedMode
-         * @return the LedMode with the given value. (If there is no LedMode with that value, returns null)
+         * @param index the index of the LedMode
+         * @return the LedMode with the given index. (If there is no LedMode with that index, returns null)
          */
-        public static LedMode getLedModeFromValue(int value) {
-            return values()[value];
+        public static LedMode getLedModeFromValue(int index) {
+            return values()[index];
         }
     }
 
@@ -242,7 +241,6 @@ public class Limelight implements PoseSource {
                     if (fiducial.fID == id)
                         return fiducial;
                 }
-
                 return null;
             }
 
