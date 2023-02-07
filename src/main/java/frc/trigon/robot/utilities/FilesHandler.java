@@ -19,11 +19,11 @@ public class FilesHandler {
     /**
      * Sets the permissions of the deploy folder.
      *
-     * @param isReadable  whether the deploy folder should be readable
-     * @param isWriteable whether the deploy folder should be writeable
+     * @param isReadable   whether the deploy folder should be readable
+     * @param isWriteable  whether the deploy folder should be writeable
      * @param isExecutable whether the deploy folder should be executable
      */
-    public static void setDeployFolderPermissions(boolean isReadable, boolean isWriteable, boolean isExecutable) throws IOException{
+    public static void setDeployFolderPermissions(boolean isReadable, boolean isWriteable, boolean isExecutable) throws IOException {
         final File deployFolder = Filesystem.getDeployDirectory();
 
         if (!deployFolder.setReadable(isReadable))
