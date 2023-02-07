@@ -83,9 +83,6 @@ public class FilesHandler {
     public static void safeWrite(String absolutePath, String str) throws IOException {
         final String fileName = extractFileNameFromAbsolutePath(absolutePath);
 
-        if (fileExists(absolutePath + ".tmp"))
-            deleteFile(absolutePath + ".tmp");
-
         writeStringToFile(absolutePath + ".tmp", str);
         deleteFile(absolutePath);
         renameFile(absolutePath + ".tmp", fileName);
