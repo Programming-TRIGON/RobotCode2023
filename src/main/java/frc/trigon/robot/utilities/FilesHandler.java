@@ -121,9 +121,8 @@ public class FilesHandler {
     private static String extractFileNameFromAbsolutePath(String absolutePath) {
         int slashIndex = absolutePath.lastIndexOf("/");
 
-        if (absolutePath.endsWith("/")){
+        if (absolutePath.endsWith("/"))
             slashIndex = absolutePath.lastIndexOf("/", slashIndex - 1);
-        }
 
         return absolutePath.substring(slashIndex + 1).replace("/", "");
     }

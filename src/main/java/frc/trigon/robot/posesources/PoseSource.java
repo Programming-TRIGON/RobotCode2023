@@ -10,7 +10,8 @@ public interface PoseSource {
      * @return whether there are new results since the last call to this method
      */
     default boolean hasNewResult() {
-        if (getLastUpdatedTimestamp() == getTimestampSeconds()) return false;
+        if (getLastUpdatedTimestamp() == getTimestampSeconds())
+            return false;
 
         setLastUpdatedTimestamp(getTimestampSeconds());
         return hasResults();

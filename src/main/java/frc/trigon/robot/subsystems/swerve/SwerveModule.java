@@ -71,7 +71,7 @@ public class SwerveModule implements Sendable {
     }
 
     /**
-     * @return the module position of the module
+     * @return the current module position
      */
     SwerveModulePosition getCurrentPosition() {
         return new SwerveModulePosition(getDriveDistance(), Rotation2d.fromDegrees(getCurrentAngle()));

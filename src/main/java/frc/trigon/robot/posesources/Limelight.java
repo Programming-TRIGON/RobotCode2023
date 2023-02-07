@@ -48,11 +48,9 @@ public class Limelight implements PoseSource {
 
     @Override
     public Pose2d getRobotPose() {
-        final double[]
-                defaultDoubleArray = {1.0},
-                robotPoseArray = botPose.getDoubleArray(defaultDoubleArray);
-
-        if (robotPoseArray.length != 6) return null;
+        final double[] robotPoseArray = botPose.getDoubleArray(new double[0]);
+        if (robotPoseArray.length != 6)
+            return null;
 
         final Pose2d robotPose = robotPoseArrayToPose2d(robotPoseArray).toPose2d();
         lastRealPose = robotPose;
@@ -133,7 +131,7 @@ public class Limelight implements PoseSource {
      * @return the current LedMode
      */
     public LedMode getLedMode() {
-        return LedMode.getLedModeFromValue(ledMode.getDouble(0));
+        return LedMode.getLedModeFromValue((int) ledMode.getDouble(0));
     }
 
     /**
@@ -210,14 +208,8 @@ public class Limelight implements PoseSource {
          * @param value the value of the LedMode
          * @return the LedMode with the given value. (If there is no LedMode with that value, returns null)
          */
-        public static LedMode getLedModeFromValue(double value) {
-            for (LedMode currentMode : values()) {
-                if (currentMode.index == value) continue;
-
-                return currentMode;
-            }
-
-            return null;
+        public static LedMode getLedModeFromValue(int value) {
+            return values()[value];
         }
     }
 
@@ -234,7 +226,8 @@ public class Limelight implements PoseSource {
 
             private Fiducial getFiducialFromId(int id) {
                 for (Fiducial fiducial : Fiducial) {
-                    if (fiducial.fID == id) return fiducial;
+                    if (fiducial.fID == id)
+                        return fiducial;
                 }
 
                 return null;

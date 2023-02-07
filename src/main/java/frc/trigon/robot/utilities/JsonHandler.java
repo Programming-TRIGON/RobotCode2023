@@ -32,8 +32,9 @@ public class JsonHandler {
             return GSON.fromJson(FilesHandler.readFile(FilesHandler.DEPLOY_PATH + fileName), type);
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
+
+        return null;
     }
 
     /**
