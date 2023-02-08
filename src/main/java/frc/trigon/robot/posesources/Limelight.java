@@ -81,10 +81,8 @@ public class Limelight implements PoseSource {
      */
     public double getTy(int id) {
         final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
-        if (fiducial == null)
-            return 0;
 
-        return fiducial.ty;
+        return fiducial == null ? 0 : fiducial.ty;
     }
 
     /**
@@ -95,10 +93,8 @@ public class Limelight implements PoseSource {
      */
     public double getTx(int id) {
         final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
-        if (fiducial == null)
-            return 0;
 
-        return fiducial.tx;
+        return fiducial == null ? 0 : fiducial.tx;
     }
 
     /**
@@ -109,10 +105,8 @@ public class Limelight implements PoseSource {
      */
     public double getTa(int id) {
         final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
-        if (fiducial == null)
-            return 0;
 
-        return fiducial.ta;
+        return fiducial == null ? 0 : fiducial.ta;
     }
 
     /**
