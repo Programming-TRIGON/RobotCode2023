@@ -13,14 +13,14 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     private double lastUpdatedTimestamp = 0;
     private Pose2d lastRealPose = new Pose2d();
 
-    public PhotonCamera(String cameraName, Transform3d cameraToRobot) {
+    public PhotonCamera(String cameraName, Transform3d cameraToRobotCenter) {
         super(cameraName);
 
         photonPoseEstimator = new PhotonPoseEstimator(
                 PoseSourceConstants.APRIL_TAG_FIELD_LAYOUT,
                 PoseSourceConstants.POSE_STRATEGY,
                 this,
-                cameraToRobot.inverse()
+                cameraToRobotCenter.inverse()
         );
     }
 

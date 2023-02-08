@@ -19,9 +19,9 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
 
     private final Swerve swerve = Swerve.getInstance();
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
-
     @Log
     private final Field2d field = new Field2d();
+    private PoseSource[] poseSources = {};
 
     private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -68,6 +68,15 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
+    /**
+     * Sets the pose sources to use in the pose estimator.
+     *
+     * @param poseSources the pose sources to use
+     */
+    public void setPoseSources(PoseSource... poseSources) {
+        this.poseSources = poseSources;
+    }
+
     private void updatePoseEstimator() {
         attemptToUpdateWithPoseSources();
         updatePoseEstimatorStates();
@@ -75,7 +84,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     private void attemptToUpdateWithPoseSources() {
-        for (PoseSource poseSource : PoseEstimatorConstants.POSE_SOURCES) {
+        for (PoseSource poseSource : poseSources) {
             if (poseSource.getRobotPose() == null)
                 continue;
 
