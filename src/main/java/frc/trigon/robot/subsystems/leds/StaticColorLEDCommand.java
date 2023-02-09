@@ -3,21 +3,37 @@ package frc.trigon.robot.subsystems.leds;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-import java.util.Arrays;
 
 public class StaticColorLEDCommand extends CommandBase {
-    private final Color color;
-    private final LedStrip ledStrip;
-    public StaticColorLEDCommand(Color color, LedStrip ledStrip) {
-        this.color = color;
-        this.ledStrip = ledStrip;
-    }
 
+    private final LedStrip ledStrip;
+    private final Color[] theColors;
+    private final int[] lengthOfEveryStrip;
+
+
+    public StaticColorLEDCommand(LedStrip ledStrip, Color[] theColors, int[] lengthOfEveryStrip) {
+        this.ledStrip = ledStrip;
+        this.theColors = theColors;
+        this.lengthOfEveryStrip = lengthOfEveryStrip;
+    }
 
     @Override
     public void initialize() {
         Color[] colors = new Color[ledStrip.getLength()];
-        Arrays.fill(colors, color);
+        boolean end = false;
+        int counter = 0;
+        while (!end) {
+            for (int i = 0; i < theColors.length; i++) {
+                for (int j = 0; j < lengthOfEveryStrip[i]; j++) {
+                    if (counter >= ledStrip.getLength()) {
+                        end = true;
+                        break;
+                    }
+                    colors[counter] = theColors[i];
+                    counter++;
+                }
+            }
+        }
         ledStrip.setLedsColors(colors);
     }
 
@@ -26,12 +42,12 @@ public class StaticColorLEDCommand extends CommandBase {
     }
 
     @Override
-    public void end(boolean interrupted) {
+    public boolean isFinished() {
+        return false;
     }
 
     @Override
-    public boolean isFinished() {
-        return false;
+    public void end(boolean interrupted) {
     }
 
     @Override
