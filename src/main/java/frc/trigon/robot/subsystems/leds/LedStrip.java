@@ -39,7 +39,9 @@ public class LedStrip extends SubsystemBase {
             Logger.getGlobal().warning("frc.trigon.robot.subsystems.leds.LedStrip.setLedsColors(): Tried to apply a array that not in the correct size");
             return;
         }
-        colors = setInverted(inverted, colors);
+        if (inverted){
+            colors = InvertArray( colors);
+        }
         for (int i = startingPosition; i < endingPosition + 1; i++) {
             LED_BUFFER.setLED(i, convertToGrbIfIsReal(applyBrightness(colors[i - startingPosition], 1)));
         }
@@ -64,13 +66,11 @@ public class LedStrip extends SubsystemBase {
         } else return color;
     }
 
-    private static Color[] setInverted(boolean inverted, Color[] colors) {
+    private static Color[] InvertArray(Color[] colors) {
         Color[] newColors = new Color[colors.length];
-        if (inverted) {
-            for (int i = 0; i < colors.length; i++) {
-                newColors[i] = colors[colors.length - i - 1];
-            }
-            return newColors;
-        } else return colors;
+        for (int i = 0; i < colors.length; i++) {
+            newColors[i] = colors[colors.length - i - 1];
+        }
+        return newColors;
     }
 }
