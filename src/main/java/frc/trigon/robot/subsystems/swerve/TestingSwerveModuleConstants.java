@@ -1,13 +1,12 @@
 package frc.trigon.robot.subsystems.swerve;
 
-import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.revrobotics.*;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.trigon.robot.utilities.Conversions;
 
-public class SwerveModuleConstants {
+public class TestingSwerveModuleConstants {
     static final double DRIVE_GEAR_RATIO = 10.8577633008;
     static final double WHEEL_DIAMETER_METERS = 0.1;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
@@ -70,46 +69,46 @@ public class SwerveModuleConstants {
                     REAR_RIGHT_STEER_MOTOR_ID,
                     CANSparkMaxLowLevel.MotorType.kBrushless
             );
-    private static final SwerveModuleConstants
-            FRONT_LEFT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
+    private static final TestingSwerveModuleConstants
+            FRONT_LEFT_SWERVE_MODULE_CONSTANTS = new TestingSwerveModuleConstants(
                     FRONT_LEFT_DRIVE_MOTOR,
                     FRONT_LEFT_STEER_MOTOR
             ),
-            FRONT_RIGHT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
+            FRONT_RIGHT_SWERVE_MODULE_CONSTANTS = new TestingSwerveModuleConstants(
                     FRONT_RIGHT_DRIVE_MOTOR,
                     FRONT_RIGHT_STEER_MOTOR
             ),
-            REAR_LEFT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
+            REAR_LEFT_SWERVE_MODULE_CONSTANTS = new TestingSwerveModuleConstants(
                     REAR_LEFT_DRIVE_MOTOR,
                     REAR_LEFT_STEER_MOTOR
             ),
-            REAR_RIGHT_SWERVE_MODULE_CONSTANTS = new SwerveModuleConstants(
+            REAR_RIGHT_SWERVE_MODULE_CONSTANTS = new TestingSwerveModuleConstants(
                     REAR_RIGHT_DRIVE_MOTOR,
                     REAR_RIGHT_STEER_MOTOR
             );
 
     private static final Translation2d
             FRONT_LEFT_MODULE_LOCATION = new Translation2d(
-                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
-                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
+                    TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
+                    TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
             ),
             FRONT_RIGHT_MODULE_LOCATION = new Translation2d(
-                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
-                    -SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
+                    TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
+                    -TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
             ),
             REAR_LEFT_MODULE_LOCATION = new Translation2d(
-                    -SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
-                    SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
+                    -TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
+                    TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
             ),
             REAR_RIGHT_MODULE_LOCATION = new Translation2d(
-                    -SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
-                    -SwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
+                    -TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
+                    -TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
             );
 
     final WPI_TalonFX driveMotor;
     final CANSparkMax steerMotor;
 
-    public SwerveModuleConstants(WPI_TalonFX driveMotor, CANSparkMax steerMotor) {
+    public TestingSwerveModuleConstants(WPI_TalonFX driveMotor, CANSparkMax steerMotor) {
         this.driveMotor = driveMotor;
         this.steerMotor = steerMotor;
 
@@ -146,28 +145,24 @@ public class SwerveModuleConstants {
         steerMotor.burnFlash();
     }
 
-    enum SwerveModules {
+    enum TestingSwerveModules {
         FRONT_LEFT(FRONT_LEFT_ID, FRONT_LEFT_SWERVE_MODULE_CONSTANTS, FRONT_LEFT_MODULE_LOCATION),
         FRONT_RIGHT(FRONT_RIGHT_ID, FRONT_RIGHT_SWERVE_MODULE_CONSTANTS, FRONT_RIGHT_MODULE_LOCATION),
         REAR_LEFT(REAR_LEFT_ID, REAR_LEFT_SWERVE_MODULE_CONSTANTS, REAR_LEFT_MODULE_LOCATION),
         REAR_RIGHT(REAR_RIGHT_ID, REAR_RIGHT_SWERVE_MODULE_CONSTANTS, REAR_RIGHT_MODULE_LOCATION);
 
         final int id;
-        final SwerveModuleConstants swerveModuleConstants;
+        final TestingSwerveModuleConstants swerveModuleConstants;
         final Translation2d location;
 
-        SwerveModules(int id, SwerveModuleConstants swerveModuleConstants, Translation2d location) {
+        TestingSwerveModules(int id, TestingSwerveModuleConstants swerveModuleConstants, Translation2d location) {
             this.id = id;
             this.swerveModuleConstants = swerveModuleConstants;
             this.location = location;
         }
 
-        static SwerveModules fromId(int id) {
+        static TestingSwerveModules fromId(int id) {
             return values()[id];
-        }
-
-        static int fromModule(SwerveModules module) {
-            return module.id;
         }
     }
 }

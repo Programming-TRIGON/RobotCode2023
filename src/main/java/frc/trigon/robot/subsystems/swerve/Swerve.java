@@ -1,30 +1,69 @@
 package frc.trigon.robot.subsystems.swerve;
 
+import com.ctre.phoenix.sensors.Pigeon2;
+import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 
-public class Swerve extends SubsystemBase {
-    private final static Swerve INSTANCE = new Swerve();
+public abstract class Swerve extends SubsystemBase implements Loggable {
+    /**
+     * @return the swerve's gyro
+     */
+    abstract Pigeon2 getGyro();
 
-    private Swerve() {
-        putModulesOnDashboard();
-    }
+    /**
+     * @return the swerve's modules
+     */
+    abstract SwerveModule[] getModules();
 
-    public static Swerve getInstance() {
-        return INSTANCE;
-    }
+    /**
+     * @return the swerve's kinematics
+     */
+    abstract SwerveDriveKinematics getKinematics();
+
+    /**
+     * @return the swerve's drive neutral deadband
+     */
+    abstract double getDriveNeutralDeadband();
+
+    /**
+     * @return the swerve's rotation neutral deadband
+     */
+    abstract double getRotationNeutralDeadband();
+
+    /**
+     * @return the swerve's translation PID constants
+     */
+    abstract PIDConstants getTranslationPIDConstants();
+
+    /**
+     * @return the swerve's rotation PID constants
+     */
+    abstract PIDConstants getRotationPIDConstants();
+
+    /**
+     * @return the swerve's max speed in meters per second
+     */
+    abstract double getMaxSpeedMetersPerSecond();
+
+    /**
+     * @return the swerve's max rotational speed in radians per second
+     */
+    abstract double getMaxRotationalSpeedRadiansPerSecond();
 
     /**
      * @return the heading of the robot
      */
+    @Log(name = "heading", methodName = "getDegrees")
     public Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(SwerveConstants.GYRO.getYaw());
+        return Rotation2d.fromDegrees(getGyro().getYaw());
     }
 
     /**
@@ -33,7 +72,7 @@ public class Swerve extends SubsystemBase {
      * @param heading the new heading
      */
     public void setHeading(Rotation2d heading) {
-        SwerveConstants.GYRO.setYaw(heading.getDegrees());
+        getGyro().setYaw(heading.getDegrees());
     }
 
     /**
@@ -72,9 +111,10 @@ public class Swerve extends SubsystemBase {
      */
     SwerveModulePosition[] getModulePositions() {
         final SwerveModulePosition[] swerveModuleStates = new SwerveModulePosition[4];
+        final SwerveModule[] swerveModules = getModules();
 
-        for (int i = 0; i < 4; i++)
-            swerveModuleStates[i] = SwerveConstants.SWERVE_MODULES[i].getCurrentPosition();
+        for (int i = 0; i < swerveModules.length; i++)
+            swerveModuleStates[i] = swerveModules[i].getCurrentPosition();
 
         return swerveModuleStates;
     }
@@ -85,7 +125,7 @@ public class Swerve extends SubsystemBase {
      * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
      */
     void setClosedLoop(boolean closedLoop) {
-        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
+        for (SwerveModule module : getModules())
             module.setDriveMotorClosedLoop(closedLoop);
     }
 
@@ -93,7 +133,7 @@ public class Swerve extends SubsystemBase {
      * Stops the swerve's motors.
      */
     void stop() {
-        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
+        for (SwerveModule module : getModules())
             module.stop();
     }
 
@@ -103,7 +143,7 @@ public class Swerve extends SubsystemBase {
      * @param brake whether the drive motors should brake or coast
      */
     void setBrake(boolean brake) {
-        for (SwerveModule module : SwerveConstants.SWERVE_MODULES)
+        for (SwerveModule module : getModules())
             module.setBrake(brake);
     }
 
@@ -111,17 +151,22 @@ public class Swerve extends SubsystemBase {
      * @return the robot's current velocity
      */
     ChassisSpeeds getCurrentVelocity() {
-        return SwerveConstants.KINEMATICS.toChassisSpeeds(
-                SwerveConstants.SWERVE_MODULES[0].getCurrentState(),
-                SwerveConstants.SWERVE_MODULES[1].getCurrentState(),
-                SwerveConstants.SWERVE_MODULES[2].getCurrentState(),
-                SwerveConstants.SWERVE_MODULES[3].getCurrentState()
+        return getKinematics().toChassisSpeeds(
+                getModules()[0].getCurrentState(),
+                getModules()[1].getCurrentState(),
+                getModules()[2].getCurrentState(),
+                getModules()[3].getCurrentState()
         );
     }
 
+    /**
+     * Sets the swerve's target module states.
+     *
+     * @param swerveModuleStates the target module states
+     */
     void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
-        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
-            SwerveConstants.SWERVE_MODULES[i].setTargetState(swerveModuleStates[i]);
+        for (int i = 0; i < getModules().length; i++)
+            getModules()[i].setTargetState(swerveModuleStates[i]);
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
@@ -130,7 +175,7 @@ public class Swerve extends SubsystemBase {
             return;
         }
 
-        SwerveModuleState[] swerveModuleStates = SwerveConstants.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
+        SwerveModuleState[] swerveModuleStates = getKinematics().toSwerveModuleStates(chassisSpeeds);
         setTargetModuleStates(swerveModuleStates);
     }
 
@@ -142,24 +187,8 @@ public class Swerve extends SubsystemBase {
      */
     private boolean isStill(ChassisSpeeds chassisSpeeds) {
         return
-                Math.abs(chassisSpeeds.vxMetersPerSecond) <= SwerveConstants.DRIVE_NEUTRAL_DEADBAND &&
-                        Math.abs(chassisSpeeds.vyMetersPerSecond) <= SwerveConstants.DRIVE_NEUTRAL_DEADBAND &&
-                        Math.abs(chassisSpeeds.omegaRadiansPerSecond) <= SwerveConstants.ROTATION_NEUTRAL_DEADBAND;
-    }
-
-    private void putModulesOnDashboard() {
-        for (int i = 0; i < SwerveConstants.SWERVE_MODULES.length; i++)
-            SmartDashboard.putData(
-                    getName() + "/" + SwerveModuleConstants.SwerveModules.fromId(i).name(),
-                    SwerveConstants.SWERVE_MODULES[i]
-            );
-    }
-
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        super.initSendable(builder);
-        builder.addDoubleProperty(
-                "Heading", () -> getHeading().getDegrees(), (heading) -> setHeading(Rotation2d.fromDegrees(heading)));
+                Math.abs(chassisSpeeds.vxMetersPerSecond) <= getDriveNeutralDeadband() &&
+                        Math.abs(chassisSpeeds.vyMetersPerSecond) <= getDriveNeutralDeadband() &&
+                        Math.abs(chassisSpeeds.omegaRadiansPerSecond) <= getRotationNeutralDeadband();
     }
 }
-

@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.posesources.PoseSource;
 import frc.trigon.robot.posesources.PoseSourceConstants;
 import io.github.oblarg.oblog.Loggable;
@@ -17,7 +18,7 @@ import java.util.List;
 public class PoseEstimator extends SubsystemBase implements Loggable {
     private final static PoseEstimator INSTANCE = new PoseEstimator();
 
-    private final Swerve swerve = Swerve.getInstance();
+    private final Swerve swerve = RobotContainer.SWERVE;
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
     @Log
     private final Field2d field = new Field2d();
@@ -25,7 +26,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
 
     private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
-                SwerveConstants.KINEMATICS,
+                swerve.getKinematics(),
                 swerve.getHeading(),
                 swerve.getModulePositions(),
                 new Pose2d(),

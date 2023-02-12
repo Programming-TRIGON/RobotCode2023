@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.trigon.robot.RobotContainer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 public class SwerveCommands {
-    private static final Swerve SWERVE = Swerve.getInstance();
+    private static final Swerve SWERVE = RobotContainer.SWERVE;
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     /**
@@ -31,9 +32,9 @@ public class SwerveCommands {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
-                SwerveConstants.KINEMATICS,
-                SwerveConstants.TRANSLATION_PID_CONSTANTS,
-                SwerveConstants.ROTATION_PID_CONSTANTS,
+                SWERVE.getKinematics(),
+                SWERVE.getTranslationPIDConstants(),
+                SWERVE.getRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
                 eventMap,
                 useAllianceColor,
@@ -53,9 +54,9 @@ public class SwerveCommands {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
-                SwerveConstants.KINEMATICS,
-                SwerveConstants.TRANSLATION_PID_CONSTANTS,
-                SwerveConstants.ROTATION_PID_CONSTANTS,
+                SWERVE.getKinematics(),
+                SWERVE.getTranslationPIDConstants(),
+                SWERVE.getRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
                 new HashMap<>(),
                 useAllianceColor,
@@ -164,11 +165,11 @@ public class SwerveCommands {
     private static Runnable getFieldRelativeRunnable(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return () -> SWERVE.fieldRelativeDrive(
                 new Translation2d(
-                        x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
-                        y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
+                        x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
+                        y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
                 ),
                 new Rotation2d(
-                        theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
+                        theta.getAsDouble() * SWERVE.getMaxRotationalSpeedRadiansPerSecond()
                 )
         );
     }
@@ -176,11 +177,11 @@ public class SwerveCommands {
     private static Runnable getSelfRelativeRunnable(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return () -> SWERVE.selfRelativeDrive(
                 new Translation2d(
-                        x.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND,
-                        y.getAsDouble() * SwerveConstants.MAX_SPEED_METERS_PER_SECOND
+                        x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
+                        y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
                 ),
                 new Rotation2d(
-                        theta.getAsDouble() * SwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND
+                        theta.getAsDouble() * SWERVE.getMaxRotationalSpeedRadiansPerSecond()
                 )
         );
     }

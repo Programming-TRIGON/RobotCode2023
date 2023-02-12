@@ -5,12 +5,13 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.trigon.robot.posesources.PhotonCamera;
 import frc.trigon.robot.posesources.PoseSource;
-import frc.trigon.robot.subsystems.swerve.PoseEstimator;
+import frc.trigon.robot.subsystems.swerve.*;
 
 public class RobotContainer {
+    public static final Swerve SWERVE = TrihardSwerve.getInstance();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
     private final Transform3d photonCameraToRobotCenter = new Transform3d(
-            new Translation3d(0 ,0, 0),
+            new Translation3d(0, 0, 0),
             new Rotation3d(0, 0, 0)
     );
     private final PoseSource photonCamera = new PhotonCamera("limelime", photonCameraToRobotCenter);

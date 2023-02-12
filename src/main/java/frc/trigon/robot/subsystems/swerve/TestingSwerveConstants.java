@@ -6,34 +6,34 @@ import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
-public class SwerveConstants {
+public class TestingSwerveConstants {
     static final double
             MAX_SPEED_METERS_PER_SECOND = 4.25,
             MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND = 12.03;
     static final double
             DRIVE_NEUTRAL_DEADBAND = 0,
             ROTATION_NEUTRAL_DEADBAND = 0;
-    private static final int PIGEON_ID = 0;
-    static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     static final double
             SIDE_LENGTH_METERS = 0.5,
             DISTANCE_FROM_CENTER_OF_BASE = SIDE_LENGTH_METERS / 2;
     private static final Translation2d[] LOCATIONS = {
-            SwerveModuleConstants.SwerveModules.fromId(0).location,
-            SwerveModuleConstants.SwerveModules.fromId(1).location,
-            SwerveModuleConstants.SwerveModules.fromId(2).location,
-            SwerveModuleConstants.SwerveModules.fromId(3).location
+            TestingSwerveModuleConstants.TestingSwerveModules.fromId(0).location,
+            TestingSwerveModuleConstants.TestingSwerveModules.fromId(1).location,
+            TestingSwerveModuleConstants.TestingSwerveModules.fromId(2).location,
+            TestingSwerveModuleConstants.TestingSwerveModules.fromId(3).location
     };
-    static SwerveModule[] SWERVE_MODULES = {
-            new SwerveModule(SwerveModuleConstants.SwerveModules.fromId(0).swerveModuleConstants),
-            new SwerveModule(SwerveModuleConstants.SwerveModules.fromId(1).swerveModuleConstants),
-            new SwerveModule(SwerveModuleConstants.SwerveModules.fromId(2).swerveModuleConstants),
-            new SwerveModule(SwerveModuleConstants.SwerveModules.fromId(3).swerveModuleConstants)
+    static TestingSwerveModule[] SWERVE_MODULES = {
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(0).swerveModuleConstants),
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(1).swerveModuleConstants),
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(2).swerveModuleConstants),
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(3).swerveModuleConstants)
     };
     static SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
             TRANSLATION_PID_CONSTANTS = new PIDConstants(7, 0, 0),
             ROTATION_PID_CONSTANTS = new PIDConstants(9, 0, 0);
+    private static final int PIGEON_ID = 0;
+    static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
 
     static {
         GYRO.configFactoryDefault();
