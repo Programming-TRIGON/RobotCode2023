@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.logging.Logger;
 
 public class LedStrip extends SubsystemBase {
@@ -67,10 +69,8 @@ public class LedStrip extends SubsystemBase {
     }
 
     private static Color[] InvertArray(Color[] colors) {
-        Color[] newColors = new Color[colors.length];
-        for (int i = 0; i < colors.length; i++) {
-            newColors[i] = colors[colors.length - i - 1];
-        }
-        return newColors;
+        Collections.reverse(Arrays.asList(colors));
+
+        return colors;
     }
 }
