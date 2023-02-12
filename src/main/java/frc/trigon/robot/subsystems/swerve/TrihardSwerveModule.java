@@ -13,12 +13,16 @@ public class TrihardSwerveModule extends SwerveModule {
     private final WPI_TalonFX driveMotor, steerMotor;
     private final DutyCycleEncoder steerEncoder;
     private final double encoderOffset;
+    private final String name;
 
-    TrihardSwerveModule(TrihardSwerveModuleConstants moduleConstants) {
+    TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules swerveModule) {
+        final TrihardSwerveModuleConstants moduleConstants = swerveModule.swerveModuleConstants;
+
         driveMotor = moduleConstants.driveMotor;
         steerMotor = moduleConstants.steerMotor;
         steerEncoder = moduleConstants.steerEncoder;
         encoderOffset = moduleConstants.encoderOffset;
+        name = swerveModule.name();
     }
 
     @Override
@@ -84,6 +88,11 @@ public class TrihardSwerveModule extends SwerveModule {
     void setTargetOpenLoopVelocity(double velocity) {
         double power = velocity / TrihardSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
         driveMotor.set(power);
+    }
+
+    @Override
+    String getName() {
+        return name;
     }
 
     private double getAbsoluteDegrees() {

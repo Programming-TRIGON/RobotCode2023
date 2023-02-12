@@ -6,6 +6,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
 public class TestingSwerve extends Swerve {
     private static final TestingSwerve INSTANCE = new TestingSwerve();
+    private final TestingSwerveModule[] swerveModules = TestingSwerveConstants.SWERVE_MODULES;
 
     private TestingSwerve() {
     }
@@ -21,7 +22,7 @@ public class TestingSwerve extends Swerve {
 
     @Override
     SwerveModule[] getModules() {
-        return TestingSwerveConstants.SWERVE_MODULES;
+        return swerveModules;
     }
 
     @Override

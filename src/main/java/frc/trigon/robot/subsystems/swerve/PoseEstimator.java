@@ -60,6 +60,9 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
                 swerve.getModulePositions(),
                 currentPose
         );
+
+        for (PoseSource poseSource : poseSources)
+            poseSource.setCurrentPose(currentPose);
     }
 
     /**

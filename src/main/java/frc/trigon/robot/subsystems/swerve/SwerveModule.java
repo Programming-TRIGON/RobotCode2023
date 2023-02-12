@@ -4,10 +4,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Config;
+import io.github.oblarg.oblog.annotations.Log;
 
 public abstract class SwerveModule implements Loggable {
     private SwerveModuleState targetState = new SwerveModuleState();
     private boolean driveMotorClosedLoop = false;
+
+    @Override
+    public String configureLogName() {
+        return getName();
+    }
 
     /**
      * @return the current position of the module
@@ -53,6 +60,7 @@ public abstract class SwerveModule implements Loggable {
     /**
      * @return the target angle of the module
      */
+    @Log(name = "targetAngle", methodName = "getDegrees")
     private Rotation2d getTargetAngle() {
         return getTargetState().angle;
     }
@@ -60,6 +68,7 @@ public abstract class SwerveModule implements Loggable {
     /**
      * @return the target velocity of the module
      */
+    @Log(name = "targetVelocity")
     private double getTargetVelocity() {
         return getTargetState().speedMetersPerSecond;
     }
@@ -69,6 +78,7 @@ public abstract class SwerveModule implements Loggable {
      *
      * @param velocity the target velocity
      */
+    @Config(name = "setTargetVelocity")
     private void setTargetVelocity(double velocity) {
         if (driveMotorClosedLoop)
             setTargetClosedLoopVelocity(velocity);
@@ -76,6 +86,7 @@ public abstract class SwerveModule implements Loggable {
             setTargetOpenLoopVelocity(velocity);
     }
 
+    @Config(name = "setTargetAngle")
     private void setTargetDegrees(double degrees) {
         setTargetAngle(Rotation2d.fromDegrees(degrees));
     }
@@ -95,11 +106,13 @@ public abstract class SwerveModule implements Loggable {
     /**
      * @return the module's current angle as a rotation2d
      */
+    @Log(name = "angle", methodName = "getDegrees")
     abstract Rotation2d getCurrentAngle();
 
     /**
      * @return the module's current velocity in meters per second
      */
+    @Log(name = "velocity")
     abstract double getCurrentVelocity();
 
     /**
@@ -135,4 +148,9 @@ public abstract class SwerveModule implements Loggable {
      * @param velocity the target velocity
      */
     abstract void setTargetOpenLoopVelocity(double velocity);
+
+    /**
+     * @return the module's name
+     */
+    abstract String getName();
 }

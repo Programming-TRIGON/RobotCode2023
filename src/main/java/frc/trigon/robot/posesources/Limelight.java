@@ -34,6 +34,9 @@ public class Limelight implements PoseSource {
     }
 
     @Override
+    public void setCurrentPose(Pose2d pose) {}
+
+    @Override
     public Pose2d getLastRealPose() {
         return lastRealPose;
     }
@@ -80,7 +83,7 @@ public class Limelight implements PoseSource {
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
     public double getTy(int id) {
-        final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
 
         return fiducial == null ? 0 : fiducial.ty;
     }
@@ -92,7 +95,7 @@ public class Limelight implements PoseSource {
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
     public double getTx(int id) {
-        final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
 
         return fiducial == null ? 0 : fiducial.tx;
     }
@@ -104,7 +107,7 @@ public class Limelight implements PoseSource {
      * @return target's area (from 0% of the image to 100% of the image)
      */
     public double getTa(int id) {
-        final LimelightJsonOutput.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
 
         return fiducial == null ? 0 : fiducial.ta;
     }
@@ -187,11 +190,11 @@ public class Limelight implements PoseSource {
         return new Pose3d(robotTranslation, robotRotation);
     }
 
-    private LimelightJsonOutput getJsonOutput() {
+    private LimelightJsonDump getJsonOutput() {
         final String jsonString = json.getString("");
         return JsonHandler.parseJsonStringToObject(
                 jsonString,
-                LimelightJsonOutput.class
+                LimelightJsonDump.class
         );
     }
 
@@ -218,7 +221,7 @@ public class Limelight implements PoseSource {
         }
     }
 
-    private static class LimelightJsonOutput {
+    private static class LimelightJsonDump {
         private Results Results;
 
         private static class Results {

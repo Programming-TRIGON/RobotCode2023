@@ -18,6 +18,14 @@ public interface PoseSource {
     }
 
     /**
+     * Sets the current pose of the robot.
+     * This may not be used by all pose sources.
+     *
+     * @param pose the current pose of the robot
+     */
+    void setCurrentPose(Pose2d pose);
+
+    /**
      * @return the last robot pose the pose source has provided, that went through pose validation checks
      */
     Pose2d getLastRealPose();

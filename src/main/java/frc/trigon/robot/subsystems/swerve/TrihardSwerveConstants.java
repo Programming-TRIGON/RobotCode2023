@@ -14,7 +14,7 @@ public class TrihardSwerveConstants {
             DRIVE_NEUTRAL_DEADBAND = 0,
             ROTATION_NEUTRAL_DEADBAND = 0;
     static final double
-            SIDE_LENGTH_METERS = 0.5,
+            SIDE_LENGTH_METERS = 0.7,
             DISTANCE_FROM_CENTER_OF_BASE = SIDE_LENGTH_METERS / 2;
     private static final Translation2d[] LOCATIONS = {
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0).location,
@@ -22,13 +22,13 @@ public class TrihardSwerveConstants {
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(2).location,
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3).location
     };
-    static TrihardSwerveModule[] SWERVE_MODULES = {
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0).swerveModuleConstants),
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1).swerveModuleConstants),
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(2).swerveModuleConstants),
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3).swerveModuleConstants)
+    static final TrihardSwerveModule[] SWERVE_MODULES = {
+            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0)),
+            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1)),
+            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(2)),
+            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3))
     };
-    static SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
+    static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
             TRANSLATION_PID_CONSTANTS = new PIDConstants(7, 0, 0),
             ROTATION_PID_CONSTANTS = new PIDConstants(9, 0, 0);

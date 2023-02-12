@@ -25,6 +25,9 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     @Override
+    public void setCurrentPose(Pose2d pose) {}
+
+    @Override
     public Pose2d getLastRealPose() {
         return lastRealPose;
     }

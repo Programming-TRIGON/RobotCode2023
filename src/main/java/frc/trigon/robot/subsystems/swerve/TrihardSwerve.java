@@ -6,6 +6,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
 public class TrihardSwerve extends Swerve {
     private static final TrihardSwerve INSTANCE = new TrihardSwerve();
+    private final TrihardSwerveModule[] swerveModules = TrihardSwerveConstants.SWERVE_MODULES;
 
     private TrihardSwerve() {
     }
@@ -21,7 +22,7 @@ public class TrihardSwerve extends Swerve {
 
     @Override
     SwerveModule[] getModules() {
-        return TrihardSwerveConstants.SWERVE_MODULES;
+        return swerveModules;
     }
 
     @Override

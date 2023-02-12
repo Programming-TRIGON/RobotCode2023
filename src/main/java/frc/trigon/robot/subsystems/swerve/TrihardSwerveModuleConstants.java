@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModuleConstants {
-    static final double DRIVE_GEAR_RATIO = 10.8577633008;
-    static final double WHEEL_DIAMETER_METERS = 0.1;
+    static final double DRIVE_GEAR_RATIO = 5.14;
+    static final double WHEEL_DIAMETER_METERS = 0.1016;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
     private static final double VOLTAGE_COMP_SATURATION = 12;
 
@@ -68,10 +68,10 @@ public class TrihardSwerveModuleConstants {
             );
 
     private static final int
-            FRONT_LEFT_ENCODER_ID = FRONT_LEFT_ID,
-            FRONT_RIGHT_ENCODER_ID = FRONT_RIGHT_ID,
-            REAR_LEFT_ENCODER_ID = REAR_LEFT_ID,
-            REAR_RIGHT_ENCODER_ID = REAR_RIGHT_ID;
+            FRONT_LEFT_ENCODER_CHANNEL = FRONT_LEFT_ID,
+            FRONT_RIGHT_ENCODER_CHANNEL = FRONT_RIGHT_ID,
+            REAR_LEFT_ENCODER_CHANNEL = REAR_LEFT_ID,
+            REAR_RIGHT_ENCODER_CHANNEL = REAR_RIGHT_ID;
     private static final double
             FRONT_LEFT_ENCODER_OFFSET = 0,
             FRONT_RIGHT_ENCODER_OFFSET = 0,
@@ -79,16 +79,16 @@ public class TrihardSwerveModuleConstants {
             REAR_RIGHT_ENCODER_OFFSET = 0;
     private static final DutyCycleEncoder
             FRONT_LEFT_ENCODER = new DutyCycleEncoder(
-                    FRONT_LEFT_ENCODER_ID
+                    FRONT_LEFT_ENCODER_CHANNEL
             ),
             FRONT_RIGHT_ENCODER = new DutyCycleEncoder(
-                    FRONT_RIGHT_ENCODER_ID
+                    FRONT_RIGHT_ENCODER_CHANNEL
             ),
             REAR_LEFT_ENCODER = new DutyCycleEncoder(
-                    REAR_LEFT_ENCODER_ID
+                    REAR_LEFT_ENCODER_CHANNEL
             ),
             REAR_RIGHT_ENCODER = new DutyCycleEncoder(
-                    REAR_RIGHT_ENCODER_ID
+                    REAR_RIGHT_ENCODER_CHANNEL
             );
 
     private static final TrihardSwerveModuleConstants

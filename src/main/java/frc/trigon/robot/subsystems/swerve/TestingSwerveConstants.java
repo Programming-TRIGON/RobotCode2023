@@ -22,13 +22,13 @@ public class TestingSwerveConstants {
             TestingSwerveModuleConstants.TestingSwerveModules.fromId(2).location,
             TestingSwerveModuleConstants.TestingSwerveModules.fromId(3).location
     };
-    static TestingSwerveModule[] SWERVE_MODULES = {
-            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(0).swerveModuleConstants),
-            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(1).swerveModuleConstants),
-            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(2).swerveModuleConstants),
-            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(3).swerveModuleConstants)
+    static final TestingSwerveModule[] SWERVE_MODULES = {
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(0)),
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(1)),
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(2)),
+            new TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules.fromId(3))
     };
-    static SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
+    static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
             TRANSLATION_PID_CONSTANTS = new PIDConstants(7, 0, 0),
             ROTATION_PID_CONSTANTS = new PIDConstants(9, 0, 0);

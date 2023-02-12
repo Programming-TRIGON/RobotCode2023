@@ -1,5 +1,6 @@
 package frc.trigon.robot;
 
+import com.sun.jdi.ThreadReference;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -31,6 +32,7 @@ public class Robot extends TimedRobot {
         SwerveCommands.getSetSwerveBrakeCommand(true)
                 .andThen(new WaitCommand(1.5))
                 .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
+                .ignoringDisable(true)
                 .schedule();
     }
 
