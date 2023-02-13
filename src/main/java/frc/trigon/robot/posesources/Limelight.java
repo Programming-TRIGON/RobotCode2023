@@ -34,7 +34,8 @@ public class Limelight implements PoseSource {
     }
 
     @Override
-    public void setCurrentPose(Pose2d pose) {}
+    public void setCurrentPose(Pose2d pose) {
+    }
 
     @Override
     public Pose2d getLastRealPose() {
