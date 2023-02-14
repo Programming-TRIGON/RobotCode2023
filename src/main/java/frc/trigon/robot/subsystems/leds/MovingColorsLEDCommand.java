@@ -30,12 +30,12 @@ public class MovingColorsLEDCommand extends CommandBase {
         Color[] colors = new Color[ledStrip.getLength()];
         int firstInMovingRange = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % ledStrip.getLength();
         int lastInMovingRange = firstInMovingRange + amountOfMovingLeds;
-        for (int i = 0; i < ledStrip.getLength(); i++)
-            if (shouldBePrimeColor(firstInMovingRange, lastInMovingRange, i)) {
+        for (int i = 0; i < ledStrip.getLength(); i++) {
+            if (shouldBePrimeColor(firstInMovingRange, lastInMovingRange, i))
                 colors[i] = primeColor;
-            } else {
+            else
                 colors[i] = backgroundColor;
-            }
+        }
 
         ledStrip.setLedsColors(colors);
     }

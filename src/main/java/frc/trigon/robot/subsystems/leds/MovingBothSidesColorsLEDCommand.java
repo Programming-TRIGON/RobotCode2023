@@ -34,9 +34,9 @@ public class MovingBothSidesColorsLEDCommand extends CommandBase {
 
             if ((i >= firstInMovingRange && i <= lastInMovingRange) ||
                     (i >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
-                            i <= lastInMovingRange % ledStrip.getLength()) || ((ledStrip.getLength() - i) >= firstInMovingRange && (ledStrip.getLength() - i) <= lastInMovingRange) ||
+                    i <= lastInMovingRange % ledStrip.getLength()) || ((ledStrip.getLength() - i) >= firstInMovingRange && (ledStrip.getLength() - i) <= lastInMovingRange) ||
                     ((ledStrip.getLength() - i) >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
-                            (ledStrip.getLength() - i) <= lastInMovingRange % ledStrip.getLength())){
+                    (ledStrip.getLength() - i) <= lastInMovingRange % ledStrip.getLength())){
                 colors[(ledStrip.getLength() - i) % ledStrip.getLength()] = primeColor;
                 colors[i] = primeColor;
             }else {

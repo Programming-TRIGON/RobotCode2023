@@ -42,7 +42,7 @@ public class LedStrip extends SubsystemBase {
             return;
         }
         if (inverted){
-            colors = InvertArray( colors);
+            colors = InvertArray(colors);
         }
         for (int i = startingPosition; i < endingPosition + 1; i++) {
             LED_BUFFER.setLED(i, convertToGrbIfIsReal(applyBrightness(colors[i - startingPosition], 1)));
