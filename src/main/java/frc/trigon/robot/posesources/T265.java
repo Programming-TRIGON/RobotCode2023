@@ -23,8 +23,7 @@ public class T265 extends RelativeRobotPoseSource {
         if (!canUseJsonDump())
             return getLastRealPose();
 
-        setLastRealPose(getRobotPoseFromJsonDump());
-        return getLastRealPose();
+        return getRobotPoseFromJsonDump();
     }
 
     @Override

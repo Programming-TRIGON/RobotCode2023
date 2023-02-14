@@ -17,7 +17,10 @@ public abstract class RelativeRobotPoseSource extends RobotPoseSource {
 
     @Override
     public Pose2d getRobotPose() {
-        final Pose3d robotCenterStartRelativePose = getCameraPose().plus(getCameraToRobotCenter());
+        final Pose3d cameraPose = getCameraPose();
+
+        setLastRealPose(cameraPose);
+        final Pose3d robotCenterStartRelativePose = cameraPose.plus(getCameraToRobotCenter());
 
         return robotCenterStartRelativePose.toPose2d().plus(poseToRelativePose);
     }

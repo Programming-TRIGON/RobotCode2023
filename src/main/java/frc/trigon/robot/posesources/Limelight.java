@@ -2,7 +2,6 @@ package frc.trigon.robot.posesources;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -10,8 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
 @SuppressWarnings("unused")
-public class Limelight extends RobotPoseSource {
-    private final String hostname;
+public class Limelight {
     private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
 
     /**
@@ -20,8 +18,6 @@ public class Limelight extends RobotPoseSource {
      * @param hostname the name of the Limelight
      */
     public Limelight(String hostname) {
-        super(new Transform3d());
-        this.hostname = hostname;
         final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
         tv = networkTable.getEntry("tv");
@@ -32,24 +28,11 @@ public class Limelight extends RobotPoseSource {
         snapshot = networkTable.getEntry("snapshot");
     }
 
-    @Override
-    public Pose3d getCameraPose() {
-        final Pose3d robotPose = getRobotPoseFromJsonDump();
-        if (robotPose == null)
-            return getLastRealPose();
-
-        setLastRealPose(robotPose);
-        return getLastRealPose();
-    }
-
-    @Override
+    /**
+     * @return the last result's timestamp
+     */
     public double getLastResultTimestamp() {
         return getJsonOutput().Results.ts;
-    }
-
-    @Override
-    public String getName() {
-        return hostname;
     }
 
     /**
@@ -150,7 +133,10 @@ public class Limelight extends RobotPoseSource {
         snapshot.setNumber(1);
     }
 
-    private Pose3d getRobotPoseFromJsonDump() {
+    /**
+     * @return the robot's pose, as reported by the Limelight
+     */
+    public Pose3d getRobotPoseFromJsonDump() {
         final double[] robotPoseArray = getJsonOutput().Results.botpose_wpiblue;
         if (robotPoseArray.length != 6)
             return null;

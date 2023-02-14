@@ -31,6 +31,9 @@ public abstract class RobotPoseSource {
      * @return the robot's best estimated pose, according to the pose source
      */
     public Pose2d getRobotPose() {
+        final Pose3d cameraPose = getCameraPose().plus(cameraToRobotCenter);
+
+        setLastRealPose(cameraPose);
         return getCameraPose().plus(cameraToRobotCenter).toPose2d();
     }
 
@@ -42,14 +45,14 @@ public abstract class RobotPoseSource {
     }
 
     /**
-     * @return the last valid robot pose the pose source has provided
+     * @return the last valid camera pose the pose source has provided
      */
     protected Pose3d getLastRealPose() {
         return lastRealPose;
     }
 
     /**
-     * Sets the last valid robot pose the pose source has provided.
+     * Sets the last valid camera pose the pose source has provided.
      *
      * @param pose the pose to set
      */
