@@ -19,8 +19,8 @@ public class Limelight extends RobotPoseSource {
      *
      * @param hostname the name of the Limelight
      */
-    public Limelight(String hostname, Transform3d cameraToRobotCenter) {
-        super(cameraToRobotCenter);
+    public Limelight(String hostname) {
+        super(new Transform3d());
         this.hostname = hostname;
         final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
@@ -233,4 +233,5 @@ public class Limelight extends RobotPoseSource {
             }
         }
     }
+
 }
