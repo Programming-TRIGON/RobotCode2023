@@ -23,10 +23,10 @@ public class TrihardSwerveConstants {
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3).location
     };
     static final TrihardSwerveModule[] SWERVE_MODULES = {
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0)),
             new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1)),
             new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(2)),
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3))
+            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3)),
+            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(4))
     };
     static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants

@@ -14,10 +14,10 @@ public class TrihardSwerveModuleConstants {
     private static final double VOLTAGE_COMP_SATURATION = 12;
 
     private static final int
-            FRONT_LEFT_ID = 0,
-            FRONT_RIGHT_ID = 1,
-            REAR_LEFT_ID = 2,
-            REAR_RIGHT_ID = 3;
+            FRONT_LEFT_ID = 1,
+            FRONT_RIGHT_ID = 2,
+            REAR_LEFT_ID = 3,
+            REAR_RIGHT_ID = 4;
 
     private static final int
             FRONT_LEFT_DRIVE_MOTOR_ID = FRONT_LEFT_ID,
@@ -67,7 +67,7 @@ public class TrihardSwerveModuleConstants {
                     REAR_RIGHT_STEER_MOTOR_ID
             );
 
-    private static final int ENCODER_CHANNEL_OFFSET = 5;
+    private static final int ENCODER_CHANNEL_OFFSET = 4;
     private static final int
             FRONT_LEFT_ENCODER_CHANNEL = FRONT_LEFT_ID + ENCODER_CHANNEL_OFFSET,
             FRONT_RIGHT_ENCODER_CHANNEL = FRONT_RIGHT_ID + ENCODER_CHANNEL_OFFSET,
