@@ -7,25 +7,23 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import java.util.Arrays;
 
 public class BlinkLEDCommand extends CommandBase {
-    private final Color color1;
-    private final Color color2;
+    private final Color[] theColors;
     private final double cycleTime;
     private final LedStrip ledStrip;
-    public BlinkLEDCommand(Color color1, Color color2, double cycleTime, LedStrip ledStrip){
-        this.color1 = color1;
-        this.color2 = color2;
-        this.cycleTime = cycleTime;
+    public BlinkLEDCommand(Color[] theColors, double cycleTime, LedStrip ledStrip){
+        this.theColors = theColors;
+        this.cycleTime = cycleTime * 2;
         this.ledStrip = ledStrip;
     }
 
     @Override
     public void execute() {
         Color[] colors = new Color[ledStrip.getLength()];
-        if ((Timer.getFPGATimestamp() / cycleTime)% 1 <= 0.5) {
-            Arrays.fill(colors, color1);
-        } else {
-            Arrays.fill(colors, color2);
+        for (int i = 0; i < ledStrip.getLength(); i++) {
+            colors[i] = theColors[(int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % theColors.length];
         }
+
+
         ledStrip.setLedsColors(colors);
     }
 
