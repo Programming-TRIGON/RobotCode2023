@@ -37,14 +37,6 @@ public abstract class PoseSource {
     }
 
     /**
-     * Sets the current pose of the robot.
-     * This may not be used by all pose sources.
-     *
-     * @param pose the current pose of the robot
-     */
-    public abstract void setCurrentPose(Pose2d pose);
-
-    /**
      * @return the robot's best estimated pose, according to the pose source
      */
     public abstract Pose2d getRobotPose();

@@ -8,7 +8,7 @@ import org.photonvision.PhotonPoseEstimator;
 
 import java.util.Optional;
 
-public class PhotonCamera extends PoseSource implements Loggable {
+public class PhotonCamera extends AbsolutePoseSource implements Loggable {
     private final org.photonvision.PhotonCamera photonCamera;
     private final PhotonPoseEstimator photonPoseEstimator;
 
@@ -21,10 +21,6 @@ public class PhotonCamera extends PoseSource implements Loggable {
                 photonCamera,
                 cameraToRobotCenter.inverse()
         );
-    }
-
-    @Override
-    public void setCurrentPose(Pose2d pose) {
     }
 
     @Override

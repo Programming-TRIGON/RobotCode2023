@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.posesources.PoseSource;
 import frc.trigon.robot.posesources.PoseSourceConstants;
+import frc.trigon.robot.posesources.RelativePoseSource;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
@@ -61,8 +62,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
                 currentPose
         );
 
-        for (PoseSource poseSource : poseSources)
-            poseSource.setCurrentPose(currentPose);
+        setRelativePose(currentPose);
     }
 
     /**
@@ -79,6 +79,16 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      */
     public void setPoseSources(PoseSource... poseSources) {
         this.poseSources = poseSources;
+    }
+
+    private void setRelativePose(Pose2d pose) {
+        for (PoseSource poseSource : poseSources) {
+            if (!(poseSource instanceof RelativePoseSource))
+                continue;
+
+            final RelativePoseSource relativePoseSource = (RelativePoseSource) poseSource;
+            relativePoseSource.setRelativePose(pose);
+        }
     }
 
     private void updatePoseEstimator() {

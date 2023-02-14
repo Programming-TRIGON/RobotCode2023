@@ -6,12 +6,11 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
-public class T265 extends PoseSource {
+public class T265 extends RelativePoseSource {
     private static final NetworkTable NETWORK_TABLE = NetworkTableInstance.getDefault().getTable("T265");
     private final String name;
     private final Transform3d t265ToRobotCenter;
     private final NetworkTableEntry jsonDump;
-    private Transform2d currentPoseToOffsettedPose = new Transform2d();
 
     public T265(String name, Transform3d t265ToRobotCenter) {
         this.name = name;
@@ -21,16 +20,11 @@ public class T265 extends PoseSource {
     }
 
     @Override
-    public void setCurrentPose(Pose2d pose) {
-        currentPoseToOffsettedPose = pose2dToTransform2d(pose);
-    }
-
-    @Override
     public Pose2d getRobotPose() {
         if (!canUseJsonDump())
             return getLastRealPose();
 
-        setLastRealPose(t265PoseToRobotPose(getRobotPoseFromJsonDump()).toPose2d());
+        setLastRealPose(t265PoseToRobotPose(getRobotPoseFromJsonDump()));
         return getLastRealPose();
     }
 
@@ -44,15 +38,16 @@ public class T265 extends PoseSource {
         return name;
     }
 
-    private Pose3d t265PoseToRobotPose(Pose3d pose) {
+    private Pose2d t265PoseToRobotPose(Pose3d pose) {
         final Pose3d
-                robotWPIPose = t265PoseToWPIPose(pose),
-                offsettedRobotWPIPose = robotWPIPose.plus(t265ToRobotCenter);
+                robotWpiPose = t265PoseToWpiPose(pose),
+                robotCenterWpiPose = robotWpiPose.plus(t265ToRobotCenter);
+        final Transform2d poseToRelativePose = getPoseToRelativePoseTransform();
 
-        return offsettedRobotWPIPose.plus(t265ToRobotCenter);
+        return robotCenterWpiPose.toPose2d().plus(poseToRelativePose);
     }
 
-    private Pose3d t265PoseToWPIPose(Pose3d pose) {
+    private Pose3d t265PoseToWpiPose(Pose3d pose) {
         final Translation3d translation = new Translation3d(
                 pose.getY(),
                 pose.getX(),
@@ -60,10 +55,6 @@ public class T265 extends PoseSource {
         );
 
         return new Pose3d(translation, pose.getRotation());
-    }
-
-    private Transform2d pose2dToTransform2d(Pose2d pose) {
-        return new Transform2d(pose.getTranslation(), pose.getRotation());
     }
 
     private Pose3d getRobotPoseFromJsonDump() {

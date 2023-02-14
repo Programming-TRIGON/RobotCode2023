@@ -10,7 +10,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
 @SuppressWarnings("unused")
-public class Limelight extends PoseSource {
+public class Limelight extends AbsolutePoseSource {
     private final String hostname;
     private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
 
@@ -29,10 +29,6 @@ public class Limelight extends PoseSource {
         driverCam = networkTable.getEntry("camMode");
         pipeline = networkTable.getEntry("pipeline");
         snapshot = networkTable.getEntry("snapshot");
-    }
-
-    @Override
-    public void setCurrentPose(Pose2d pose) {
     }
 
     @Override
