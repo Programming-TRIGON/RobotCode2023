@@ -14,12 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class D415 {
+    private static final NetworkTable NETWORK_TABLE = NetworkTableInstance.getDefault().getTable("D415");
     private final NetworkTableEntry jsonDump;
 
     public D415(String name) {
-        final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable("D415");
-
-        jsonDump = networkTable.getEntry(name + "/jsonDump");
+        jsonDump = NETWORK_TABLE.getEntry(name + "/jsonDump");
     }
 
     /**
