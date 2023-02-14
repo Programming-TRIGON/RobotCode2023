@@ -1,8 +1,8 @@
 package frc.trigon.robot.posesources;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -10,7 +10,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
 @SuppressWarnings("unused")
-public class Limelight extends AbsolutePoseSource {
+public class Limelight extends PoseSource {
     private final String hostname;
     private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
 
@@ -19,7 +19,8 @@ public class Limelight extends AbsolutePoseSource {
      *
      * @param hostname the name of the Limelight
      */
-    public Limelight(String hostname) {
+    public Limelight(String hostname, Transform3d cameraToRobotCenter) {
+        super(cameraToRobotCenter);
         this.hostname = hostname;
         final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
@@ -32,12 +33,12 @@ public class Limelight extends AbsolutePoseSource {
     }
 
     @Override
-    public Pose2d getRobotPose() {
+    public Pose3d getCameraPose() {
         final Pose3d robotPose = getRobotPoseFromJsonDump();
         if (robotPose == null)
             return getLastRealPose();
 
-        setLastRealPose(robotPose.toPose2d());
+        setLastRealPose(robotPose);
         return getLastRealPose();
     }
 

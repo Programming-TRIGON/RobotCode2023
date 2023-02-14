@@ -9,22 +9,21 @@ import frc.trigon.robot.utilities.JsonHandler;
 public class T265 extends RelativePoseSource {
     private static final NetworkTable NETWORK_TABLE = NetworkTableInstance.getDefault().getTable("T265");
     private final String name;
-    private final Transform3d t265ToRobotCenter;
     private final NetworkTableEntry jsonDump;
 
-    public T265(String name, Transform3d t265ToRobotCenter) {
+    public T265(String name, Transform3d cameraToRobotCenter) {
+        super(cameraToRobotCenter);
         this.name = name;
-        this.t265ToRobotCenter = t265ToRobotCenter;
 
         jsonDump = NETWORK_TABLE.getEntry(name + "/jsonDump");
     }
 
     @Override
-    public Pose2d getRobotPose() {
+    public Pose3d getCameraPose() {
         if (!canUseJsonDump())
             return getLastRealPose();
 
-        setLastRealPose(t265PoseToRobotPose(getRobotPoseFromJsonDump()));
+        setLastRealPose(getRobotPoseFromJsonDump());
         return getLastRealPose();
     }
 
@@ -38,41 +37,20 @@ public class T265 extends RelativePoseSource {
         return name;
     }
 
-    private Pose2d t265PoseToRobotPose(Pose3d pose) {
-        final Pose3d
-                robotWpiPose = t265PoseToWpiPose(pose),
-                robotCenterWpiPose = robotWpiPose.plus(t265ToRobotCenter);
-        final Transform2d poseToRelativePose = getPoseToRelativePoseTransform();
-
-        return robotCenterWpiPose.toPose2d().plus(poseToRelativePose);
-    }
-
-    private Pose3d t265PoseToWpiPose(Pose3d pose) {
-        final Translation3d translation = new Translation3d(
-                pose.getY(),
-                pose.getX(),
-                pose.getZ()
-        );
-
-        return new Pose3d(translation, pose.getRotation());
-    }
-
     private Pose3d getRobotPoseFromJsonDump() {
         final T265JsonDump jsonDump = getJsonDump();
-
-        final Translation3d translation = new Translation3d(
-                jsonDump.translation[0],
-                jsonDump.translation[1],
-                jsonDump.translation[2]
-        );
-        final Rotation3d rotation = new Rotation3d(new Quaternion(
-                jsonDump.rotation[0],
-                jsonDump.rotation[1],
-                jsonDump.rotation[2],
-                jsonDump.rotation[3]
-        ));
+        final Translation3d translation = getTranslationFromYXZArray(jsonDump.translation);
+        final Rotation3d rotation = getRotationFromWXYZArray(jsonDump.rotation);
 
         return new Pose3d(translation, rotation);
+    }
+
+    private Translation3d getTranslationFromYXZArray(double[] yxz) {
+        return new Translation3d(yxz[1], yxz[0], yxz[2]);
+    }
+
+    private Rotation3d getRotationFromWXYZArray(double[] wxyz) {
+        return new Rotation3d(new Quaternion(wxyz[0], wxyz[1], wxyz[2], wxyz[3]));
     }
 
     private boolean canUseJsonDump() {
