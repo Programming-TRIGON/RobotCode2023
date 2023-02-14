@@ -8,10 +8,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 /**
  * A pose source that provides the robot's pose, relative to a given pose.
  */
-public abstract class RelativePoseSource extends PoseSource {
+public abstract class RelativeRobotPoseSource extends RobotPoseSource {
     private Transform2d poseToRelativePose = new Transform2d();
 
-    protected RelativePoseSource(Transform3d cameraToRobotCenter) {
+    protected RelativeRobotPoseSource(Transform3d cameraToRobotCenter) {
         super(cameraToRobotCenter);
     }
 

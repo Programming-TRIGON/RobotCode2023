@@ -10,7 +10,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
 @SuppressWarnings("unused")
-public class Limelight extends PoseSource {
+public class Limelight extends RobotPoseSource {
     private final String hostname;
     private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
 

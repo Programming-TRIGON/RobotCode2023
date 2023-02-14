@@ -7,9 +7,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
-import frc.trigon.robot.posesources.PoseSource;
+import frc.trigon.robot.posesources.RobotPoseSource;
 import frc.trigon.robot.posesources.PoseSourceConstants;
-import frc.trigon.robot.posesources.RelativePoseSource;
+import frc.trigon.robot.posesources.RelativeRobotPoseSource;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
@@ -23,7 +23,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
     @Log
     private final Field2d field = new Field2d();
-    private PoseSource[] poseSources = {};
+    private RobotPoseSource[] robotPoseSources = {};
 
     private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -75,18 +75,18 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     /**
      * Sets the pose sources to use in the pose estimator.
      *
-     * @param poseSources the pose sources to use
+     * @param robotPoseSources the pose sources to use
      */
-    public void setPoseSources(PoseSource... poseSources) {
-        this.poseSources = poseSources;
+    public void setPoseSources(RobotPoseSource... robotPoseSources) {
+        this.robotPoseSources = robotPoseSources;
     }
 
     private void setRelativePose(Pose2d pose) {
-        for (PoseSource poseSource : poseSources) {
-            if (!(poseSource instanceof RelativePoseSource))
+        for (RobotPoseSource robotPoseSource : robotPoseSources) {
+            if (!(robotPoseSource instanceof RelativeRobotPoseSource))
                 continue;
 
-            final RelativePoseSource relativePoseSource = (RelativePoseSource) poseSource;
+            final RelativeRobotPoseSource relativePoseSource = (RelativeRobotPoseSource) robotPoseSource;
             relativePoseSource.setRelativePose(pose);
         }
     }
@@ -98,21 +98,21 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     private void attemptToUpdateWithPoseSources() {
-        for (PoseSource poseSource : poseSources) {
-            if (poseSource.isNewTimestamp())
-                updateWithPoseSource(poseSource);
+        for (RobotPoseSource robotPoseSource : robotPoseSources) {
+            if (robotPoseSource.isNewTimestamp())
+                updateWithPoseSource(robotPoseSource);
         }
     }
 
-    private void updateWithPoseSource(PoseSource poseSource) {
-        final Pose2d robotPose = poseSource.getRobotPose();
+    private void updateWithPoseSource(RobotPoseSource robotPoseSource) {
+        final Pose2d robotPose = robotPoseSource.getRobotPose();
 
         swerveDrivePoseEstimator.addVisionMeasurement(
                 robotPose,
-                poseSource.getLastResultTimestamp()
+                robotPoseSource.getLastResultTimestamp()
         );
 
-        field.getObject(poseSource.getName()).setPose(robotPose);
+        field.getObject(robotPoseSource.getName()).setPose(robotPose);
     }
 
     private void updatePoseEstimatorStates() {

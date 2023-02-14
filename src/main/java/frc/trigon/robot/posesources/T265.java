@@ -6,7 +6,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
-public class T265 extends RelativePoseSource {
+public class T265 extends RelativeRobotPoseSource {
     private static final NetworkTable NETWORK_TABLE = NetworkTableInstance.getDefault().getTable("T265");
     private final String name;
     private final NetworkTableEntry jsonDump;

@@ -8,7 +8,7 @@ import org.photonvision.PhotonPoseEstimator;
 
 import java.util.Optional;
 
-public class PhotonCamera extends PoseSource implements Loggable {
+public class PhotonCamera extends RobotPoseSource implements Loggable {
     private final org.photonvision.PhotonCamera photonCamera;
     private final PhotonPoseEstimator photonPoseEstimator;
 

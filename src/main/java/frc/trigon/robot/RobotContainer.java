@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.trigon.robot.posesources.PhotonCamera;
-import frc.trigon.robot.posesources.PoseSource;
+import frc.trigon.robot.posesources.RobotPoseSource;
 import frc.trigon.robot.posesources.T265;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
@@ -22,7 +22,7 @@ public class RobotContainer {
                     new Translation3d(0, 0, 0),
                     new Rotation3d(0, 0, 0)
             );
-    private final PoseSource
+    private final RobotPoseSource
             forwardLimelight = new PhotonCamera("limelight-forward", forwardLimelightToRobotCenter),
             t265 = new T265("t265", t265ToRobotCenter);
 

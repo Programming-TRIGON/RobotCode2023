@@ -7,12 +7,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 /**
  * A pose source is a class that provides the robot's pose.
  */
-public abstract class PoseSource {
+public abstract class RobotPoseSource {
     private final Transform3d cameraToRobotCenter;
     private double lastUpdatedTimestamp;
     private Pose3d lastRealPose = new Pose3d();
 
-    protected PoseSource(Transform3d cameraToRobotCenter) {
+    protected RobotPoseSource(Transform3d cameraToRobotCenter) {
         this.cameraToRobotCenter = cameraToRobotCenter;
     }
 
