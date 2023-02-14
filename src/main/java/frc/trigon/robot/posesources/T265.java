@@ -6,18 +6,18 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
-public class T265 implements PoseSource {
+public class T265 extends PoseSource {
+    private static final NetworkTable NETWORK_TABLE = NetworkTableInstance.getDefault().getTable("T265");
     private final String name;
+    private final Transform3d t265ToRobotCenter;
     private final NetworkTableEntry jsonDump;
-    private double lastUpdatedTimestamp = 0;
-    private Pose2d lastRealPose = new Pose2d();
     private Transform2d currentPoseToOffsettedPose = new Transform2d();
 
-    public T265(String name) {
+    public T265(String name, Transform3d t265ToRobotCenter) {
         this.name = name;
-        final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable("T265");
+        this.t265ToRobotCenter = t265ToRobotCenter;
 
-        jsonDump = networkTable.getEntry(name + "/jsonDump");
+        jsonDump = NETWORK_TABLE.getEntry(name + "/jsonDump");
     }
 
     @Override
@@ -26,24 +26,12 @@ public class T265 implements PoseSource {
     }
 
     @Override
-    public Pose2d getLastRealPose() {
-        return lastRealPose;
-    }
-
-    @Override
-    public boolean hasResults() {
-        return getJsonDump() != null;
-    }
-
-    @Override
     public Pose2d getRobotPose() {
         if (!canUseJsonDump())
-            return null;
+            return getLastRealPose();
 
-        final Pose2d robotWPIPose = t265PoseToWPIPose(getRobotPoseFromJsonDump().toPose2d());
-        lastRealPose = robotWPIPose.plus(currentPoseToOffsettedPose);
-
-        return lastRealPose;
+        setLastRealPose(t265PoseToRobotPose(getRobotPoseFromJsonDump()).toPose2d());
+        return getLastRealPose();
     }
 
     @Override
@@ -52,22 +40,26 @@ public class T265 implements PoseSource {
     }
 
     @Override
-    public double getLastUpdatedTimestamp() {
-        return lastUpdatedTimestamp;
-    }
-
-    @Override
-    public void setLastUpdatedTimestamp(double timestamp) {
-        lastUpdatedTimestamp = timestamp;
-    }
-
-    @Override
     public String getName() {
         return name;
     }
 
-    private Pose2d t265PoseToWPIPose(Pose2d pose) {
-        return new Pose2d(pose.getTranslation().getY(), pose.getTranslation().getX(), pose.getRotation());
+    private Pose3d t265PoseToRobotPose(Pose3d pose) {
+        final Pose3d
+                robotWPIPose = t265PoseToWPIPose(pose),
+                offsettedRobotWPIPose = robotWPIPose.plus(t265ToRobotCenter);
+
+        return offsettedRobotWPIPose.plus(t265ToRobotCenter);
+    }
+
+    private Pose3d t265PoseToWPIPose(Pose3d pose) {
+        final Translation3d translation = new Translation3d(
+                pose.getY(),
+                pose.getX(),
+                pose.getZ()
+        );
+
+        return new Pose3d(translation, pose.getRotation());
     }
 
     private Transform2d pose2dToTransform2d(Pose2d pose) {

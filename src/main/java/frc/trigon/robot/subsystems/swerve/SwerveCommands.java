@@ -29,6 +29,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static Command getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
+        final Command initializeSwerveCommand = new InstantCommand(getDriveInitializeRunnable(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {
@@ -41,7 +42,8 @@ public class SwerveCommands {
                 useAllianceColor,
                 SWERVE
         );
-        return swerveAutoBuilder.fullAuto(pathGroup);
+
+        return initializeSwerveCommand.andThen(swerveAutoBuilder.fullAuto(pathGroup));
     }
 
     /**
@@ -52,6 +54,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static Command getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
+        final Command initializeSwerveCommand = new InstantCommand(getDriveInitializeRunnable(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {
@@ -64,7 +67,8 @@ public class SwerveCommands {
                 useAllianceColor,
                 SWERVE
         );
-        return swerveAutoBuilder.followPath(path);
+
+        return initializeSwerveCommand.andThen(swerveAutoBuilder.followPath(path));
     }
 
     /**

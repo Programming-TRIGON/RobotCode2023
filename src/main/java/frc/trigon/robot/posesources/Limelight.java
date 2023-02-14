@@ -10,11 +10,9 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
 @SuppressWarnings("unused")
-public class Limelight implements PoseSource {
+public class Limelight extends PoseSource {
     private final String hostname;
     private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
-    private double lastUpdatedTimestamp = 0;
-    private Pose2d lastRealPose = new Pose2d();
 
     /**
      * Constructs a new Limelight.
@@ -38,23 +36,13 @@ public class Limelight implements PoseSource {
     }
 
     @Override
-    public Pose2d getLastRealPose() {
-        return lastRealPose;
-    }
-
-    @Override
-    public boolean hasResults() {
-        return tv.getDouble(0) > 0;
-    }
-
-    @Override
     public Pose2d getRobotPose() {
         final Pose3d robotPose = getRobotPoseFromJsonDump();
         if (robotPose == null)
-            return null;
+            return getLastRealPose();
 
-        lastRealPose = robotPose.toPose2d();
-        return robotPose.toPose2d();
+        setLastRealPose(robotPose.toPose2d());
+        return getLastRealPose();
     }
 
     @Override
@@ -63,18 +51,15 @@ public class Limelight implements PoseSource {
     }
 
     @Override
-    public double getLastUpdatedTimestamp() {
-        return lastUpdatedTimestamp;
-    }
-
-    @Override
-    public void setLastUpdatedTimestamp(double timestamp) {
-        lastUpdatedTimestamp = timestamp;
-    }
-
-    @Override
     public String getName() {
         return hostname;
+    }
+
+    /**
+     * @return true if the limelight has any visible targets, false otherwise
+     */
+    public boolean hasResults() {
+        return tv.getDouble(0) > 0;
     }
 
     /**

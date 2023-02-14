@@ -8,18 +8,17 @@ import org.photonvision.PhotonPoseEstimator;
 
 import java.util.Optional;
 
-public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseSource, Loggable {
+public class PhotonCamera extends PoseSource implements Loggable {
+    private final org.photonvision.PhotonCamera photonCamera;
     private final PhotonPoseEstimator photonPoseEstimator;
-    private double lastUpdatedTimestamp = 0;
-    private Pose2d lastRealPose = new Pose2d();
 
     public PhotonCamera(String cameraName, Transform3d cameraToRobotCenter) {
-        super(cameraName);
+        photonCamera = new org.photonvision.PhotonCamera(cameraName);
 
         photonPoseEstimator = new PhotonPoseEstimator(
                 PoseSourceConstants.APRIL_TAG_FIELD_LAYOUT,
                 PoseSourceConstants.POSE_STRATEGY,
-                this,
+                photonCamera,
                 cameraToRobotCenter.inverse()
         );
     }
@@ -29,37 +28,22 @@ public class PhotonCamera extends org.photonvision.PhotonCamera implements PoseS
     }
 
     @Override
-    public Pose2d getLastRealPose() {
-        return lastRealPose;
-    }
-
-    @Override
     public double getTimestampSeconds() {
-        return getLatestResult().getTimestampSeconds();
-    }
-
-    @Override
-    public boolean hasResults() {
-        return true;
+        return photonCamera.getLatestResult().getTimestampSeconds();
     }
 
     @Override
     public Pose2d getRobotPose() {
         final Optional<EstimatedRobotPose> estimatedRobotPose = photonPoseEstimator.update();
         if (estimatedRobotPose.isEmpty())
-            return null;
+            return getLastRealPose();
 
-        lastRealPose = estimatedRobotPose.get().estimatedPose.toPose2d();
-        return lastRealPose;
+        setLastRealPose(estimatedRobotPose.get().estimatedPose.toPose2d());
+        return getLastRealPose();
     }
 
     @Override
-    public double getLastUpdatedTimestamp() {
-        return lastUpdatedTimestamp;
-    }
-
-    @Override
-    public void setLastUpdatedTimestamp(double timestamp) {
-        lastUpdatedTimestamp = timestamp;
+    public String getName() {
+        return photonCamera.getName();
     }
 }

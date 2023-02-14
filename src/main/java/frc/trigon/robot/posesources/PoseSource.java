@@ -5,16 +5,35 @@ import edu.wpi.first.math.geometry.Pose2d;
 /**
  * A pose source is a class that provides the robot's pose.
  */
-public interface PoseSource {
+public abstract class PoseSource {
+    private double lastUpdatedTimestamp;
+    private Pose2d lastRealPose = new Pose2d();
+
     /**
-     * @return whether there are new results since the last call to this method
+     * @return if the current timestamp is not the same as the last timestamp
      */
-    default boolean hasNewResult() {
-        if (getLastUpdatedTimestamp() == getTimestampSeconds())
+    public boolean isNewTimestamp() {
+        if (lastUpdatedTimestamp == getTimestampSeconds())
             return false;
 
-        setLastUpdatedTimestamp(getTimestampSeconds());
-        return hasResults();
+        lastUpdatedTimestamp =  getTimestampSeconds();
+        return true;
+    }
+
+    /**
+     * @return the last robot pose the pose source has provided, that went through pose validation checks
+     */
+    Pose2d getLastRealPose() {
+        return lastRealPose;
+    }
+
+    /**
+     * Sets the last robot pose the pose source has provided, that went through validation checks.
+     *
+     * @param pose the pose to set
+     */
+    void setLastRealPose(Pose2d pose) {
+        lastRealPose = pose;
     }
 
     /**
@@ -23,40 +42,20 @@ public interface PoseSource {
      *
      * @param pose the current pose of the robot
      */
-    void setCurrentPose(Pose2d pose);
-
-    /**
-     * @return the last robot pose the pose source has provided, that went through pose validation checks
-     */
-    Pose2d getLastRealPose();
-
-    /**
-     * @return true if the pose source has results, false otherwise
-     */
-    boolean hasResults();
+    public abstract void setCurrentPose(Pose2d pose);
 
     /**
      * @return the robot's best estimated pose, according to the pose source
      */
-    Pose2d getRobotPose();
+    public abstract Pose2d getRobotPose();
 
     /**
      * @return the current timestamp in seconds
      */
-    double getTimestampSeconds();
-
-    /**
-     * @return the previous timestamp in seconds
-     */
-    double getLastUpdatedTimestamp();
-
-    /**
-     * Sets the previous timestamp.
-     */
-    void setLastUpdatedTimestamp(double timestamp);
+    public abstract double getTimestampSeconds();
 
     /**
      * @return the pose source's name
      */
-    String getName();
+    public abstract String getName();
 }

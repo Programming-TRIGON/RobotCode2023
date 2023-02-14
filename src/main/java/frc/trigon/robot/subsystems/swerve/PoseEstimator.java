@@ -12,7 +12,7 @@ import frc.trigon.robot.posesources.PoseSourceConstants;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
-import java.util.List;
+import java.util.HashMap;
 
 
 public class PoseEstimator extends SubsystemBase implements Loggable {
@@ -89,10 +89,8 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
 
     private void attemptToUpdateWithPoseSources() {
         for (PoseSource poseSource : poseSources) {
-            if (poseSource.getRobotPose() == null)
-                continue;
-
-            updateWithPoseSource(poseSource);
+            if (poseSource.isNewTimestamp())
+                updateWithPoseSource(poseSource);
         }
     }
 
@@ -112,11 +110,10 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     private void addAprilTagsToFieldWidget() {
-        final List<Pose3d> tagPoses = PoseSourceConstants.TAG_POSES;
-        final int tagsCount = tagPoses.size();
+        final HashMap<Integer, Pose3d> tagsIdToPose = PoseSourceConstants.TAGS_ID_TO_POSE;
 
-        for (int i = 1; i < tagsCount; i++)
-            field.getObject("Tag " + i).setPose(tagPoses.get(i).toPose2d());
+        for (Integer currentID : tagsIdToPose.keySet())
+            field.getObject("Tag " + currentID).setPose(tagsIdToPose.get(currentID).toPose2d());
     }
 
     private void setGyroHeadingAndWaitUntilUpdate(Rotation2d heading) {

@@ -67,6 +67,18 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     }
 
     /**
+     * @return the robot's current velocity
+     */
+    public ChassisSpeeds getCurrentVelocity() {
+        return getKinematics().toChassisSpeeds(
+                getModules()[0].getCurrentState(),
+                getModules()[1].getCurrentState(),
+                getModules()[2].getCurrentState(),
+                getModules()[3].getCurrentState()
+        );
+    }
+
+    /**
      * Sets the heading of the robot.
      *
      * @param heading the new heading
@@ -145,18 +157,6 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     void setBrake(boolean brake) {
         for (SwerveModule module : getModules())
             module.setBrake(brake);
-    }
-
-    /**
-     * @return the robot's current velocity
-     */
-    ChassisSpeeds getCurrentVelocity() {
-        return getKinematics().toChassisSpeeds(
-                getModules()[0].getCurrentState(),
-                getModules()[1].getCurrentState(),
-                getModules()[2].getCurrentState(),
-                getModules()[3].getCurrentState()
-        );
     }
 
     /**

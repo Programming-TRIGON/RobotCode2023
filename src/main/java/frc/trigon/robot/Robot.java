@@ -28,11 +28,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-        SwerveCommands.getSetSwerveBrakeCommand(true)
-                .andThen(new WaitCommand(1.5))
-                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
-                .ignoringDisable(true)
-                .schedule();
+        scheduleBrakeAndCoastCommand();
     }
 
     @Override
@@ -62,6 +58,14 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testPeriodic() {
+    }
+
+    private void scheduleBrakeAndCoastCommand() {
+        SwerveCommands.getSetSwerveBrakeCommand(true)
+                .andThen(new WaitCommand(0.3))
+                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
+                .ignoringDisable(true)
+                .schedule();
     }
 
     private void setDeployFolderToMaxPermissions() {
