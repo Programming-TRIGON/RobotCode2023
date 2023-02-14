@@ -35,7 +35,7 @@ public class T265 extends PoseSource {
     }
 
     @Override
-    public double getTimestampSeconds() {
+    public double getLastResultTimestamp() {
         return jsonDump.getLastChange();
     }
 

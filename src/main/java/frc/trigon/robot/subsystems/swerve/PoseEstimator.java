@@ -99,7 +99,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
 
         swerveDrivePoseEstimator.addVisionMeasurement(
                 robotPose,
-                poseSource.getTimestampSeconds()
+                poseSource.getLastResultTimestamp()
         );
 
         field.getObject(poseSource.getName()).setPose(robotPose);

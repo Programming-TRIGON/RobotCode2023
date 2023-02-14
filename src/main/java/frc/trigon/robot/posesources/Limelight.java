@@ -46,7 +46,7 @@ public class Limelight extends PoseSource {
     }
 
     @Override
-    public double getTimestampSeconds() {
+    public double getLastResultTimestamp() {
         return getJsonOutput().Results.ts;
     }
 

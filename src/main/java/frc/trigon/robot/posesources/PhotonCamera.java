@@ -28,7 +28,7 @@ public class PhotonCamera extends PoseSource implements Loggable {
     }
 
     @Override
-    public double getTimestampSeconds() {
+    public double getLastResultTimestamp() {
         return photonCamera.getLatestResult().getTimestampSeconds();
     }
 

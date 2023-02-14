@@ -13,22 +13,22 @@ public abstract class PoseSource {
      * @return if the current timestamp is not the same as the last timestamp
      */
     public boolean isNewTimestamp() {
-        if (lastUpdatedTimestamp == getTimestampSeconds())
+        if (lastUpdatedTimestamp == getLastResultTimestamp())
             return false;
 
-        lastUpdatedTimestamp =  getTimestampSeconds();
+        lastUpdatedTimestamp = getLastResultTimestamp();
         return true;
     }
 
     /**
-     * @return the last robot pose the pose source has provided, that went through pose validation checks
+     * @return the last valid robot pose the pose source has provided
      */
     Pose2d getLastRealPose() {
         return lastRealPose;
     }
 
     /**
-     * Sets the last robot pose the pose source has provided, that went through validation checks.
+     * Sets the last valid robot pose the pose source has provided.
      *
      * @param pose the pose to set
      */
@@ -50,9 +50,9 @@ public abstract class PoseSource {
     public abstract Pose2d getRobotPose();
 
     /**
-     * @return the current timestamp in seconds
+     * @return the last result's timestamp
      */
-    public abstract double getTimestampSeconds();
+    public abstract double getLastResultTimestamp();
 
     /**
      * @return the pose source's name

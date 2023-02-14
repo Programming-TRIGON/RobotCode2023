@@ -32,8 +32,7 @@ public class SwerveCommands {
         final Command initializeSwerveCommand = new InstantCommand(getDriveInitializeRunnable(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {
-                },
+                (pose2d) -> {},
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
                 SWERVE.getRotationPIDConstants(),
@@ -57,8 +56,7 @@ public class SwerveCommands {
         final Command initializeSwerveCommand = new InstantCommand(getDriveInitializeRunnable(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {
-                },
+                (pose2d) -> {},
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
                 SWERVE.getRotationPIDConstants(),
