@@ -50,7 +50,7 @@ public class TrihardSwerveModuleConstants {
             REAR_RIGHT_STEER_MOTOR_ID = REAR_RIGHT_ID + 4;
     private static final boolean STEER_MOTOR_INVERTED = false;
     private static final double
-            STEER_MOTOR_P = 0.01,
+            STEER_MOTOR_P = 0.35,
             STEER_MOTOR_I = 0,
             STEER_MOTOR_D = 0;
     private static final WPI_TalonFX

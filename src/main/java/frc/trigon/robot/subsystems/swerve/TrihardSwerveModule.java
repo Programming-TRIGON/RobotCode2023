@@ -62,7 +62,7 @@ public class TrihardSwerveModule extends SwerveModule {
     void setTargetAngle(Rotation2d rotation2d) {
         final double targetSteerMotorPosition = Conversions.degreesToFalconTicks(rotation2d.getDegrees() + encoderOffset);
 
-        steerMotor.set(ControlMode.Position, targetSteerMotorPosition);
+        steerMotor.set(ControlMode.Position, Conversions.systemToMotor(targetSteerMotorPosition, 12.8));
     }
 
     @Override
