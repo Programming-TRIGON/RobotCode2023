@@ -6,14 +6,11 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.trigon.robot.subsystems.swerve.SwerveModule;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModule extends SwerveModule {
     private final WPI_TalonFX driveMotor, steerMotor;
-    private final DutyCycleEncoder steerEncoder;
-    private final double encoderOffset;
     private final String name;
 
     TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules swerveModule) {
@@ -21,8 +18,6 @@ public class TrihardSwerveModule extends SwerveModule {
 
         driveMotor = moduleConstants.driveMotor;
         steerMotor = moduleConstants.steerMotor;
-        steerEncoder = moduleConstants.steerEncoder;
-        encoderOffset = moduleConstants.encoderOffset;
         name = swerveModule.name();
     }
 
@@ -39,7 +34,11 @@ public class TrihardSwerveModule extends SwerveModule {
 
     @Override
     protected Rotation2d getCurrentAngle() {
-        return Rotation2d.fromDegrees(getAbsoluteDegrees() - encoderOffset);
+        final double
+                currentSteerMotorDegrees = Conversions.falconTicksToDegrees(steerMotor.getSelectedSensorPosition()),
+                currentSystemDegrees = Conversions.motorToSystem(currentSteerMotorDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
+
+        return Rotation2d.fromDegrees(currentSystemDegrees);
     }
 
     @Override
@@ -61,9 +60,11 @@ public class TrihardSwerveModule extends SwerveModule {
 
     @Override
     protected void setTargetAngle(Rotation2d rotation2d) {
-        final double targetSteerMotorPosition = Conversions.degreesToFalconTicks(rotation2d.getDegrees() + encoderOffset);
+        final double
+                targetSteerMotorPosition = Conversions.degreesToFalconTicks(rotation2d.getDegrees()),
+                targetSystemPosition = Conversions.motorToSystem(targetSteerMotorPosition, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
 
-        steerMotor.set(ControlMode.Position, Conversions.systemToMotor(targetSteerMotorPosition, 12.8));
+        steerMotor.set(ControlMode.Position, targetSystemPosition);
     }
 
     @Override
@@ -94,10 +95,6 @@ public class TrihardSwerveModule extends SwerveModule {
     @Override
     protected String getName() {
         return name;
-    }
-
-    private double getAbsoluteDegrees() {
-        return Conversions.revolutionsToDegrees(steerEncoder.getAbsolutePosition());
     }
 
     private Rotation2d scope(Rotation2d targetRotation2d) {

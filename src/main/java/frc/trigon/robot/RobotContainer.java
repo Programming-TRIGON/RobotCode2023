@@ -8,10 +8,10 @@ import frc.trigon.robot.posesources.RobotPoseSource;
 import frc.trigon.robot.posesources.T265;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
-import frc.trigon.robot.subsystems.swerve.testing.TestingSwerve;
+import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
 
 public class RobotContainer {
-    public static final Swerve SWERVE = TestingSwerve.getInstance();
+    public static final Swerve SWERVE = TrihardSwerve.getInstance();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
     private final Transform3d
             forwardLimelightToRobotCenter = new Transform3d(

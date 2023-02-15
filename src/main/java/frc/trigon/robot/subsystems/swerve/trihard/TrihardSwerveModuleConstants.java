@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModuleConstants {
-    static final double DRIVE_GEAR_RATIO = 5.14;
+    static final double
+            DRIVE_GEAR_RATIO = 5.14,
+            STEER_GEAR_RATIO = 12.8;
     static final double WHEEL_DIAMETER_METERS = 0.1016;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
     private static final double VOLTAGE_COMP_SATURATION = 12;
@@ -137,8 +139,8 @@ public class TrihardSwerveModuleConstants {
             );
 
     final WPI_TalonFX driveMotor, steerMotor;
-    final DutyCycleEncoder steerEncoder;
-    final double encoderOffset;
+    private final DutyCycleEncoder steerEncoder;
+    private final double encoderOffset;
 
     public TrihardSwerveModuleConstants(WPI_TalonFX driveMotor, WPI_TalonFX steerMotor, DutyCycleEncoder steerEncoder, double encoderOffset) {
         this.driveMotor = driveMotor;
@@ -171,7 +173,9 @@ public class TrihardSwerveModuleConstants {
         steerMotor.config_kI(0, STEER_MOTOR_I);
         steerMotor.config_kD(0, STEER_MOTOR_D);
 
-        steerMotor.setSelectedSensorPosition(Conversions.revolutionsToFalconTicks(steerEncoder.getAbsolutePosition()));
+        steerMotor.setSelectedSensorPosition(
+                Conversions.revolutionsToFalconTicks(steerEncoder.getAbsolutePosition()) - Conversions.degreesToFalconTicks(encoderOffset)
+        );
     }
 
     enum TrihardSwerveModules {
