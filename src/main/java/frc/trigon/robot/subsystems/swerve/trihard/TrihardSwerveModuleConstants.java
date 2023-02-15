@@ -8,22 +8,24 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModuleConstants {
-    static final double DRIVE_GEAR_RATIO = 5.14;
+    static final double
+            DRIVE_GEAR_RATIO = 5.14,
+            STEER_GEAR_RATIO = 12.8;
     static final double WHEEL_DIAMETER_METERS = 0.1016;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
     private static final double VOLTAGE_COMP_SATURATION = 12;
 
     private static final int
-            FRONT_LEFT_ID = 1,
-            FRONT_RIGHT_ID = 2,
-            REAR_LEFT_ID = 3,
-            REAR_RIGHT_ID = 4;
+            FRONT_LEFT_ID = 0,
+            FRONT_RIGHT_ID = 1,
+            REAR_LEFT_ID = 2,
+            REAR_RIGHT_ID = 3;
 
     private static final int
-            FRONT_LEFT_DRIVE_MOTOR_ID = FRONT_LEFT_ID,
-            FRONT_RIGHT_DRIVE_MOTOR_ID = FRONT_RIGHT_ID,
-            REAR_LEFT_DRIVE_MOTOR_ID = REAR_LEFT_ID,
-            REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID;
+            FRONT_LEFT_DRIVE_MOTOR_ID = FRONT_LEFT_ID + 1,
+            FRONT_RIGHT_DRIVE_MOTOR_ID = FRONT_RIGHT_ID + 1,
+            REAR_LEFT_DRIVE_MOTOR_ID = REAR_LEFT_ID + 1,
+            REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID + 1;
     private static final boolean DRIVE_MOTOR_INVERTED = false;
     private static final double
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
@@ -31,16 +33,16 @@ public class TrihardSwerveModuleConstants {
     static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.0001, 0.0001, 0.0001);
     private static final WPI_TalonFX
             FRONT_LEFT_DRIVE_MOTOR = new WPI_TalonFX(
-                    FRONT_LEFT_DRIVE_MOTOR_ID
-            ),
+            FRONT_LEFT_DRIVE_MOTOR_ID + 4
+    ),
             FRONT_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(
-                    FRONT_RIGHT_DRIVE_MOTOR_ID
+                    FRONT_RIGHT_DRIVE_MOTOR_ID + 4
             ),
             REAR_LEFT_DRIVE_MOTOR = new WPI_TalonFX(
-                    REAR_LEFT_DRIVE_MOTOR_ID
+                    REAR_LEFT_DRIVE_MOTOR_ID + 4
             ),
             REAR_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(
-                    REAR_RIGHT_DRIVE_MOTOR_ID
+                    REAR_RIGHT_DRIVE_MOTOR_ID + 4
             );
 
     private static final int
@@ -55,8 +57,8 @@ public class TrihardSwerveModuleConstants {
             STEER_MOTOR_D = 0;
     private static final WPI_TalonFX
             FRONT_LEFT_STEER_MOTOR = new WPI_TalonFX(
-                    FRONT_LEFT_STEER_MOTOR_ID
-            ),
+            FRONT_LEFT_STEER_MOTOR_ID
+    ),
             FRONT_RIGHT_STEER_MOTOR = new WPI_TalonFX(
                     FRONT_RIGHT_STEER_MOTOR_ID
             ),
@@ -80,8 +82,8 @@ public class TrihardSwerveModuleConstants {
             REAR_RIGHT_ENCODER_OFFSET = 0;
     private static final DutyCycleEncoder
             FRONT_LEFT_ENCODER = new DutyCycleEncoder(
-                    FRONT_LEFT_ENCODER_CHANNEL
-            ),
+            FRONT_LEFT_ENCODER_CHANNEL
+    ),
             FRONT_RIGHT_ENCODER = new DutyCycleEncoder(
                     FRONT_RIGHT_ENCODER_CHANNEL
             ),
@@ -94,11 +96,11 @@ public class TrihardSwerveModuleConstants {
 
     private static final TrihardSwerveModuleConstants
             FRONT_LEFT_SWERVE_MODULE_CONSTANTS = new TrihardSwerveModuleConstants(
-                    FRONT_LEFT_DRIVE_MOTOR,
-                    FRONT_LEFT_STEER_MOTOR,
-                    FRONT_LEFT_ENCODER,
-                    FRONT_LEFT_ENCODER_OFFSET
-            ),
+            FRONT_LEFT_DRIVE_MOTOR,
+            FRONT_LEFT_STEER_MOTOR,
+            FRONT_LEFT_ENCODER,
+            FRONT_LEFT_ENCODER_OFFSET
+    ),
             FRONT_RIGHT_SWERVE_MODULE_CONSTANTS = new TrihardSwerveModuleConstants(
                     FRONT_RIGHT_DRIVE_MOTOR,
                     FRONT_RIGHT_STEER_MOTOR,
@@ -120,9 +122,9 @@ public class TrihardSwerveModuleConstants {
 
     private static final Translation2d
             FRONT_LEFT_MODULE_LOCATION = new Translation2d(
-                    TrihardSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
-                    TrihardSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
-            ),
+            TrihardSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
+            TrihardSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
+    ),
             FRONT_RIGHT_MODULE_LOCATION = new Translation2d(
                     TrihardSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE,
                     -TrihardSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
@@ -138,7 +140,7 @@ public class TrihardSwerveModuleConstants {
 
     final WPI_TalonFX driveMotor, steerMotor;
     final DutyCycleEncoder steerEncoder;
-    final double encoderOffset;
+    private final double encoderOffset;
 
     public TrihardSwerveModuleConstants(WPI_TalonFX driveMotor, WPI_TalonFX steerMotor, DutyCycleEncoder steerEncoder, double encoderOffset) {
         this.driveMotor = driveMotor;
@@ -171,7 +173,10 @@ public class TrihardSwerveModuleConstants {
         steerMotor.config_kI(0, STEER_MOTOR_I);
         steerMotor.config_kD(0, STEER_MOTOR_D);
 
-        steerMotor.setSelectedSensorPosition(Conversions.revolutionsToFalconTicks(steerEncoder.getAbsolutePosition()));
+        double encoderPosition = steerEncoder.getAbsolutePosition() - encoderOffset;
+        double motorPosition = Conversions.systemToMotor(encoderPosition, STEER_GEAR_RATIO);
+        int motorTicks = (int) Conversions.revolutionsToFalconTicks(motorPosition);
+        steerMotor.setSelectedSensorPosition(motorTicks); //TODO: extract function
     }
 
     enum TrihardSwerveModules {

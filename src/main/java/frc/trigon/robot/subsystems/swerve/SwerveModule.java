@@ -104,7 +104,7 @@ public abstract class SwerveModule implements Loggable {
     protected abstract void stop();
 
     /**
-     * @return the module's current angle as a rotation2d
+     * @return the module's current angle
      */
     @Log(name = "angle", methodName = "getDegrees")
     protected abstract Rotation2d getCurrentAngle();
@@ -123,7 +123,7 @@ public abstract class SwerveModule implements Loggable {
     /**
      * Sets the module's target angle.
      *
-     * @param rotation2d the target angle as a rotation2d
+     * @param rotation2d the target angle
      */
     protected abstract void setTargetAngle(Rotation2d rotation2d);
 
