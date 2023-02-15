@@ -1,8 +1,10 @@
-package frc.trigon.robot.subsystems.swerve;
+package frc.trigon.robot.subsystems.swerve.testing;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import frc.trigon.robot.subsystems.swerve.Swerve;
+import frc.trigon.robot.subsystems.swerve.SwerveModule;
 
 public class TestingSwerve extends Swerve {
     private static final TestingSwerve INSTANCE = new TestingSwerve();
@@ -16,47 +18,47 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
-    Pigeon2 getGyro() {
+    protected Pigeon2 getGyro() {
         return TestingSwerveConstants.GYRO;
     }
 
     @Override
-    SwerveModule[] getModules() {
+    protected SwerveModule[] getModules() {
         return swerveModules;
     }
 
     @Override
-    SwerveDriveKinematics getKinematics() {
+    protected SwerveDriveKinematics getKinematics() {
         return TestingSwerveConstants.KINEMATICS;
     }
 
     @Override
-    double getDriveNeutralDeadband() {
+    protected double getDriveNeutralDeadband() {
         return TestingSwerveConstants.DRIVE_NEUTRAL_DEADBAND;
     }
 
     @Override
-    double getRotationNeutralDeadband() {
+    protected double getRotationNeutralDeadband() {
         return TestingSwerveConstants.ROTATION_NEUTRAL_DEADBAND;
     }
 
     @Override
-    PIDConstants getTranslationPIDConstants() {
+    protected PIDConstants getTranslationPIDConstants() {
         return TestingSwerveConstants.TRANSLATION_PID_CONSTANTS;
     }
 
     @Override
-    PIDConstants getRotationPIDConstants() {
+    protected PIDConstants getRotationPIDConstants() {
         return TestingSwerveConstants.ROTATION_PID_CONSTANTS;
     }
 
     @Override
-    double getMaxSpeedMetersPerSecond() {
+    protected double getMaxSpeedMetersPerSecond() {
         return TestingSwerveConstants.MAX_SPEED_METERS_PER_SECOND;
     }
 
     @Override
-    double getMaxRotationalSpeedRadiansPerSecond() {
+    protected double getMaxRotationalSpeedRadiansPerSecond() {
         return TestingSwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND;
     }
 }

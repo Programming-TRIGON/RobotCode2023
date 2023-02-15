@@ -8,7 +8,7 @@ import frc.trigon.robot.posesources.RobotPoseSource;
 import frc.trigon.robot.posesources.T265;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
-import frc.trigon.robot.subsystems.swerve.TestingSwerve;
+import frc.trigon.robot.subsystems.swerve.testing.TestingSwerve;
 
 public class RobotContainer {
     public static final Swerve SWERVE = TestingSwerve.getInstance();

@@ -1,4 +1,4 @@
-package frc.trigon.robot.subsystems.swerve;
+package frc.trigon.robot.subsystems.swerve.testing;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import frc.trigon.robot.subsystems.swerve.SwerveModule;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TestingSwerveModule extends SwerveModule {
@@ -27,18 +28,18 @@ public class TestingSwerveModule extends SwerveModule {
     }
 
     @Override
-    void setBrake(boolean brake) {
+    protected void setBrake(boolean brake) {
         driveMotor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
     }
 
     @Override
-    void stop() {
+    protected void stop() {
         driveMotor.disable();
         steerMotor.disable();
     }
 
     @Override
-    void setTargetClosedLoopVelocity(double velocity) {
+    protected void setTargetClosedLoopVelocity(double velocity) {
         final double driveMotorVelocity = Conversions.systemToMotor(velocity, TestingSwerveModuleConstants.DRIVE_GEAR_RATIO);
         final double feedForward = TestingSwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(driveMotorVelocity);
 
@@ -49,23 +50,23 @@ public class TestingSwerveModule extends SwerveModule {
     }
 
     @Override
-    void setTargetOpenLoopVelocity(double velocity) {
+    protected void setTargetOpenLoopVelocity(double velocity) {
         double power = velocity / TestingSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
         driveMotor.set(power);
     }
 
     @Override
-    String getName() {
+    protected String getName() {
         return name;
     }
 
     @Override
-    void setTargetAngle(Rotation2d rotation2d) {
+    protected void setTargetAngle(Rotation2d rotation2d) {
         steerMotor.getPIDController().setReference(rotation2d.getDegrees(), ControlType.kPosition);
     }
 
     @Override
-    double getDriveDistance() {
+    protected double getDriveDistance() {
         double ticks = driveMotor.getSelectedSensorPosition();
         double motorRevolutions = Conversions.falconTicksToRevolutions(ticks);
         double wheelRevolutions = Conversions.motorToSystem(motorRevolutions, TestingSwerveModuleConstants.DRIVE_GEAR_RATIO);
@@ -73,12 +74,12 @@ public class TestingSwerveModule extends SwerveModule {
     }
 
     @Override
-    SwerveModuleState optimizeState(SwerveModuleState state) {
+    protected SwerveModuleState optimizeState(SwerveModuleState state) {
         return SwerveModuleState.optimize(state, getCurrentAngle());
     }
 
     @Override
-    double getCurrentVelocity() {
+    protected double getCurrentVelocity() {
         double motorTicksPer100Ms = driveMotor.getSelectedSensorVelocity();
         double motorRevolutionsPer100Ms = Conversions.falconTicksToRevolutions(motorTicksPer100Ms);
         double motorRps = Conversions.perHundredMsToPerSecond(motorRevolutionsPer100Ms);
@@ -87,7 +88,7 @@ public class TestingSwerveModule extends SwerveModule {
     }
 
     @Override
-    Rotation2d getCurrentAngle() {
+    protected Rotation2d getCurrentAngle() {
         return Rotation2d.fromDegrees(steerEncoder.getPosition());
     }
 }

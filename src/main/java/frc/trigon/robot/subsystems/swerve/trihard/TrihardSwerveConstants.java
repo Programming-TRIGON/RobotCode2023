@@ -1,4 +1,4 @@
-package frc.trigon.robot.subsystems.swerve;
+package frc.trigon.robot.subsystems.swerve.trihard;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;

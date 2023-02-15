@@ -19,14 +19,14 @@ public abstract class SwerveModule implements Loggable {
     /**
      * @return the current position of the module
      */
-    SwerveModulePosition getCurrentPosition() {
+    protected SwerveModulePosition getCurrentPosition() {
         return new SwerveModulePosition(getDriveDistance(), getCurrentAngle());
     }
 
     /**
      * @return the current state of the module
      */
-    SwerveModuleState getCurrentState() {
+    protected SwerveModuleState getCurrentState() {
         return new SwerveModuleState(getCurrentVelocity(), getCurrentAngle());
     }
 
@@ -35,7 +35,7 @@ public abstract class SwerveModule implements Loggable {
      *
      * @param targetState the target state
      */
-    void setTargetState(SwerveModuleState targetState) {
+    protected void setTargetState(SwerveModuleState targetState) {
         this.targetState = targetState = optimizeState(targetState);
         setTargetAngle(targetState.angle);
         setTargetVelocity(targetState.speedMetersPerSecond);
@@ -46,7 +46,7 @@ public abstract class SwerveModule implements Loggable {
      *
      * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
      */
-    void setDriveMotorClosedLoop(boolean closedLoop) {
+    protected void setDriveMotorClosedLoop(boolean closedLoop) {
         driveMotorClosedLoop = closedLoop;
     }
 
@@ -96,36 +96,36 @@ public abstract class SwerveModule implements Loggable {
      *
      * @param brake true if the drive motor should brake, false if it should coast
      */
-    abstract void setBrake(boolean brake);
+    protected abstract void setBrake(boolean brake);
 
     /**
      * Stops the module from moving.
      */
-    abstract void stop();
+    protected abstract void stop();
 
     /**
      * @return the module's current angle as a rotation2d
      */
     @Log(name = "angle", methodName = "getDegrees")
-    abstract Rotation2d getCurrentAngle();
+    protected abstract Rotation2d getCurrentAngle();
 
     /**
      * @return the module's current velocity in meters per second
      */
     @Log(name = "velocity")
-    abstract double getCurrentVelocity();
+    protected abstract double getCurrentVelocity();
 
     /**
      * @return the module's current drive distance in meters
      */
-    abstract double getDriveDistance();
+    protected abstract double getDriveDistance();
 
     /**
      * Sets the module's target angle.
      *
      * @param rotation2d the target angle as a rotation2d
      */
-    abstract void setTargetAngle(Rotation2d rotation2d);
+    protected abstract void setTargetAngle(Rotation2d rotation2d);
 
     /**
      * Optimizes the module state.
@@ -133,24 +133,24 @@ public abstract class SwerveModule implements Loggable {
      * @param state the state to optimize
      * @return the optimized state
      */
-    abstract SwerveModuleState optimizeState(SwerveModuleState state);
+    protected abstract SwerveModuleState optimizeState(SwerveModuleState state);
 
     /**
      * Sets the module's target velocity in closed loop control.
      *
      * @param velocity the target velocity
      */
-    abstract void setTargetClosedLoopVelocity(double velocity);
+    protected abstract void setTargetClosedLoopVelocity(double velocity);
 
     /**
      * Sets the module's target velocity in open loop control.
      *
      * @param velocity the target velocity
      */
-    abstract void setTargetOpenLoopVelocity(double velocity);
+    protected abstract void setTargetOpenLoopVelocity(double velocity);
 
     /**
      * @return the module's name
      */
-    abstract String getName();
+    protected abstract String getName();
 }

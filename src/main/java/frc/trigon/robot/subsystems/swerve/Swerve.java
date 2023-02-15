@@ -16,47 +16,47 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     /**
      * @return the swerve's gyro
      */
-    abstract Pigeon2 getGyro();
+    protected abstract Pigeon2 getGyro();
 
     /**
      * @return the swerve's modules
      */
-    abstract SwerveModule[] getModules();
+    protected abstract SwerveModule[] getModules();
 
     /**
      * @return the swerve's kinematics
      */
-    abstract SwerveDriveKinematics getKinematics();
+    protected abstract SwerveDriveKinematics getKinematics();
 
     /**
      * @return the swerve's drive neutral deadband
      */
-    abstract double getDriveNeutralDeadband();
+    protected abstract double getDriveNeutralDeadband();
 
     /**
      * @return the swerve's rotation neutral deadband
      */
-    abstract double getRotationNeutralDeadband();
+    protected abstract double getRotationNeutralDeadband();
 
     /**
      * @return the swerve's translation PID constants
      */
-    abstract PIDConstants getTranslationPIDConstants();
+    protected abstract PIDConstants getTranslationPIDConstants();
 
     /**
      * @return the swerve's rotation PID constants
      */
-    abstract PIDConstants getRotationPIDConstants();
+    protected abstract PIDConstants getRotationPIDConstants();
 
     /**
      * @return the swerve's max speed in meters per second
      */
-    abstract double getMaxSpeedMetersPerSecond();
+    protected abstract double getMaxSpeedMetersPerSecond();
 
     /**
      * @return the swerve's max rotational speed in radians per second
      */
-    abstract double getMaxRotationalSpeedRadiansPerSecond();
+    protected abstract double getMaxRotationalSpeedRadiansPerSecond();
 
     /**
      * @return the heading of the robot
@@ -93,7 +93,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      * @param translation the target x and y velocities in m/s
      * @param rotation    the target theta velocity in radians per second
      */
-    void selfRelativeDrive(Translation2d translation, Rotation2d rotation) {
+    protected void selfRelativeDrive(Translation2d translation, Rotation2d rotation) {
         ChassisSpeeds chassisSpeeds = new ChassisSpeeds(
                 translation.getX(),
                 translation.getY(),
@@ -108,7 +108,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      * @param translation the target x and y velocities in m/s
      * @param rotation    the target theta velocity in radians per second
      */
-    void fieldRelativeDrive(Translation2d translation, Rotation2d rotation) {
+    protected void fieldRelativeDrive(Translation2d translation, Rotation2d rotation) {
         ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 translation.getX(),
                 translation.getY(),
@@ -121,7 +121,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     /**
      * @return the swerve's module's positions
      */
-    SwerveModulePosition[] getModulePositions() {
+    protected SwerveModulePosition[] getModulePositions() {
         final SwerveModulePosition[] swerveModuleStates = new SwerveModulePosition[4];
         final SwerveModule[] swerveModules = getModules();
 
@@ -136,7 +136,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      *
      * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
      */
-    void setClosedLoop(boolean closedLoop) {
+    protected void setClosedLoop(boolean closedLoop) {
         for (SwerveModule module : getModules())
             module.setDriveMotorClosedLoop(closedLoop);
     }
@@ -144,7 +144,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     /**
      * Stops the swerve's motors.
      */
-    void stop() {
+    protected void stop() {
         for (SwerveModule module : getModules())
             module.stop();
     }
@@ -154,7 +154,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      *
      * @param brake whether the drive motors should brake or coast
      */
-    void setBrake(boolean brake) {
+    protected void setBrake(boolean brake) {
         for (SwerveModule module : getModules())
             module.setBrake(brake);
     }
@@ -164,7 +164,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      *
      * @param swerveModuleStates the target module states
      */
-    void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
+    protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
         for (int i = 0; i < getModules().length; i++)
             getModules()[i].setTargetState(swerveModuleStates[i]);
     }
