@@ -2,6 +2,7 @@ package frc.trigon.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
@@ -45,7 +46,7 @@ public class LedStrip extends SubsystemBase {
             colors = InvertArray(colors);
         }
         for (int i = startingPosition; i < endingPosition + 1; i++) {
-            LED_BUFFER.setLED(i, convertToGrbIfIsReal(applyBrightness(colors[i - startingPosition], 1)));
+            LED_BUFFER.setLED(i, convertToTrihardColorIfIsReal(applyBrightness(colors[i - startingPosition], 1)));
         }
         leds.setData(LED_BUFFER);
     }
@@ -62,9 +63,19 @@ public class LedStrip extends SubsystemBase {
         return new Color(color.green, color.red, color.blue);
     }
 
-    private static Color convertToGrbIfIsReal(Color color) {
+    private static Color balance(Color color){
+        double v = Math.max(Math.max(color.red, color.green), color.blue);
+        var nc= new Color(color.red, color.green / 2, color.blue / 4);
+        double newV = Math.max(Math.max(nc.red, nc.green), nc.blue);
+        double ratio = v / newV;
+        return new Color(nc.red * ratio, nc.green * ratio, nc.blue * ratio);
+
+    }
+
+
+    private static Color convertToTrihardColorIfIsReal(Color color) {
         if (Robot.isReal()) {
-            return rgbToGrb(color);
+            return rgbToGrb(balance(color));
         } else return color;
     }
 
