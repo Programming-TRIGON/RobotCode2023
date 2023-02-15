@@ -1,7 +1,9 @@
 package frc.trigon.robot.subsystems.swerve.testing;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.revrobotics.*;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
+import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.trigon.robot.utilities.Conversions;
@@ -162,7 +164,13 @@ public class TestingSwerveModuleConstants {
         }
 
         static TestingSwerveModules fromId(int id) {
-            return values()[id];
+            for (TestingSwerveModules module : values()) {
+                if (module.id == id) {
+                    return module;
+                }
+            }
+
+            throw new IndexOutOfBoundsException("No module with id " + id + " exists");
         }
     }
 }

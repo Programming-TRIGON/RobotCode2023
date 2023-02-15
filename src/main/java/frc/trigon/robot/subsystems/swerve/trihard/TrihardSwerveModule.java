@@ -7,7 +7,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import frc.trigon.robot.Robot;
 import frc.trigon.robot.subsystems.swerve.SwerveModule;
 import frc.trigon.robot.utilities.Conversions;
 import io.github.oblarg.oblog.annotations.Log;
@@ -26,7 +25,7 @@ public class TrihardSwerveModule extends SwerveModule {
         name = swerveModule.name();
     }
 
-    @Log(name="rawSteerAngle")
+    @Log(name = "rawSteerAngle")
     private double getRawSteerAngle() {
         return steerEncoder.get();
     }

@@ -196,7 +196,13 @@ public class TrihardSwerveModuleConstants {
         }
 
         static TrihardSwerveModules fromId(int id) {
-            return values()[id];
+            for (TrihardSwerveModules module : values()) {
+                if (module.id == id) {
+                    return module;
+                }
+            }
+
+            throw new IndexOutOfBoundsException("No module with id " + id + " exists");
         }
     }
 }
