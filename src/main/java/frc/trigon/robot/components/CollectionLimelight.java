@@ -1,7 +1,5 @@
 package frc.trigon.robot.components;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import frc.trigon.robot.utilities.Maths;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -28,17 +26,14 @@ public class CollectionLimelight extends PhotonCamera {
     /**
      * @return the pose of the game piece on the collection, in meters. Return the default if no game piece is detected
      */
-    public double getPoseOnCollection(double defaultPose) {
+    public double getPositionOnCollection(double defaultPosition) {
         final PhotonTrackedTarget bestTarget = getBestTarget();
 
         if (bestTarget == null)
-            return defaultPose;
+            return defaultPosition;
 
-        final Pose3d gamePiecePose = transform3dToPose3d(bestTarget.getBestCameraToTarget());
-        final double distanceToGamePiece = getDistance(gamePiecePose, new Pose3d());
         final double gamePieceXPixels = bestTarget.getPitch();
-        final double collectionLengthPixels = getCollectionLengthPixels(distanceToGamePiece);
-        final double pixelsPerMeter = collectionLengthPixels / COLLECTION_LENGTH_METERS;
+        final double pixelsPerMeter = getPixelsPerMeter(bestTarget);
 
         return gamePieceXPixels / pixelsPerMeter;
     }
@@ -62,14 +57,6 @@ public class CollectionLimelight extends PhotonCamera {
         return GamePieceType.CUBE;
     }
 
-    private double getDistance(Pose3d pose, Pose3d other) {
-        return pose.getTranslation().getDistance(other.getTranslation());
-    }
-
-    private Pose3d transform3dToPose3d(Transform3d transform) {
-        return new Pose3d(transform.getTranslation(), transform.getRotation());
-    }
-
     private PhotonTrackedTarget getBestTarget() {
         final PhotonTrackedTarget targetCone = getBestTargetFromPipeline(CONES_DETECTION_PIPELINE_INDEX);
         final PhotonTrackedTarget targetCube = getBestTargetFromPipeline(CUBES_DETECTION_PIPELINE_INDEX);
@@ -91,8 +78,12 @@ public class CollectionLimelight extends PhotonCamera {
         return getLatestResult().getBestTarget();
     }
 
-    private double getCollectionLengthPixels(double distanceToGamePiece) {
-        return Maths.calculatePolynomial(distanceToGamePiece, A, B, C);
+    private double getPixelsPerMeter(PhotonTrackedTarget gamePiece) {
+        return Maths.calculatePolynomial(gamePiece.getYaw(), A, B, C) / COLLECTION_LENGTH_METERS;
+    }
+
+    private double getCollectionLengthPixels(double gamePieceYPixels) {
+        return Maths.calculatePolynomial(gamePieceYPixels, A, B, C);
     }
 
     public enum GamePieceType {
