@@ -30,15 +30,13 @@ public class CollectionCamera extends PhotonCamera {
      * @return the pose of the game piece on the collection, in meters. Return the default if no game piece is detected
      */
     public double getPositionOnCollection(double defaultPosition) {
-        final PhotonTrackedTarget bestTarget = getBestTarget();
-
-        if (bestTarget == null)
+        final PhotonTrackedTarget bestTargetGamePiece = getBestTargetGamePiece();
+        if (bestTargetGamePiece == null)
             return defaultPosition;
 
-        final double gamePieceXPixels = bestTarget.getPitch();
-        final double pixelsPerMeter = getPixelsPerMeter(bestTarget);
+        final double gamePieceYaw = bestTargetGamePiece.getYaw();
 
-        return gamePieceXPixels / pixelsPerMeter;
+        return calculatePositionOnCollection(gamePieceYaw);
     }
 
     /**
@@ -46,7 +44,7 @@ public class CollectionCamera extends PhotonCamera {
      */
     public GamePieceType getBestVisibleGamePiece() {
         final PhotonTrackedTarget targetCone = getBestTargetFromPipeline(CONES_DETECTION_PIPELINE_INDEX);
-        final PhotonTrackedTarget bestTarget = getBestTarget();
+        final PhotonTrackedTarget bestTarget = getBestTargetGamePiece();
 
         if (bestTarget == null)
             return GamePieceType.NONE;
@@ -60,7 +58,7 @@ public class CollectionCamera extends PhotonCamera {
         return GamePieceType.CUBE;
     }
 
-    private PhotonTrackedTarget getBestTarget() {
+    private PhotonTrackedTarget getBestTargetGamePiece() {
         final PhotonTrackedTarget targetCone = getBestTargetFromPipeline(CONES_DETECTION_PIPELINE_INDEX);
         final PhotonTrackedTarget targetCube = getBestTargetFromPipeline(CUBES_DETECTION_PIPELINE_INDEX);
 
@@ -81,12 +79,8 @@ public class CollectionCamera extends PhotonCamera {
         return getLatestResult().getBestTarget();
     }
 
-    private double getPixelsPerMeter(PhotonTrackedTarget gamePiece) {
-        return Maths.calculatePolynomial(gamePiece.getYaw(), A, B, C) / COLLECTION_LENGTH_METERS;
-    }
-
-    private double getCollectionLengthPixels(double gamePieceYPixels) {
-        return Maths.calculatePolynomial(gamePieceYPixels, A, B, C);
+    private double calculatePositionOnCollection(double gamePieceYaw) {
+        return Maths.calculatePolynomial(gamePieceYaw, A, B, C);
     }
 
     public enum GamePieceType {
