@@ -4,7 +4,10 @@ import frc.trigon.robot.utilities.Maths;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-public class CollectionLimelight extends PhotonCamera {
+/**
+ * A class that represents a collection camera that looks at the collection and detects game pieces.
+ */
+public class CollectionCamera extends PhotonCamera {
     private static final int
             CONES_DETECTION_PIPELINE_INDEX = 0,
             CUBES_DETECTION_PIPELINE_INDEX = 1;
@@ -15,11 +18,11 @@ public class CollectionLimelight extends PhotonCamera {
             C = 1;
 
     /**
-     * Constructs a new collection limelight.
+     * Constructs a new collection camera.
      *
-     * @param hostname the name of the collection limelight
+     * @param hostname the name of the collection camera
      */
-    public CollectionLimelight(String hostname) {
+    public CollectionCamera(String hostname) {
         super(hostname);
     }
 
