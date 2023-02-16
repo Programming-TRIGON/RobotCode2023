@@ -142,9 +142,13 @@ public class TrihardSwerveModuleConstants {
         driveMotor.configOpenloopRamp(DRIVE_OPEN_LOOP_RAMP_RATE);
         driveMotor.configClosedloopRamp(DRIVE_CLOSED_LOOP_RAMP_RATE);
 
-        steerMotor.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, 10);
+        steerMotor.setStatusFramePeriod(StatusFrame.Status_1_General, 255); // Applied output
+        steerMotor.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, 10); // Sensor position and velocity
+        steerMotor.setStatusFramePeriod(StatusFrame.Status_4_AinTempVbat, 255); // Battery and temperature
+        steerMotor.setStatusFramePeriod(StatusFrame.Status_10_MotionMagic, 255); // Motion magic and profiling
+        steerMotor.setStatusFramePeriod(StatusFrame.Status_12_Feedback1, 255); // Aux pid feedback
+        steerMotor.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 255); // Aux pid information
 
-        //TODO: CAN periods
         steerMotor.config_kP(0, STEER_MOTOR_P);
         steerMotor.config_kI(0, STEER_MOTOR_I);
         steerMotor.config_kD(0, STEER_MOTOR_D);
@@ -165,7 +169,7 @@ public class TrihardSwerveModuleConstants {
         try {
             Thread.sleep(ENCODER_UPDATE_TIME_MS);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 

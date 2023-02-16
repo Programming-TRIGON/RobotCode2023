@@ -131,9 +131,13 @@ public class TestingSwerveModuleConstants {
         driveMotor.configOpenloopRamp(DRIVE_OPEN_LOOP_RAMP_RATE);
         driveMotor.configClosedloopRamp(DRIVE_CLOSED_LOOP_RAMP_RATE);
 
-        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 10);
+        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, 255); // Applied output
+        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, 10); // Motor movement
+        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 10); // Motor position
+        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus3, 1000); // Analog sensor
+        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus4, 1000); // Alternate encoder
+        steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus5, 100); // Duty cycle position
 
-        //TODO: CAN periods
         steerMotor.setSmartCurrentLimit(10);
         steerMotor.getPIDController().setP(STEER_MOTOR_P);
         steerMotor.getPIDController().setI(STEER_MOTOR_I);
