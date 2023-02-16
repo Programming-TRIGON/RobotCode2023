@@ -28,7 +28,7 @@ public class TrihardSwerveModuleConstants {
             REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID + 1;
     private static final boolean DRIVE_MOTOR_INVERTED = false;
     private static final double
-            DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
+            DRIVE_OPEN_LOOP_RAMP_RATE = 0.3,
             DRIVE_CLOSED_LOOP_RAMP_RATE = 0.4;
     static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.0001, 0.0001, 0.0001);
     private static final WPI_TalonFX
