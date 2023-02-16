@@ -11,7 +11,6 @@ public class CollectionCamera extends PhotonCamera {
     private static final int
             CONES_DETECTION_PIPELINE_INDEX = 0,
             CUBES_DETECTION_PIPELINE_INDEX = 1;
-    private static final double COLLECTION_LENGTH_METERS = 0.4;
     private static final double
             A = 1,
             B = 1,
