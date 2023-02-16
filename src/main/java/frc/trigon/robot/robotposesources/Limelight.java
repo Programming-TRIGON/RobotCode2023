@@ -1,4 +1,4 @@
-package frc.trigon.robot.posesources;
+package frc.trigon.robot.robotposesources;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
