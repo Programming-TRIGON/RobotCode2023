@@ -14,6 +14,7 @@ import io.github.oblarg.oblog.annotations.Log;
 public class TrihardSwerveModule extends SwerveModule {
     private final WPI_TalonFX driveMotor, steerMotor;
     private final DutyCycleEncoder steerEncoder;
+    private final double offset;
     private final String name;
 
     TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules swerveModule) {
@@ -22,12 +23,18 @@ public class TrihardSwerveModule extends SwerveModule {
         driveMotor = moduleConstants.driveMotor;
         steerMotor = moduleConstants.steerMotor;
         steerEncoder = moduleConstants.steerEncoder;
+        offset = moduleConstants.encoderOffset;
         name = swerveModule.name();
     }
 
     @Log(name = "rawSteerAngle")
     private double getRawSteerAngle() {
-        return steerEncoder.get();
+        return steerEncoder.getAbsolutePosition();
+    }
+
+    @Log(name = "steerEncoderDifference")
+    private double getSteerEncoderDifference() {
+        return getRawSteerAngle() - Conversions.offsetWrite(getCurrentAngle().getRotations(), offset);
     }
 
     @Override
@@ -44,9 +51,8 @@ public class TrihardSwerveModule extends SwerveModule {
     @Override
     protected Rotation2d getCurrentAngle() {
         double motorTicks = steerMotor.getSelectedSensorPosition();
-        double motorRevolutions = Conversions.falconTicksToRevolutions(motorTicks);
-        double systemRevolutions = Conversions.motorToSystem(motorRevolutions, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
-        double systemDegrees = Conversions.revolutionsToDegrees(systemRevolutions);
+        double motorDegrees = Conversions.falconTicksToDegrees(motorTicks);
+        double systemDegrees = Conversions.motorToSystem(motorDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
         return Rotation2d.fromDegrees(systemDegrees);
     }
 
@@ -69,8 +75,8 @@ public class TrihardSwerveModule extends SwerveModule {
 
     @Override
     protected void setTargetAngle(Rotation2d rotation2d) {
-        double targetDegrees = rotation2d.getDegrees();
-        double targetMotorDegrees = Conversions.systemToMotor(targetDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
+        double targetSystemDegrees = rotation2d.getDegrees();
+        double targetMotorDegrees = Conversions.systemToMotor(targetSystemDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
         double targetMotorTicks = Conversions.degreesToFalconTicks(targetMotorDegrees);
         steerMotor.set(ControlMode.Position, targetMotorTicks);
     }

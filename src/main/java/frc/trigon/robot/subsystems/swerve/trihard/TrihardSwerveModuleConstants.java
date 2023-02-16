@@ -53,17 +53,17 @@ public class TrihardSwerveModuleConstants {
             REAR_LEFT_STEER_MOTOR = new WPI_TalonFX(REAR_LEFT_STEER_MOTOR_ID),
             REAR_RIGHT_STEER_MOTOR = new WPI_TalonFX(REAR_RIGHT_STEER_MOTOR_ID);
 
-    private static final int ENCODER_CHANNEL_OFFSET = 5;
+    private static final int ENCODER_UPDATE_TIME_MS = 1000;
     private static final int
-            FRONT_LEFT_ENCODER_CHANNEL = FRONT_LEFT_ID + ENCODER_CHANNEL_OFFSET,
-            FRONT_RIGHT_ENCODER_CHANNEL = FRONT_RIGHT_ID + ENCODER_CHANNEL_OFFSET,
-            REAR_LEFT_ENCODER_CHANNEL = REAR_LEFT_ID + ENCODER_CHANNEL_OFFSET,
-            REAR_RIGHT_ENCODER_CHANNEL = REAR_RIGHT_ID + ENCODER_CHANNEL_OFFSET;
+            FRONT_LEFT_ENCODER_CHANNEL = FRONT_LEFT_ID,
+            FRONT_RIGHT_ENCODER_CHANNEL = FRONT_RIGHT_ID,
+            REAR_LEFT_ENCODER_CHANNEL = REAR_LEFT_ID,
+            REAR_RIGHT_ENCODER_CHANNEL = REAR_RIGHT_ID;
     private static final double
-            FRONT_LEFT_ENCODER_OFFSET = 0,
-            FRONT_RIGHT_ENCODER_OFFSET = 0,
-            REAR_LEFT_ENCODER_OFFSET = 0,
-            REAR_RIGHT_ENCODER_OFFSET = 0;
+            FRONT_LEFT_ENCODER_OFFSET = 0.897061,
+            FRONT_RIGHT_ENCODER_OFFSET = 0.512212,
+            REAR_LEFT_ENCODER_OFFSET = 0.199026,
+            REAR_RIGHT_ENCODER_OFFSET = 0.069506+0.5;
     private static final DutyCycleEncoder
             FRONT_LEFT_ENCODER = new DutyCycleEncoder(FRONT_LEFT_ENCODER_CHANNEL),
             FRONT_RIGHT_ENCODER = new DutyCycleEncoder(FRONT_RIGHT_ENCODER_CHANNEL),
@@ -116,7 +116,7 @@ public class TrihardSwerveModuleConstants {
 
     final WPI_TalonFX driveMotor, steerMotor;
     final DutyCycleEncoder steerEncoder;
-    private final double encoderOffset;
+    final double encoderOffset;
 
     public TrihardSwerveModuleConstants(WPI_TalonFX driveMotor, WPI_TalonFX steerMotor, DutyCycleEncoder steerEncoder, double encoderOffset) {
         this.driveMotor = driveMotor;
@@ -153,9 +153,20 @@ public class TrihardSwerveModuleConstants {
     }
 
     private int getSteerMotorPosition() {
-        double encoderPosition = steerEncoder.getAbsolutePosition() - encoderOffset;
+        if (steerEncoder.getSourceChannel() == FRONT_LEFT_ENCODER_CHANNEL)
+            waitForSteerEncoderToUpdate();
+
+        double encoderPosition = Conversions.offsetRead(steerEncoder.getAbsolutePosition(), encoderOffset);
         double motorPosition = Conversions.systemToMotor(encoderPosition, STEER_GEAR_RATIO);
         return (int) Conversions.revolutionsToFalconTicks(motorPosition);
+    }
+
+    private void waitForSteerEncoderToUpdate() {
+        try {
+            Thread.sleep(ENCODER_UPDATE_TIME_MS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     enum TrihardSwerveModules {
