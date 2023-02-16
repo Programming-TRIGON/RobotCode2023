@@ -92,8 +92,8 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     private void updatePoseEstimator() {
-        attemptToUpdateWithPoseSources();
         updatePoseEstimatorStates();
+        attemptToUpdateWithPoseSources();
         field.setRobotPose(getCurrentPose());
     }
 
