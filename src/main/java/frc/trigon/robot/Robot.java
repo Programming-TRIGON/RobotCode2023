@@ -10,6 +10,7 @@ import io.github.oblarg.oblog.Logger;
 import java.io.IOException;
 
 public class Robot extends TimedRobot {
+    private static final double BRAKE_TIME_SECONDS = 0.3;
     private RobotContainer robotContainer;
 
     @Override
@@ -62,7 +63,7 @@ public class Robot extends TimedRobot {
 
     private void scheduleBrakeAndCoastCommand() {
         SwerveCommands.getSetSwerveBrakeCommand(true)
-                .andThen(new WaitCommand(0.3))
+                .andThen(new WaitCommand(BRAKE_TIME_SECONDS))
                 .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
                 .ignoringDisable(true)
                 .schedule();
