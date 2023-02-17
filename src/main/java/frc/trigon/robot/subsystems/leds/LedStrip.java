@@ -2,11 +2,12 @@ package frc.trigon.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
@@ -16,6 +17,7 @@ public class LedStrip extends SubsystemBase {
     private final boolean inverted;
     private static final AddressableLED leds = LedsConstants.LED;
     private static final AddressableLEDBuffer LED_BUFFER = new AddressableLEDBuffer(LedsConstants.LEDS_LENGTH);
+    public static final ArrayList<LedStrip> ledStrips = new ArrayList<>();
 
     static {
         LedsConstants.LED.setLength(LED_BUFFER.getLength());
@@ -35,6 +37,7 @@ public class LedStrip extends SubsystemBase {
         this.startingPosition = startingPosition;
         this.endingPosition = endingPosition;
         this.inverted = inverted;
+        ledStrips.add(this);
     }
 
     public void setLedsColors(Color[] colors) {
@@ -65,7 +68,7 @@ public class LedStrip extends SubsystemBase {
 
     private static Color balance(Color color){
         double v = Math.max(Math.max(color.red, color.green), color.blue);
-        var nc= new Color(color.red, color.green / 2, color.blue / 4);
+        var nc = new Color(color.red, color.green / 2, color.blue / 4);
         double newV = Math.max(Math.max(nc.red, nc.green), nc.blue);
         double ratio = v / newV;
         return new Color(nc.red * ratio, nc.green * ratio, nc.blue * ratio);
@@ -83,5 +86,23 @@ public class LedStrip extends SubsystemBase {
         Collections.reverse(Arrays.asList(colors));
 
         return colors;
+    }
+
+    boolean isOverlapping(LedStrip otherLedStrip) {
+        return (otherLedStrip.startingPosition >= this.startingPosition && otherLedStrip.startingPosition <= this.endingPosition)
+        ||(otherLedStrip.endingPosition >= this.startingPosition && otherLedStrip.endingPosition <= this.endingPosition);
+    }
+
+    void cancelOverlapping(){
+        for (LedStrip ledStrip : ledStrips) {
+            if (ledStrip == this)
+                continue;
+
+            if (isOverlapping(ledStrip)) {
+                Command cmd = ledStrip.getCurrentCommand();
+                if (cmd != null)
+                    cmd.cancel();
+            }
+        }
     }
 }

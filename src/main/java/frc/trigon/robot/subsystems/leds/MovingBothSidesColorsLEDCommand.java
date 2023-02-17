@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-public class MovingBothSidesColorsLEDCommand extends CommandBase {
+public class MovingBothSidesColorsLEDCommand extends LedCommand {
     Color backgroundColor;
     Color primeColor;
     double cycleTime;
@@ -13,6 +13,7 @@ public class MovingBothSidesColorsLEDCommand extends CommandBase {
 
 
     public MovingBothSidesColorsLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip){
+        super(ledStrip);
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;
         this.cycleTime = cycleTime;
@@ -22,6 +23,7 @@ public class MovingBothSidesColorsLEDCommand extends CommandBase {
 
     @Override
     public void initialize() {
+        super.initialize();
     }
 
     @Override
@@ -50,6 +52,11 @@ public class MovingBothSidesColorsLEDCommand extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
+        Color[] colors = new Color[ledStrip.getLength()];
+        for (int i = 0; i < ledStrip.getLength(); i++){
+            colors[i] = Color.kBlack;
+        }
+        ledStrip.setLedsColors(colors);
     }
 
     @Override

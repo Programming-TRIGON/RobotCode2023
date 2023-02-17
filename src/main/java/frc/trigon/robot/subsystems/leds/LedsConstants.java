@@ -7,5 +7,5 @@ import java.io.IOError;
 
 public class LedsConstants {
     static final AddressableLED LED = new AddressableLED(9);
-    static final int LEDS_LENGTH = 114;
+    static final int LEDS_LENGTH = 300;
 }

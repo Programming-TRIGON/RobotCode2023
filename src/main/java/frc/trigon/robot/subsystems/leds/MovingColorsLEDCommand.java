@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 
-public class MovingColorsLEDCommand extends CommandBase {
+public class MovingColorsLEDCommand extends LedCommand {
     Color backgroundColor;
     Color primeColor;
     double cycleTime;
@@ -13,6 +13,7 @@ public class MovingColorsLEDCommand extends CommandBase {
     private final LedStrip ledStrip;
 
     public MovingColorsLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
+        super(ledStrip);
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;
         this.cycleTime = cycleTime;
@@ -22,7 +23,7 @@ public class MovingColorsLEDCommand extends CommandBase {
 
     @Override
     public void initialize() {
-
+        super.initialize();
     }
 
     @Override
@@ -43,6 +44,15 @@ public class MovingColorsLEDCommand extends CommandBase {
     @Override
     public boolean runsWhenDisabled() {
         return true;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        Color[] colors = new Color[ledStrip.getLength()];
+        for (int i = 0; i < ledStrip.getLength(); i++){
+            colors[i] = Color.kBlack;
+        }
+        ledStrip.setLedsColors(colors);
     }
 
     private boolean shouldBePrimeColor(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
