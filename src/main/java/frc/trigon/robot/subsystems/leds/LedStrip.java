@@ -18,6 +18,7 @@ public class LedStrip extends SubsystemBase {
     private static final AddressableLED leds = LedsConstants.LED;
     private static final AddressableLEDBuffer LED_BUFFER = new AddressableLEDBuffer(LedsConstants.LEDS_LENGTH);
     public static final ArrayList<LedStrip> ledStrips = new ArrayList<>();
+    private int virtualLength;
 
     static {
         LedsConstants.LED.setLength(LED_BUFFER.getLength());
@@ -32,30 +33,45 @@ public class LedStrip extends SubsystemBase {
      * @param startingPosition the first LED in the strip
      * @param endingPosition   the last LED in the strip
      * @param inverted
+     * @param virtualLength
      */
-    public LedStrip(int startingPosition, int endingPosition, boolean inverted) {
+    public LedStrip(int startingPosition, int endingPosition, boolean inverted, int virtualLength) {
         this.startingPosition = startingPosition;
         this.endingPosition = endingPosition;
         this.inverted = inverted;
+        this.virtualLength = virtualLength;
         ledStrips.add(this);
     }
 
+
+    /**
+     * Constructs a new LedStrip.
+     * LedStrip represents a subsection of the one long LED strip on the robot.
+     *
+     * @param startingPosition the first LED in the strip
+     * @param endingPosition   the last LED in the strip
+     * @param inverted
+     */
+    public LedStrip(int startingPosition, int endingPosition, boolean inverted) {
+        this(startingPosition, endingPosition, inverted, endingPosition - startingPosition + 1);
+    }
+
     public void setLedsColors(Color[] colors) {
-        if (colors.length != getLength()) {
+        if (colors.length != getLength() || getLength() < endingPosition - startingPosition + 1) {
             Logger.getGlobal().warning("frc.trigon.robot.subsystems.leds.LedStrip.setLedsColors(): Tried to apply a array that not in the correct size");
+            if (getCurrentCommand() != null)
+                getCurrentCommand().cancel();
             return;
         }
-        if (inverted){
-            colors = InvertArray(colors);
-        }
         for (int i = startingPosition; i < endingPosition + 1; i++) {
-            LED_BUFFER.setLED(i, convertToTrihardColorIfIsReal(applyBrightness(colors[i - startingPosition], 1)));
+            int idx = inverted ? endingPosition + startingPosition - i : i;
+            LED_BUFFER.setLED(i, convertToTrihardColorIfIsReal(applyBrightness(colors[idx - startingPosition], 1)));
         }
         leds.setData(LED_BUFFER);
     }
 
     public int getLength() {
-        return endingPosition - startingPosition + 1;
+        return virtualLength;
     }
 
     private static Color applyBrightness(Color color, double brightness) {
@@ -66,7 +82,7 @@ public class LedStrip extends SubsystemBase {
         return new Color(color.green, color.red, color.blue);
     }
 
-    private static Color balance(Color color){
+    private static Color balance(Color color) {
         double v = Math.max(Math.max(color.red, color.green), color.blue);
         var nc = new Color(color.red, color.green / 2, color.blue / 4);
         double newV = Math.max(Math.max(nc.red, nc.green), nc.blue);
@@ -82,18 +98,16 @@ public class LedStrip extends SubsystemBase {
         } else return color;
     }
 
-    private static Color[] InvertArray(Color[] colors) {
+    private static void InvertArray(Color[] colors) {
         Collections.reverse(Arrays.asList(colors));
-
-        return colors;
     }
 
     boolean isOverlapping(LedStrip otherLedStrip) {
         return (otherLedStrip.startingPosition >= this.startingPosition && otherLedStrip.startingPosition <= this.endingPosition)
-        ||(otherLedStrip.endingPosition >= this.startingPosition && otherLedStrip.endingPosition <= this.endingPosition);
+                || (otherLedStrip.endingPosition >= this.startingPosition && otherLedStrip.endingPosition <= this.endingPosition);
     }
 
-    void cancelOverlapping(){
+    void cancelOverlapping() {
         for (LedStrip ledStrip : ledStrips) {
             if (ledStrip == this)
                 continue;
