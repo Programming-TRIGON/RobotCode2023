@@ -4,12 +4,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class BlinkLEDCommand extends LedCommand {
-    private final Color[] theColors;
+    private final Color[] colors;
     private final double cycleTime;
     private final LedStrip ledStrip;
-    public BlinkLEDCommand(Color[] theColors, double cycleTime, LedStrip ledStrip){
+    public BlinkLEDCommand(Color[] colors, double cycleTime, LedStrip ledStrip){
         super(ledStrip);
-        this.theColors = theColors;
+        this.colors = colors;
         this.cycleTime = cycleTime * 2;
         this.ledStrip = ledStrip;
     }
@@ -23,7 +23,7 @@ public class BlinkLEDCommand extends LedCommand {
     public void execute() {
         Color[] colors = new Color[ledStrip.getLength()];
         for (int i = 0; i < ledStrip.getLength(); i++) {
-            colors[i] = theColors[(int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % theColors.length];
+            colors[i] = this.colors[(int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % this.colors.length];
         }
 
 
