@@ -1,5 +1,6 @@
 package frc.trigon.robot.components;
 
+import edu.wpi.first.wpilibj.Notifier;
 import frc.trigon.robot.utilities.Maths;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -15,6 +16,10 @@ public class CollectionCamera extends PhotonCamera {
             A = 1,
             B = 1,
             C = 1;
+    private static final double NOTIFIER_PERIOD_SECONDS = 1;
+    private PhotonTrackedTarget
+            lastBestCone = null,
+            lastBestCube = null;
 
     /**
      * Constructs a new collection camera.
@@ -23,13 +28,16 @@ public class CollectionCamera extends PhotonCamera {
      */
     public CollectionCamera(String hostname) {
         super(hostname);
+
+        final Notifier updateTargetsNotifier = new Notifier(getUpdateTargetsRunnable());
+        updateTargetsNotifier.startPeriodic(NOTIFIER_PERIOD_SECONDS);
     }
 
     /**
      * @return the pose of the game piece on the collection, in meters. Return the default if no game piece is detected
      */
     public double getPositionOnCollection(double defaultPosition) {
-        final PhotonTrackedTarget bestTargetGamePiece = getBestTargetGamePiece();
+        final PhotonTrackedTarget bestTargetGamePiece = getBestTarget();
         if (bestTargetGamePiece == null)
             return defaultPosition;
 
@@ -42,40 +50,39 @@ public class CollectionCamera extends PhotonCamera {
      * @return the type of game piece that the collection limelight sees
      */
     public GamePieceType getBestVisibleGamePiece() {
-        final PhotonTrackedTarget targetCone = getBestTargetFromPipeline(CONES_DETECTION_PIPELINE_INDEX);
-        final PhotonTrackedTarget bestTarget = getBestTargetGamePiece();
-
-        if (bestTarget == null)
+        if (getBestTarget() == null)
             return GamePieceType.NONE;
-
-        final double
-                coneAmbiguity = targetCone.getPoseAmbiguity(),
-                bestTargetAmbiguity = bestTarget.getPoseAmbiguity();
-
-        if (coneAmbiguity == bestTargetAmbiguity)
+        if (lastBestCube == null)
             return GamePieceType.CONE;
-        return GamePieceType.CUBE;
+        if (lastBestCone == null)
+            return GamePieceType.CUBE;
+
+        return isLastConeBetterThanLastCube() ? GamePieceType.CONE : GamePieceType.CUBE;
     }
 
-    private PhotonTrackedTarget getBestTargetGamePiece() {
-        final PhotonTrackedTarget targetCone = getBestTargetFromPipeline(CONES_DETECTION_PIPELINE_INDEX);
-        final PhotonTrackedTarget targetCube = getBestTargetFromPipeline(CUBES_DETECTION_PIPELINE_INDEX);
+    private PhotonTrackedTarget getBestTarget() {
+        if (lastBestCube == null)
+            return lastBestCone;
+        if (lastBestCone == null)
+            return lastBestCube;
 
-        if (targetCone == null)
-            return targetCube;
-        if (targetCube == null)
-            return targetCone;
-
-        final double coneAmbiguity = targetCone.getPoseAmbiguity();
-        final double cubeAmbiguity = targetCube.getPoseAmbiguity();
-
-        return coneAmbiguity < cubeAmbiguity || cubeAmbiguity == -1 ? targetCone : targetCube;
+        return isLastConeBetterThanLastCube() ? lastBestCone : lastBestCube;
     }
 
-    private PhotonTrackedTarget getBestTargetFromPipeline(int pipelineIndex) {
-        setPipelineIndex(pipelineIndex);
+    private boolean isLastConeBetterThanLastCube() {
+        return lastBestCube.getPoseAmbiguity() == -1 || lastBestCone.getPoseAmbiguity() < lastBestCube.getPoseAmbiguity();
+    }
 
-        return getLatestResult().getBestTarget();
+    private Runnable getUpdateTargetsRunnable() {
+        return () -> {
+            if (getPipelineIndex() == CONES_DETECTION_PIPELINE_INDEX) {
+                lastBestCone = getLatestResult().getBestTarget();
+                setPipelineIndex(CUBES_DETECTION_PIPELINE_INDEX);
+            } else {
+                lastBestCube = getLatestResult().getBestTarget();
+                setPipelineIndex(CONES_DETECTION_PIPELINE_INDEX);
+            }
+        };
     }
 
     private double calculatePositionOnCollection(double gamePieceYaw) {
