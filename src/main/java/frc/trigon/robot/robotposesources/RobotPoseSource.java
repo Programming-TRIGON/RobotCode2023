@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 public abstract class RobotPoseSource {
     private final Transform3d cameraToRobotCenter;
     private double lastUpdatedTimestamp;
-    private Pose3d lastRealPose = new Pose3d();
+    private Pose3d lastProvidedPose = new Pose3d();
 
     protected RobotPoseSource(Transform3d cameraToRobotCenter) {
         this.cameraToRobotCenter = cameraToRobotCenter;
@@ -28,40 +28,22 @@ public abstract class RobotPoseSource {
     }
 
     /**
-     * @return the robot's best estimated pose, according to the pose source
+     * @return the robot's estimated pose, according to the pose source
      */
     public Pose2d getRobotPose() {
-        final Pose3d cameraPose = getCameraPose().plus(cameraToRobotCenter);
-
-        setLastRealPose(cameraPose);
-        return getCameraPose().plus(cameraToRobotCenter).toPose2d();
+        lastProvidedPose = getCameraPose();
+        return lastProvidedPose.plus(cameraToRobotCenter).toPose2d();
     }
 
     /**
-     * @return the camera to robot center transform
+     * @return the last pose the pose source has provided
      */
-    protected Transform3d getCameraToRobotCenter() {
-        return cameraToRobotCenter;
+    protected Pose3d getLastProvidedPose() {
+        return lastProvidedPose;
     }
 
     /**
-     * @return the last valid camera pose the pose source has provided
-     */
-    protected Pose3d getLastRealPose() {
-        return lastRealPose;
-    }
-
-    /**
-     * Sets the last valid camera pose the pose source has provided.
-     *
-     * @param pose the pose to set
-     */
-    protected void setLastRealPose(Pose3d pose) {
-        lastRealPose = pose;
-    }
-
-    /**
-     * @return the camera's pose
+     * @return the camera's pose, according to the pose source
      */
     protected abstract Pose3d getCameraPose();
 

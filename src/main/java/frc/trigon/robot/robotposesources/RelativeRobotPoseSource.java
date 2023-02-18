@@ -1,7 +1,6 @@
 package frc.trigon.robot.robotposesources;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 
@@ -17,12 +16,7 @@ public abstract class RelativeRobotPoseSource extends RobotPoseSource {
 
     @Override
     public Pose2d getRobotPose() {
-        final Pose3d cameraPose = getCameraPose();
-
-        setLastRealPose(cameraPose);
-        final Pose3d robotCenterStartRelativePose = cameraPose.plus(getCameraToRobotCenter());
-
-        return robotCenterStartRelativePose.toPose2d().plus(poseToRelativePose);
+        return super.getRobotPose().plus(poseToRelativePose);
     }
 
     /**

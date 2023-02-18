@@ -18,7 +18,7 @@ public class AprilTagLimelight extends RobotPoseSource {
     public Pose3d getCameraPose() {
         final Pose3d robotPose = limelight.getRobotPoseFromJsonDump();
         if (robotPose == null)
-            return getLastRealPose();
+            return getLastProvidedPose();
 
         return robotPose;
     }

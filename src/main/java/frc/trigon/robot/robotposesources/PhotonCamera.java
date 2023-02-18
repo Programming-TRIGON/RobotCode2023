@@ -33,7 +33,7 @@ public class PhotonCamera extends RobotPoseSource implements Loggable {
     public Pose3d getCameraPose() {
         final Optional<EstimatedRobotPose> estimatedRobotPose = photonPoseEstimator.update();
         if (estimatedRobotPose.isEmpty())
-            return getLastRealPose();
+            return getLastProvidedPose();
 
         return estimatedRobotPose.get().estimatedPose;
     }
