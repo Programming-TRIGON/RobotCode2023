@@ -16,8 +16,8 @@ public class PowerDistributionManager extends SubsystemBase {
         return INSTANCE;
     }
 
-    public void setPortRequirements(int port, double second, double maxAMP, Runnable function) {
-        requirements.add(new CurrentListenerConfig(port, second, maxAMP, function));
+    public void setPortRequirements(int pdPort, double triggerDuration, double triggerCurrent, Runnable callback) {
+        requirements.add(new CurrentListenerConfig(pdPort, triggerDuration, triggerCurrent, callback));
     }
 
     private void checkCurrent(CurrentListenerConfig config) {
