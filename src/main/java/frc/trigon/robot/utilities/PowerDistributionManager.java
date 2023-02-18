@@ -4,11 +4,11 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PowerDistributionManager extends SubsystemBase {
     private final PowerDistribution PD = new PowerDistribution();
-    private final ArrayList<CurrentListenerConfig> requirements = new ArrayList<>();
+    private final HashMap<CurrentLimitConfig, Runnable> requirements = new HashMap<>();
 
     private final static PowerDistributionManager INSTANCE = new PowerDistributionManager();
 
@@ -17,35 +17,38 @@ public class PowerDistributionManager extends SubsystemBase {
     }
 
     public void setPortRequirements(int pdPort, double triggerDuration, double triggerCurrent, Runnable callback) {
-        requirements.add(new CurrentListenerConfig(pdPort, triggerDuration, triggerCurrent, callback));
+        setPortRequirements(new CurrentLimitConfig(pdPort, triggerDuration, triggerCurrent), callback);
     }
 
-    private void checkCurrent(CurrentListenerConfig config) {
+    public void setPortRequirements(CurrentLimitConfig config, Runnable callback) {
+        requirements.put(config, callback);
+    }
+    private void checkCurrent(CurrentLimitConfig config) {
         double current = PD.getCurrent(config.pdPort);
-        if (current < config.triggerCurrent){
+        if (current < config.triggerCurrent) {
             config.lastOkTime = Timer.getFPGATimestamp();
             return;
         }
         double triggeredDuration = Timer.getFPGATimestamp() - config.lastOkTime;
-        if (triggeredDuration >= config.triggerDuration)
-            config.callback.run();
+        if (triggeredDuration >= config.triggerDuration) {
+            Runnable runnable = requirements.get(config);
+            if (runnable != null) runnable.run();
+        }
     }
 
     @Override
     public void periodic() {
-        requirements.forEach(this::checkCurrent);
+        requirements.keySet().forEach(this::checkCurrent);
     }
 
-    static class CurrentListenerConfig {
+    public static class CurrentLimitConfig {
         int pdPort;
         double triggerDuration, triggerCurrent, lastOkTime;
-        Runnable callback;
 
-        public CurrentListenerConfig(int pdPort, double triggerDuration, double triggerCurrent, Runnable callback) {
+        public CurrentLimitConfig(int pdPort, double triggerDuration, double triggerCurrent) {
             this.pdPort = pdPort;
             this.triggerDuration = triggerDuration;
             this.triggerCurrent = triggerCurrent;
-            this.callback = callback;
         }
     }
 }
