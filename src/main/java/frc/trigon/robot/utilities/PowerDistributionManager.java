@@ -7,35 +7,45 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 
 public class PowerDistributionManager extends SubsystemBase {
+    private final PowerDistribution PD = new PowerDistribution();
+    private final ArrayList<CurrentListenerConfig> requirements = new ArrayList<>();
 
     private final static PowerDistributionManager INSTANCE = new PowerDistributionManager();
 
-    @SuppressWarnings("WeakerAccess")
     public static PowerDistributionManager getInstance() {
         return INSTANCE;
     }
 
-    private PowerDistribution PD = new PowerDistribution();
-    static ArrayList<PortRequirements> requirements = new ArrayList<>();
-
-    public static void setPortRequirements(int port, double second, double maxAMP, Runnable function) {
-        double timer = 0, timerBeforeMaxAmp = 0;
-        requirements.add(new PortRequirements(port, second, maxAMP, function, timer, timerBeforeMaxAmp));
+    public void setPortRequirements(int port, double second, double maxAMP, Runnable function) {
+        requirements.add(new CurrentListenerConfig(port, second, maxAMP, function));
     }
 
-    private void checkPort(PortRequirements requirements) {
-        if (PD.getCurrent(requirements.port) >= requirements.maxAMP) {
-            requirements.timer = Timer.getFPGATimestamp();
-            if (requirements.timer >= requirements.timerBeforeMaxAmp + requirements.second) {
-                requirements.function.run();
-            }
-        } else {
-            requirements.timerBeforeMaxAmp = Timer.getFPGATimestamp();
+    private void checkCurrent(CurrentListenerConfig config) {
+        double current = PD.getCurrent(config.pdPort);
+        if (current < config.triggerCurrent){
+            config.lastOkTime = Timer.getFPGATimestamp();
+            return;
         }
+        double triggeredDuration = Timer.getFPGATimestamp() - config.lastOkTime;
+        if (triggeredDuration >= config.triggerDuration)
+            config.callback.run();
     }
 
     @Override
     public void periodic() {
-        requirements.forEach((n) -> checkPort(n));
+        requirements.forEach(this::checkCurrent);
+    }
+
+    static class CurrentListenerConfig {
+        int pdPort;
+        double triggerDuration, triggerCurrent, lastOkTime;
+        Runnable callback;
+
+        public CurrentListenerConfig(int pdPort, double triggerDuration, double triggerCurrent, Runnable callback) {
+            this.pdPort = pdPort;
+            this.triggerDuration = triggerDuration;
+            this.triggerCurrent = triggerCurrent;
+            this.callback = callback;
+        }
     }
 }
