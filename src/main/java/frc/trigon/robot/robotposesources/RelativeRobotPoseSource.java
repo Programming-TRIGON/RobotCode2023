@@ -19,7 +19,6 @@ public abstract class RelativeRobotPoseSource extends RobotPoseSource {
     @Override
     public Pose2d getRobotPose() {
         return transform2dToPose2d(whenWasReset.plus(pose2dToTransform2d(super.getRobotPose())));
-
     }
 
     /**
