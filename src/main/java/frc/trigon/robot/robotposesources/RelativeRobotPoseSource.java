@@ -3,7 +3,6 @@ package frc.trigon.robot.robotposesources;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 
 /**
  * A pose source that provides the robot's pose, relative to a given pose.

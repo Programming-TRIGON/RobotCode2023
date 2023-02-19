@@ -61,5 +61,10 @@ public class TestingSwerve extends Swerve {
     protected double getMaxRotationalSpeedRadiansPerSecond() {
         return TestingSwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND;
     }
+
+    @Override
+    protected double getBrakeTimeSeconds() {
+        return TestingSwerveConstants.BRAKE_TIME_SECONDS;
+    }
 }
 

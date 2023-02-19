@@ -61,4 +61,9 @@ public class TrihardSwerve extends Swerve {
     protected double getMaxRotationalSpeedRadiansPerSecond() {
         return TrihardSwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND;
     }
+
+    @Override
+    protected double getBrakeTimeSeconds() {
+        return TrihardSwerveConstants.BRAKE_TIME_SECONDS;
+    }
 }

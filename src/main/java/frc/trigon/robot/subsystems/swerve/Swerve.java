@@ -59,6 +59,11 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     protected abstract double getMaxRotationalSpeedRadiansPerSecond();
 
     /**
+     * @return the swerve's brake time in seconds
+     */
+    protected abstract double getBrakeTimeSeconds();
+
+    /**
      * @return the heading of the robot
      */
     @Log(name = "heading", methodName = "getDegrees")

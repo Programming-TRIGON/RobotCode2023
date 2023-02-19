@@ -4,10 +4,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
 
 import java.util.HashMap;
@@ -19,6 +16,12 @@ import java.util.function.DoubleSupplier;
 public class SwerveCommands {
     private static final Swerve SWERVE = RobotContainer.SWERVE;
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+
+    public static Command getBrakeAndCoastCommand() {
+        return SwerveCommands.getSetSwerveBrakeCommand(true)
+                .andThen(new WaitCommand(SWERVE.getBrakeTimeSeconds()))
+                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false));
+    }
 
     /**
      * Creates a command that will drive the robot using the given path group and event map.

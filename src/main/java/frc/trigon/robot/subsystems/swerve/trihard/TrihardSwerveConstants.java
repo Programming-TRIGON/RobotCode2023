@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
 public class TrihardSwerveConstants {
+    static final double BRAKE_TIME_SECONDS = 0.3;
     static final double
             MAX_SPEED_METERS_PER_SECOND = 4.25,
             MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND = 12.03;

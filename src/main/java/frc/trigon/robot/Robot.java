@@ -2,7 +2,6 @@ package frc.trigon.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.utilities.FilesHandler;
 import io.github.oblarg.oblog.Logger;
@@ -10,7 +9,6 @@ import io.github.oblarg.oblog.Logger;
 import java.io.IOException;
 
 public class Robot extends TimedRobot {
-    private static final double BRAKE_TIME_SECONDS = 0.3;
     private RobotContainer robotContainer;
 
     @Override
@@ -29,7 +27,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-        scheduleBrakeAndCoastCommand();
+        SwerveCommands.getBrakeAndCoastCommand().ignoringDisable(true).schedule();
     }
 
     @Override
@@ -59,14 +57,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testPeriodic() {
-    }
-
-    private void scheduleBrakeAndCoastCommand() {
-        SwerveCommands.getSetSwerveBrakeCommand(true)
-                .andThen(new WaitCommand(BRAKE_TIME_SECONDS))
-                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
-                .ignoringDisable(true)
-                .schedule();
     }
 
     private void setDeployFolderToMaxPermissions() {
