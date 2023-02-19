@@ -5,10 +5,10 @@ import frc.trigon.robot.subsystems.powerdistribution.PowerDistributionManager;
 
 public class GripperConstants {
     private static final int MOTOR_ID = 13;
-    private static final int POWER_DISTRIBUTION_PORT = 1;
+    private static final int POWER_DISTRIBUTION_PORT = 2;
     private static final double
             HOLD_TRIGGER_DURATION = 0.2,
-            HOLD_TRIGGER_CURRENT = 4;
+            HOLD_TRIGGER_CURRENT = 6;
     static final PowerDistributionManager.CurrentLimitConfig POWER_DISTRIBUTION_CONFIG = new PowerDistributionManager.CurrentLimitConfig(
             POWER_DISTRIBUTION_PORT,
             HOLD_TRIGGER_DURATION,
