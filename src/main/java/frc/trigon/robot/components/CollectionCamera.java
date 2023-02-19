@@ -34,10 +34,10 @@ public class CollectionCamera extends PhotonCamera {
     }
 
     /**
-     * @return the position of the game piece on the collection, in meters. Return the default if no game piece is detected
+     * @return the position of the game piece on the collection, in meters. Returns the default position if no game piece is detected
      */
     public double getPositionOnCollection(double defaultPosition) {
-        final PhotonTrackedTarget bestTargetGamePiece = getBestTarget();
+        final PhotonTrackedTarget bestTargetGamePiece = getTargetGamePiece();
         if (bestTargetGamePiece == null)
             return defaultPosition;
 
@@ -49,29 +49,24 @@ public class CollectionCamera extends PhotonCamera {
     /**
      * @return the type of game piece that the collection limelight sees
      */
-    public GamePieceType getBestVisibleGamePiece() {
-        if (getBestTarget() == null)
+    public GamePieceType getTargetGamePieceType() {
+        if (getTargetGamePiece() == null)
             return GamePieceType.NONE;
         if (lastBestCube == null)
             return GamePieceType.CONE;
         if (lastBestCone == null)
             return GamePieceType.CUBE;
 
-        return isLastConeBetterThanLastCube() ? GamePieceType.CONE : GamePieceType.CUBE;
+        return GamePieceType.NONE;
     }
 
-    private PhotonTrackedTarget getBestTarget() {
+    private PhotonTrackedTarget getTargetGamePiece() {
         if (lastBestCube == null)
             return lastBestCone;
         if (lastBestCone == null)
             return lastBestCube;
 
-        return isLastConeBetterThanLastCube() ? lastBestCone : lastBestCube;
-    }
-
-    private boolean isLastConeBetterThanLastCube() {
-        // TODO: Check if this is correct
-        return lastBestCube.getPoseAmbiguity() == -1 || lastBestCone.getPoseAmbiguity() < lastBestCube.getPoseAmbiguity();
+        return null;
     }
 
     private void updatePipelines() {
