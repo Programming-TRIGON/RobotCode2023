@@ -1,4 +1,4 @@
-package frc.trigon.robot.robotposesources;
+package frc.trigon.robot.components;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -8,8 +8,8 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
-@SuppressWarnings("unused")
 public class Limelight {
+    private final String hostname;
     private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
 
     /**
@@ -18,6 +18,7 @@ public class Limelight {
      * @param hostname the name of the Limelight
      */
     public Limelight(String hostname) {
+        this.hostname = hostname;
         final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
         tv = networkTable.getEntry("tv");
@@ -32,7 +33,7 @@ public class Limelight {
      * @return the last result's timestamp
      */
     public double getLastResultTimestamp() {
-        return getJsonOutput().Results.ts;
+        return getJsonDump().Results.ts;
     }
 
     /**
@@ -49,9 +50,9 @@ public class Limelight {
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
     public double getTy(int id) {
-        final LimelightJsonDump.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial currentFiducial = getFiducialFromId(id);
 
-        return fiducial == null ? 0 : fiducial.ty;
+        return currentFiducial == null ? 0 : currentFiducial.ty;
     }
 
     /**
@@ -61,9 +62,9 @@ public class Limelight {
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
     public double getTx(int id) {
-        final LimelightJsonDump.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial currentFiducial = getFiducialFromId(id);
 
-        return fiducial == null ? 0 : fiducial.tx;
+        return currentFiducial == null ? 0 : currentFiducial.tx;
     }
 
     /**
@@ -73,9 +74,9 @@ public class Limelight {
      * @return target's area (from 0% of the image to 100% of the image)
      */
     public double getTa(int id) {
-        final LimelightJsonDump.Results.Fiducial fiducial = getJsonOutput().Results.getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial currentFiducial = getFiducialFromId(id);
 
-        return fiducial == null ? 0 : fiducial.ta;
+        return currentFiducial == null ? 0 : currentFiducial.ta;
     }
 
     /**
@@ -137,11 +138,18 @@ public class Limelight {
      * @return the robot's pose, as reported by the Limelight
      */
     public Pose3d getRobotPoseFromJsonDump() {
-        final double[] robotPoseArray = getJsonOutput().Results.botpose_wpiblue;
+        final double[] robotPoseArray = getJsonDump().Results.botpose_wpiblue;
         if (robotPoseArray.length != 6)
             return null;
 
         return robotPoseArrayToPose2d(robotPoseArray);
+    }
+
+    /**
+     * @return the name of the Limelight
+     */
+    public String getName() {
+        return hostname;
     }
 
     private Pose3d robotPoseArrayToPose2d(double[] robotPoseArray) {
@@ -159,12 +167,22 @@ public class Limelight {
         return new Pose3d(robotTranslation, robotRotation);
     }
 
-    private LimelightJsonDump getJsonOutput() {
+    private LimelightJsonDump.Results.Fiducial getFiducialFromId(int id) {
+        final LimelightJsonDump.Results results = getJsonDump().Results;
+        if (results.Fiducial == null)
+            return new LimelightJsonDump.Results.Fiducial();
+
+        return results.getFiducialFromId(id);
+    }
+
+    private LimelightJsonDump getJsonDump() {
         final String jsonString = json.getString("");
-        return JsonHandler.parseJsonStringToObject(
+        final LimelightJsonDump jsonDump = JsonHandler.parseJsonStringToObject(
                 jsonString,
                 LimelightJsonDump.class
         );
+
+        return jsonDump == null ? new LimelightJsonDump() : jsonDump;
     }
 
     public enum LedMode {
@@ -191,7 +209,7 @@ public class Limelight {
     }
 
     private static class LimelightJsonDump {
-        private Results Results;
+        private Results Results = new Results();
 
         private static class Results {
             private double[] Classifier;

@@ -2,15 +2,14 @@ package frc.trigon.robot.robotposesources;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import frc.trigon.robot.components.Limelight;
 
 public class AprilTagLimelight extends RobotPoseSource {
-    private final String hostname;
     private final Limelight limelight;
 
     public AprilTagLimelight(String hostname) {
         super(new Transform3d());
 
-        this.hostname = hostname;
         limelight = new Limelight(hostname);
     }
 
@@ -30,6 +29,6 @@ public class AprilTagLimelight extends RobotPoseSource {
 
     @Override
     public String getName() {
-        return hostname;
+        return limelight.getName();
     }
 }
