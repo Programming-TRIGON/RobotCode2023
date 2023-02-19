@@ -50,9 +50,9 @@ public class Limelight {
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
     public double getTy(int id) {
-        final LimelightJsonDump.Results.Fiducial currentFiducial = getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial fiducial = getFiducialFromId(id);
 
-        return currentFiducial == null ? 0 : currentFiducial.ty;
+        return fiducial == null ? 0 : fiducial.ty;
     }
 
     /**
@@ -62,9 +62,9 @@ public class Limelight {
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
     public double getTx(int id) {
-        final LimelightJsonDump.Results.Fiducial currentFiducial = getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial fiducial = getFiducialFromId(id);
 
-        return currentFiducial == null ? 0 : currentFiducial.tx;
+        return fiducial == null ? 0 : fiducial.tx;
     }
 
     /**
@@ -74,9 +74,9 @@ public class Limelight {
      * @return target's area (from 0% of the image to 100% of the image)
      */
     public double getTa(int id) {
-        final LimelightJsonDump.Results.Fiducial currentFiducial = getFiducialFromId(id);
+        final LimelightJsonDump.Results.Fiducial fiducial = getFiducialFromId(id);
 
-        return currentFiducial == null ? 0 : currentFiducial.ta;
+        return fiducial == null ? 0 : fiducial.ta;
     }
 
     /**
