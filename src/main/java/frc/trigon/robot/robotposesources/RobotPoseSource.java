@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 
 /**
- * A pose source is a class that provides the robot's pose.
+ * A pose source is a class that provides the robot's pose, from a camera.
  */
 public abstract class RobotPoseSource {
     private final Transform3d cameraToRobotCenter;
@@ -17,7 +17,7 @@ public abstract class RobotPoseSource {
     }
 
     /**
-     * @return if the current timestamp is not the same as the last timestamp
+     * @return if the current timestamp is not the same as the timestamp from the last call to this method
      */
     public boolean isNewTimestamp() {
         if (lastUpdatedTimestamp == getLastResultTimestamp())
@@ -28,7 +28,7 @@ public abstract class RobotPoseSource {
     }
 
     /**
-     * @return the robot's estimated pose, according to the pose source
+     * @return the robot's estimated pose
      */
     public Pose2d getRobotPose() {
         lastProvidedPose = getCameraPose();
@@ -43,11 +43,6 @@ public abstract class RobotPoseSource {
     }
 
     /**
-     * @return the camera's pose, according to the pose source
-     */
-    protected abstract Pose3d getCameraPose();
-
-    /**
      * @return the last result's timestamp
      */
     public abstract double getLastResultTimestamp();
@@ -56,4 +51,9 @@ public abstract class RobotPoseSource {
      * @return the pose source's name
      */
     public abstract String getName();
+
+    /**
+     * @return the camera's pose, according to the pose source
+     */
+    protected abstract Pose3d getCameraPose();
 }
