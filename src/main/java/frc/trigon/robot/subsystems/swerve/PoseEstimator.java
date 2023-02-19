@@ -66,18 +66,18 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     /**
-     * @return the current estimated pose of the robot
+     * @return the estimated pose of the robot
      */
     public Pose2d getCurrentPose() {
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
     /**
-     * Sets the pose sources to use in the pose estimator.
+     * Sets the robot pose sources to use for the pose estimator.
      *
      * @param robotPoseSources the pose sources to use
      */
-    public void setPoseSources(RobotPoseSource... robotPoseSources) {
+    public void setRobotPoseSources(RobotPoseSource... robotPoseSources) {
         this.robotPoseSources = robotPoseSources;
     }
 
@@ -93,18 +93,18 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
 
     private void updatePoseEstimator() {
         updatePoseEstimatorStates();
-        attemptToUpdateWithPoseSources();
+        attemptToUpdateWithRobotPoseSources();
         field.setRobotPose(getCurrentPose());
     }
 
-    private void attemptToUpdateWithPoseSources() {
+    private void attemptToUpdateWithRobotPoseSources() {
         for (RobotPoseSource robotPoseSource : robotPoseSources) {
             if (robotPoseSource.isNewTimestamp())
-                updateWithPoseSource(robotPoseSource);
+                updateWithRobotPoseSource(robotPoseSource);
         }
     }
 
-    private void updateWithPoseSource(RobotPoseSource robotPoseSource) {
+    private void updateWithRobotPoseSource(RobotPoseSource robotPoseSource) {
         final Pose2d robotPose = robotPoseSource.getRobotPose();
 
         swerveDrivePoseEstimator.addVisionMeasurement(
@@ -122,8 +122,10 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     private void addAprilTagsToFieldWidget() {
         final HashMap<Integer, Pose3d> tagsIdToPose = PoseSourceConstants.TAGS_ID_TO_POSE;
 
-        for (Integer currentID : tagsIdToPose.keySet())
-            field.getObject("Tag " + currentID).setPose(tagsIdToPose.get(currentID).toPose2d());
+        for (Integer currentID : tagsIdToPose.keySet()) {
+            final Pose2d tagPose = tagsIdToPose.get(currentID).toPose2d();
+            field.getObject("Tag " + currentID).setPose(tagPose);
+        }
     }
 
     private void setGyroHeadingAndWaitUntilUpdate(Rotation2d heading) {

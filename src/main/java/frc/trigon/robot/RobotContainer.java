@@ -31,6 +31,6 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.setPoseSources(forwardLimelight, t265);
+        poseEstimator.setRobotPoseSources(forwardLimelight, t265);
     }
 }
