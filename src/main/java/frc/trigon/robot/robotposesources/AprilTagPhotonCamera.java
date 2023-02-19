@@ -3,17 +3,18 @@ package frc.trigon.robot.robotposesources;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 
 import java.util.Optional;
 
 public class AprilTagPhotonCamera extends RobotPoseSource {
-    private final org.photonvision.PhotonCamera photonCamera;
+    private final PhotonCamera photonCamera;
     private final PhotonPoseEstimator photonPoseEstimator;
 
     public AprilTagPhotonCamera(String cameraName, Transform3d cameraToRobotCenter) {
         super(cameraToRobotCenter);
-        photonCamera = new org.photonvision.PhotonCamera(cameraName);
+        photonCamera = new PhotonCamera(cameraName);
 
         photonPoseEstimator = new PhotonPoseEstimator(
                 PoseSourceConstants.APRIL_TAG_FIELD_LAYOUT,
