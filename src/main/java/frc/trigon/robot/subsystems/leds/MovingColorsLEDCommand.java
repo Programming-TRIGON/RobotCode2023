@@ -49,21 +49,15 @@ public class MovingColorsLEDCommand extends LedCommand {
     @Override
     public void end(boolean interrupted) {
         Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++){
+        for (int i = 0; i < ledStrip.getLength(); i++) {
             colors[i] = Color.kBlack;
         }
         ledStrip.setLedsColors(colors);
     }
 
     private boolean shouldBePrimeColor(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
-        boolean result;
-        if ((positionInLED >= firstInMovingRange && positionInLED <= lastInMovingRange) ||
+        return (positionInLED >= firstInMovingRange && positionInLED <= lastInMovingRange) ||
                 (positionInLED >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
-                        positionInLED <= lastInMovingRange % ledStrip.getLength())) {
-            result = true;
-        } else {
-            result = false;
-        }
-        return result;
+                        positionInLED <= lastInMovingRange % ledStrip.getLength());
     }
 }
