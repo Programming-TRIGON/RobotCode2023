@@ -13,7 +13,7 @@ public abstract class SwerveModule implements Loggable {
 
     @Override
     public String configureLogName() {
-        return getName();
+        return getModuleName();
     }
 
     /**
@@ -152,5 +152,5 @@ public abstract class SwerveModule implements Loggable {
     /**
      * @return the module's name
      */
-    protected abstract String getName();
+    protected abstract String getModuleName();
 }

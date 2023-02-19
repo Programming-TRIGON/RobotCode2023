@@ -10,7 +10,6 @@ import java.nio.file.Path;
 
 /**
  * A class that handles writing, deleting, and renaming files.
- * <p>
  * This class also holds the "DEPLOY_PATH" constant, which is the absolute path of the deploy folder.
  */
 public class FilesHandler {

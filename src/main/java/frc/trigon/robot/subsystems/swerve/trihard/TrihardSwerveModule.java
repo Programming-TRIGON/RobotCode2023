@@ -107,7 +107,7 @@ public class TrihardSwerveModule extends SwerveModule {
     }
 
     @Override
-    protected String getName() {
+    protected String getModuleName() {
         return name;
     }
 

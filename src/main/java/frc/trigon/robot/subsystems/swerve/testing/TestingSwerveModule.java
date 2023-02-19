@@ -16,7 +16,7 @@ public class TestingSwerveModule extends SwerveModule {
     private final WPI_TalonFX driveMotor;
     private final CANSparkMax steerMotor;
     private final SparkMaxAbsoluteEncoder steerEncoder;
-    private final String name;
+    private final String moduleName;
 
     TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules swerveModule) {
         final TestingSwerveModuleConstants moduleConstants = swerveModule.swerveModuleConstants;
@@ -24,7 +24,7 @@ public class TestingSwerveModule extends SwerveModule {
         driveMotor = moduleConstants.driveMotor;
         steerMotor = moduleConstants.steerMotor;
         steerEncoder = steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-        this.name = swerveModule.name();
+        this.moduleName = swerveModule.name();
     }
 
     @Override
@@ -56,8 +56,8 @@ public class TestingSwerveModule extends SwerveModule {
     }
 
     @Override
-    protected String getName() {
-        return name;
+    protected String getModuleName() {
+        return moduleName;
     }
 
     @Override

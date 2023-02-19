@@ -17,6 +17,9 @@ public class SwerveCommands {
     private static final Swerve SWERVE = RobotContainer.SWERVE;
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
+    /**
+     * @return a command that brakes the swerve modules and then coasts them
+     */
     public static Command getBrakeAndCoastCommand() {
         return SwerveCommands.getSetSwerveBrakeCommand(true)
                 .andThen(new WaitCommand(SWERVE.getBrakeTimeSeconds()))

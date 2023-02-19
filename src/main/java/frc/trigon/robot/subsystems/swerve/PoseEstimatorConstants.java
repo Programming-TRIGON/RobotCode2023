@@ -8,7 +8,7 @@ public class PoseEstimatorConstants {
     static final int GYRO_UPDATE_DELAY_MS = 15;
 
     /**
-     * The vector represents how ambiguous is each value.
+     * The vector represents how ambiguous each value is.
      * The first value represents how ambiguous is the x,
      * the second one for the y, and the third one is for the theta (rotation).
      * Increase these numbers to trust the estimate less.
