@@ -6,7 +6,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
- * A class that represents a collection camera that looks at the collection and detects game pieces.
+ * A class that represents a collection camera that looks at the collection system and detects game pieces.
  */
 public class CollectionCamera extends PhotonCamera {
     private static final int
@@ -34,14 +34,14 @@ public class CollectionCamera extends PhotonCamera {
     }
 
     /**
-     * @return the position of the game piece on the collection, in meters. Returns the default position if no game piece is detected
+     * @return the position of the game piece on the collection system, in meters. Returns the default position if no game piece is detected
      */
     public double getPositionOnCollection(double defaultPosition) {
-        final PhotonTrackedTarget bestTargetGamePiece = getTargetGamePiece();
-        if (bestTargetGamePiece == null)
+        final PhotonTrackedTarget targetGamePiece = getTargetGamePiece();
+        if (targetGamePiece == null)
             return defaultPosition;
 
-        final double gamePieceYaw = bestTargetGamePiece.getYaw();
+        final double gamePieceYaw = targetGamePiece.getYaw();
 
         return calculatePositionOnCollection(gamePieceYaw);
     }
@@ -50,21 +50,19 @@ public class CollectionCamera extends PhotonCamera {
      * @return the type of game piece that the collection limelight sees
      */
     public GamePieceType getTargetGamePieceType() {
-        if (getTargetGamePiece() == null)
-            return GamePieceType.NONE;
-        if (lastBestCube == null)
-            return GamePieceType.CONE;
-        if (lastBestCone == null)
+        if (lastBestCube != null)
             return GamePieceType.CUBE;
+        if (lastBestCone != null)
+            return GamePieceType.CONE;
 
         return GamePieceType.NONE;
     }
 
     private PhotonTrackedTarget getTargetGamePiece() {
-        if (lastBestCube == null)
-            return lastBestCone;
-        if (lastBestCone == null)
+        if (lastBestCube != null)
             return lastBestCube;
+        if (lastBestCone != null)
+            return lastBestCone;
 
         return null;
     }
