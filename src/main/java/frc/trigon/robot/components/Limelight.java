@@ -142,7 +142,7 @@ public class Limelight {
         if (robotPoseArray.length != 6)
             return null;
 
-        return robotPoseArrayToPose2d(robotPoseArray);
+        return robotPoseArrayToPose3d(robotPoseArray);
     }
 
     /**
@@ -152,7 +152,7 @@ public class Limelight {
         return hostname;
     }
 
-    private Pose3d robotPoseArrayToPose2d(double[] robotPoseArray) {
+    private Pose3d robotPoseArrayToPose3d(double[] robotPoseArray) {
         final Translation3d robotTranslation = new Translation3d(
                 robotPoseArray[0],
                 robotPoseArray[1],
@@ -170,7 +170,7 @@ public class Limelight {
     private LimelightJsonDump.Results.Fiducial getFiducialFromId(int id) {
         final LimelightJsonDump.Results results = getJsonDump().Results;
         if (results.Fiducial == null)
-            return new LimelightJsonDump.Results.Fiducial();
+            return null;
 
         return results.getFiducialFromId(id);
     }
