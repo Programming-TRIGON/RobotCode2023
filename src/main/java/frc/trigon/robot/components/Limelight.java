@@ -177,12 +177,13 @@ public class Limelight {
 
     private LimelightJsonDump getJsonDump() {
         final String jsonString = json.getString("");
-        final LimelightJsonDump jsonDump = JsonHandler.parseJsonStringToObject(
+        if (jsonString.isEmpty())
+            return new LimelightJsonDump();
+
+        return JsonHandler.parseJsonStringToObject(
                 jsonString,
                 LimelightJsonDump.class
         );
-
-        return jsonDump == null ? new LimelightJsonDump() : jsonDump;
     }
 
     public enum LedMode {

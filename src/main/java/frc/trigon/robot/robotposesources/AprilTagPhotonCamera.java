@@ -33,7 +33,7 @@ public class AprilTagPhotonCamera extends RobotPoseSource {
     public Pose3d getCameraPose() {
         final Optional<EstimatedRobotPose> estimatedRobotPose = photonPoseEstimator.update();
         if (estimatedRobotPose.isEmpty())
-            return getLastProvidedPose();
+            return null;
 
         return estimatedRobotPose.get().estimatedPose;
     }

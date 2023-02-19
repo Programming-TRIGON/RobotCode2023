@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 public abstract class RobotPoseSource {
     private final Transform3d cameraToRobotCenter;
     private double lastUpdatedTimestamp;
-    private Pose3d lastProvidedPose = new Pose3d();
+    private Pose2d lastRobotPose = new Pose2d();
 
     protected RobotPoseSource(Transform3d cameraToRobotCenter) {
         this.cameraToRobotCenter = cameraToRobotCenter;
@@ -31,15 +31,12 @@ public abstract class RobotPoseSource {
      * @return the robot's estimated pose
      */
     public Pose2d getRobotPose() {
-        lastProvidedPose = getCameraPose();
-        return lastProvidedPose.plus(cameraToRobotCenter).toPose2d();
-    }
+        final Pose3d cameraPose = getCameraPose();
+        if (cameraPose == null)
+            return lastRobotPose;
 
-    /**
-     * @return the last pose the pose source has provided
-     */
-    protected Pose3d getLastProvidedPose() {
-        return lastProvidedPose;
+        lastRobotPose = getCameraPose().plus(cameraToRobotCenter).toPose2d();
+        return lastRobotPose;
     }
 
     /**
