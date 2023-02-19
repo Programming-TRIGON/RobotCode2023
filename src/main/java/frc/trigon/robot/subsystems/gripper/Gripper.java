@@ -3,11 +3,12 @@ package frc.trigon.robot.subsystems.gripper;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.trigon.robot.subsystems.powerdistribution.PowerDistributionManager;
+import frc.trigon.robot.utilities.PowerDistributionManager;
 
 public class Gripper extends SubsystemBase {
-    private static final Gripper INSTANCE = new Gripper();
     private final WPI_TalonFX motor = GripperConstants.MOTOR;
+
+    private static final Gripper INSTANCE = new Gripper();
 
     public static Gripper getInstance() {
         return INSTANCE;
@@ -15,11 +16,13 @@ public class Gripper extends SubsystemBase {
 
     private Gripper() {
         PowerDistributionManager.getInstance().setPortRequirements(
-                GripperConstants.POWER_DISTRIBUTION_PORT,
-                GripperConstants.POWER_DISTRIBUTION_TRIGGER_DURATION,
-                GripperConstants.POWER_DISTRIBUTION_TRIGGER_CURRENT,
-                () -> setState(GripperConstants.GripperState.HOLD)
+                GripperConstants.CURRENT_LIMIT_CONFIG,
+                () -> setPower(GripperConstants.HOLD_POWER)
         );
+    }
+
+    private void setPower(double power) {
+        motor.set(power);
     }
 
     /**
@@ -27,8 +30,8 @@ public class Gripper extends SubsystemBase {
      */
     public StartEndCommand collect() {
         return new StartEndCommand(
-                () -> setState(GripperConstants.GripperState.COLLECT),
-                () -> setState(GripperConstants.GripperState.STOPPED)
+                () -> setPower(GripperConstants.COLLECT_POWER),
+                () -> setPower(0)
         );
     }
 
@@ -37,8 +40,8 @@ public class Gripper extends SubsystemBase {
      */
     public StartEndCommand eject() {
         return new StartEndCommand(
-                () -> setState(GripperConstants.GripperState.EJECT),
-                () -> setState(GripperConstants.GripperState.STOPPED)
+                () -> setPower(GripperConstants.EJECT_POWER),
+                () -> setPower(0)
         );
     }
 
@@ -47,12 +50,8 @@ public class Gripper extends SubsystemBase {
      */
     public StartEndCommand hold() {
         return new StartEndCommand(
-                () -> setState(GripperConstants.GripperState.HOLD),
-                () -> setState(GripperConstants.GripperState.STOPPED)
+                () -> setPower(GripperConstants.HOLD_POWER),
+                () -> setPower(0)
         );
-    }
-
-    private void setState(GripperConstants.GripperState state) {
-        motor.set(state.power);
     }
 }
