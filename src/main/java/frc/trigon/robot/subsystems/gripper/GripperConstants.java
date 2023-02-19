@@ -4,7 +4,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 public class GripperConstants {
     private static final int MOTOR_ID = 13;
-    static final int POWER_DISTRIBUTION_PORT = 0; //TODO: Define port
+    static final int POWER_DISTRIBUTION_PORT = 1;
     static final double
             POWER_DISTRIBUTION_TRIGGER_DURATION = 0.2,
             POWER_DISTRIBUTION_TRIGGER_CURRENT = 4;
