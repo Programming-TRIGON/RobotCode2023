@@ -29,7 +29,7 @@ public class CollectionCamera extends PhotonCamera {
     public CollectionCamera(String hostname) {
         super(hostname);
 
-        final Notifier updateTargetsNotifier = new Notifier(getUpdateTargetsRunnable());
+        final Notifier updateTargetsNotifier = new Notifier(this::updatePipelines);
         updateTargetsNotifier.startPeriodic(NOTIFIER_PERIOD_SECONDS);
     }
 
@@ -74,16 +74,14 @@ public class CollectionCamera extends PhotonCamera {
         return lastBestCube.getPoseAmbiguity() == -1 || lastBestCone.getPoseAmbiguity() < lastBestCube.getPoseAmbiguity();
     }
 
-    private Runnable getUpdateTargetsRunnable() {
-        return () -> {
-            if (getPipelineIndex() == CONES_DETECTION_PIPELINE_INDEX) {
-                lastBestCone = getLatestResult().getBestTarget();
-                setPipelineIndex(CUBES_DETECTION_PIPELINE_INDEX);
-            } else {
-                lastBestCube = getLatestResult().getBestTarget();
-                setPipelineIndex(CONES_DETECTION_PIPELINE_INDEX);
-            }
-        };
+    private void updatePipelines() {
+        if (getPipelineIndex() == CONES_DETECTION_PIPELINE_INDEX) {
+            lastBestCone = getLatestResult().getBestTarget();
+            setPipelineIndex(CUBES_DETECTION_PIPELINE_INDEX);
+        } else {
+            lastBestCube = getLatestResult().getBestTarget();
+            setPipelineIndex(CONES_DETECTION_PIPELINE_INDEX);
+        }
     }
 
     private double calculatePositionOnCollection(double gamePieceYaw) {
@@ -100,5 +98,4 @@ public class CollectionCamera extends PhotonCamera {
         CUBE,
         NONE
     }
-
 }
