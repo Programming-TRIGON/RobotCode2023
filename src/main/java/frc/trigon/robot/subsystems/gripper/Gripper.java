@@ -17,12 +17,8 @@ public class Gripper extends SubsystemBase {
     private Gripper() {
         PowerDistributionManager.getInstance().setPortRequirements(
                 GripperConstants.CURRENT_LIMIT_CONFIG,
-                () -> setPower(GripperConstants.HOLD_POWER)
+                () -> setState(GripperConstants.GripperState.HOLD)
         );
-    }
-
-    private void setPower(double power) {
-        motor.set(power);
     }
 
     /**
@@ -30,8 +26,8 @@ public class Gripper extends SubsystemBase {
      */
     public StartEndCommand collect() {
         return new StartEndCommand(
-                () -> setPower(GripperConstants.COLLECT_POWER),
-                () -> setPower(0)
+                () -> setState(GripperConstants.GripperState.COLLECT),
+                () -> setState(GripperConstants.GripperState.STOPPED)
         );
     }
 
@@ -40,8 +36,8 @@ public class Gripper extends SubsystemBase {
      */
     public StartEndCommand eject() {
         return new StartEndCommand(
-                () -> setPower(GripperConstants.EJECT_POWER),
-                () -> setPower(0)
+                () -> setState(GripperConstants.GripperState.EJECT),
+                () -> setState(GripperConstants.GripperState.STOPPED)
         );
     }
 
@@ -50,8 +46,12 @@ public class Gripper extends SubsystemBase {
      */
     public StartEndCommand hold() {
         return new StartEndCommand(
-                () -> setPower(GripperConstants.HOLD_POWER),
-                () -> setPower(0)
+                () -> setState(GripperConstants.GripperState.HOLD),
+                () -> setState(GripperConstants.GripperState.STOPPED)
         );
+    }
+
+    private void setState(GripperConstants.GripperState state) {
+        motor.set(state.power);
     }
 }
