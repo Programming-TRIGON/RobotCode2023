@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
-import frc.trigon.robot.robotposesources.RelativeRobotPoseSource;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -61,8 +60,6 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
                 swerve.getModulePositions(),
                 currentPose
         );
-
-        setRelativePose(currentPose);
     }
 
     /**
@@ -79,16 +76,6 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      */
     public void setRobotPoseSources(RobotPoseSource... robotPoseSources) {
         this.robotPoseSources = robotPoseSources;
-    }
-
-    private void setRelativePose(Pose2d pose) {
-        for (RobotPoseSource robotPoseSource : robotPoseSources) {
-            if (!(robotPoseSource instanceof RelativeRobotPoseSource))
-                continue;
-
-            final RelativeRobotPoseSource relativePoseSource = (RelativeRobotPoseSource) robotPoseSource;
-            relativePoseSource.setRelativePose(pose);
-        }
     }
 
     private void updatePoseEstimator() {
