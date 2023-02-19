@@ -13,9 +13,9 @@ public class CollectionCamera extends PhotonCamera {
             CONES_DETECTION_PIPELINE_INDEX = 0,
             CUBES_DETECTION_PIPELINE_INDEX = 1;
     private static final double
-            A = 1,
-            B = 1,
-            C = 1;
+            YAW_TO_POSITION_POLYNOMIAL_A = 1,
+            YAW_TO_POSITION_POLYNOMIAL_B = 1,
+            YAW_TO_POSITION_POLYNOMIAL_C = 1;
     private static final double NOTIFIER_PERIOD_SECONDS = 1;
     private PhotonTrackedTarget
             lastBestCone = null,
@@ -34,7 +34,7 @@ public class CollectionCamera extends PhotonCamera {
     }
 
     /**
-     * @return the pose of the game piece on the collection, in meters. Return the default if no game piece is detected
+     * @return the position of the game piece on the collection, in meters. Return the default if no game piece is detected
      */
     public double getPositionOnCollection(double defaultPosition) {
         final PhotonTrackedTarget bestTargetGamePiece = getBestTarget();
@@ -70,6 +70,7 @@ public class CollectionCamera extends PhotonCamera {
     }
 
     private boolean isLastConeBetterThanLastCube() {
+        // TODO: Check if this is correct
         return lastBestCube.getPoseAmbiguity() == -1 || lastBestCone.getPoseAmbiguity() < lastBestCube.getPoseAmbiguity();
     }
 
@@ -86,7 +87,12 @@ public class CollectionCamera extends PhotonCamera {
     }
 
     private double calculatePositionOnCollection(double gamePieceYaw) {
-        return Maths.calculatePolynomial(gamePieceYaw, A, B, C);
+        return Maths.calculatePolynomial(
+                gamePieceYaw,
+                YAW_TO_POSITION_POLYNOMIAL_A,
+                YAW_TO_POSITION_POLYNOMIAL_B,
+                YAW_TO_POSITION_POLYNOMIAL_C
+        );
     }
 
     public enum GamePieceType {
