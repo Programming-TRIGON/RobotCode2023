@@ -10,8 +10,8 @@ import frc.trigon.robot.RobotContainer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class SwerveCommands {
     private static final Swerve SWERVE = RobotContainer.SWERVE;
@@ -35,7 +35,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static Command getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(getDriveInitializeRunnable(true));
+        final Command initializeSwerveCommand = new InstantCommand(() -> driveInitialize(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
@@ -59,10 +59,10 @@ public class SwerveCommands {
      * @return the command
      */
     public static Command getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(getDriveInitializeRunnable(true));
+        final Command initializeSwerveCommand = new InstantCommand(() -> driveInitialize(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {},
+                (pose2d) -> {   },
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
                 SWERVE.getRotationPIDConstants(),
@@ -97,9 +97,9 @@ public class SwerveCommands {
     public static CommandBase getFieldRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitializeRunnable(true),
-                getFieldRelativeRunnable(x, y, theta),
-                getStopDriveConsumer(),
+                () -> driveInitialize(true),
+                () -> SwerveCommands.fieldRelativeDriveFromSuppliers(x, y, theta),
+                (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
         );
@@ -117,9 +117,30 @@ public class SwerveCommands {
     public static CommandBase getSelfRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitializeRunnable(true),
-                getSelfRelativeRunnable(x, y, theta),
-                getStopDriveConsumer(),
+                () -> driveInitialize(true),
+                () -> selfRelativeDriveFromSuppliers(x, y, theta),
+                (interrupted) -> stopDrive(),
+                () -> false,
+                SWERVE
+        );
+    }
+
+    /**
+     * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in open loop mode.
+     * All velocities are in percent output from -1 to 1.
+     * The angle should be the target angle of the robot, not the target angular velocity.
+     *
+     * @param x     the target forwards velocity
+     * @param y     the target leftwards velocity
+     * @param angle the target angle of the robot
+     * @return the command
+     */
+    public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
+            DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
+        return new FunctionalCommand(
+                () -> driveInitialize(false),
+                () -> fieldRelativeDriveFromSuppliers(x, y, angle),
+                (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
         );
@@ -137,9 +158,9 @@ public class SwerveCommands {
     public static CommandBase getSelfRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitializeRunnable(false),
-                getSelfRelativeRunnable(x, y, theta),
-                getStopDriveConsumer(),
+                () -> driveInitialize(false),
+                () -> selfRelativeDriveFromSuppliers(x, y, theta),
+                (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
         );
@@ -157,23 +178,34 @@ public class SwerveCommands {
     public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                getDriveInitializeRunnable(false),
-                getFieldRelativeRunnable(x, y, theta),
-                getStopDriveConsumer(),
+                () -> driveInitialize(false),
+                () -> SwerveCommands.fieldRelativeDriveFromSuppliers(x, y, theta),
+                (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
         );
     }
 
-    private static Runnable getDriveInitializeRunnable(boolean closedLoop) {
-        return () -> {
-            SWERVE.setBrake(true);
-            SWERVE.setClosedLoop(closedLoop);
-        };
+    private static void driveInitialize(boolean closedLoop) {
+        SWERVE.setBrake(true);
+        SWERVE.setClosedLoop(closedLoop);
     }
 
-    private static Runnable getFieldRelativeRunnable(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
-        return () -> SWERVE.fieldRelativeDrive(
+    private static void fieldRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
+        SWERVE.fieldRelativeDrive(
+                new Translation2d(
+                        x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
+                        y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
+                ),
+                new Rotation2d(
+                        SWERVE.getRotationController()
+                                .calculate(SWERVE.getGyro().getYaw(), angle.get().getDegrees())
+                )
+        );
+    }
+
+    private static void fieldRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
+        SWERVE.fieldRelativeDrive(
                 new Translation2d(
                         x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
                         y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
@@ -184,8 +216,8 @@ public class SwerveCommands {
         );
     }
 
-    private static Runnable getSelfRelativeRunnable(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
-        return () -> SWERVE.selfRelativeDrive(
+    private static void selfRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
+        SWERVE.selfRelativeDrive(
                 new Translation2d(
                         x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
                         y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
@@ -196,11 +228,8 @@ public class SwerveCommands {
         );
     }
 
-    private static Consumer<Boolean> getStopDriveConsumer() {
-        return (interrupted) -> {
-            SWERVE.stop();
-            SWERVE.setBrake(false);
-        };
+    private static void stopDrive() {
+        SWERVE.stop();
+        SWERVE.setBrake(false);
     }
-
 }

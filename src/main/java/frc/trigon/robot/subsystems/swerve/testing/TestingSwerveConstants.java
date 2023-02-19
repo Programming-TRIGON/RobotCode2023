@@ -3,8 +3,10 @@ package frc.trigon.robot.subsystems.swerve.testing;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
 import com.pathplanner.lib.auto.PIDConstants;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class TestingSwerveConstants {
     static final double BRAKE_TIME_SECONDS = 0.3;
@@ -35,6 +37,16 @@ public class TestingSwerveConstants {
             ROTATION_PID_CONSTANTS = new PIDConstants(9, 0, 0);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
+    private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
+            MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND,
+            0.5
+    );
+    static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
+            ROTATION_PID_CONSTANTS.kP,
+            ROTATION_PID_CONSTANTS.kI,
+            ROTATION_PID_CONSTANTS.kD,
+            ROTATION_CONSTRAINTS
+    );
 
     static {
         GYRO.configFactoryDefault();

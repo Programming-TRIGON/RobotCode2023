@@ -2,6 +2,7 @@ package frc.trigon.robot.subsystems.swerve;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -62,6 +63,11 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      * @return the swerve's brake time in seconds
      */
     protected abstract double getBrakeTimeSeconds();
+
+    /**
+     * @return the swerve's profiled pid controller for rotation
+     */
+    protected abstract ProfiledPIDController getRotationController();
 
     /**
      * @return the heading of the robot

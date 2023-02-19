@@ -2,6 +2,7 @@ package frc.trigon.robot.subsystems.swerve.trihard;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveModule;
@@ -65,5 +66,10 @@ public class TrihardSwerve extends Swerve {
     @Override
     protected double getBrakeTimeSeconds() {
         return TrihardSwerveConstants.BRAKE_TIME_SECONDS;
+    }
+
+    @Override
+    protected ProfiledPIDController getRotationController() {
+        return TrihardSwerveConstants.ROTATION_CONTROLLER;
     }
 }
