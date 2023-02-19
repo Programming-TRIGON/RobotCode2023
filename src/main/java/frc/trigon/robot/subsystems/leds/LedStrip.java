@@ -13,12 +13,12 @@ import java.util.Collections;
 import java.util.logging.Logger;
 
 public class LedStrip extends SubsystemBase {
-    private int startingPosition, endingPosition;
-    private final boolean inverted;
+    private final int startingPosition, endingPosition;
+    private final boolean invert;
     private static final AddressableLED leds = LedsConstants.LED;
     private static final AddressableLEDBuffer LED_BUFFER = new AddressableLEDBuffer(LedsConstants.LEDS_LENGTH);
     public static final ArrayList<LedStrip> ledStrips = new ArrayList<>();
-    private int virtualLength;
+    private final int virtualLength;
 
     static {
         LedsConstants.LED.setLength(LED_BUFFER.getLength());
@@ -32,13 +32,13 @@ public class LedStrip extends SubsystemBase {
      *
      * @param startingPosition the first LED in the strip
      * @param endingPosition   the last LED in the strip
-     * @param inverted
-     * @param virtualLength
+     * @param invert           whether the strip is inverted.
+     * @param virtualLength    the length of a virtual strip that is not connected to the robot.
      */
-    public LedStrip(int startingPosition, int endingPosition, boolean inverted, int virtualLength) {
+    public LedStrip(int startingPosition, int endingPosition, boolean invert, int virtualLength) {
         this.startingPosition = startingPosition;
         this.endingPosition = endingPosition;
-        this.inverted = inverted;
+        this.invert = invert;
         this.virtualLength = virtualLength;
         ledStrips.add(this);
     }
@@ -50,10 +50,10 @@ public class LedStrip extends SubsystemBase {
      *
      * @param startingPosition the first LED in the strip
      * @param endingPosition   the last LED in the strip
-     * @param inverted
+     * @param invert whether the strip is inverted.
      */
-    public LedStrip(int startingPosition, int endingPosition, boolean inverted) {
-        this(startingPosition, endingPosition, inverted, endingPosition - startingPosition + 1);
+    public LedStrip(int startingPosition, int endingPosition, boolean invert) {
+        this(startingPosition, endingPosition, invert, endingPosition - startingPosition + 1);
     }
 
     public void setLedsColors(Color[] colors) {
@@ -64,7 +64,7 @@ public class LedStrip extends SubsystemBase {
             return;
         }
         for (int i = startingPosition; i < endingPosition + 1; i++) {
-            int idx = inverted ? endingPosition + startingPosition - i : i;
+            int idx = invert ? endingPosition + startingPosition - i : i;
             LED_BUFFER.setLED(i, convertToTrihardColorIfIsReal(applyBrightness(colors[idx - startingPosition], 1)));
         }
         leds.setData(LED_BUFFER);
