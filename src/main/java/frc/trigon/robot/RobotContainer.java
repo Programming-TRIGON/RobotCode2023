@@ -19,10 +19,10 @@ public class RobotContainer {
     private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera("limelight-forward", forwardLimelightToRobotCenter);
 
     public RobotContainer() {
-        setPoseEstimatorPoseSources();
+        setPoseEstimatorRobotPoseSources();
     }
 
-    private void setPoseEstimatorPoseSources() {
+    private void setPoseEstimatorRobotPoseSources() {
         poseEstimator.setRobotPoseSources(forwardLimelight);
     }
 }
