@@ -16,7 +16,7 @@ public class CollectionCamera extends PhotonCamera {
             YAW_TO_POSITION_POLYNOMIAL_A = 1,
             YAW_TO_POSITION_POLYNOMIAL_B = 1,
             YAW_TO_POSITION_POLYNOMIAL_C = 1;
-    private static final double NOTIFIER_PERIOD_SECONDS = 1;
+    private static final double PIPELINES_SWITCHING_RATE = 1;
     private PhotonTrackedTarget
             lastBestCone = null,
             lastBestCube = null;
@@ -29,21 +29,18 @@ public class CollectionCamera extends PhotonCamera {
     public CollectionCamera(String hostname) {
         super(hostname);
 
-        final Notifier updateTargetsNotifier = new Notifier(this::updatePipelines);
-        updateTargetsNotifier.startPeriodic(NOTIFIER_PERIOD_SECONDS);
+        new Notifier(this::updatePipelines).startPeriodic(PIPELINES_SWITCHING_RATE);
     }
 
     /**
-     * @return the position of the game piece on the collection system, in meters. Returns the default position if no game piece is detected
+     * @return the position of the target game piece on the collection system, in meters. Returns the default position if no game piece is detected
      */
-    public double getPositionOnCollection(double defaultPosition) {
+    public double getTargetGamePiecePosition(double defaultPosition) {
         final PhotonTrackedTarget targetGamePiece = getTargetGamePiece();
         if (targetGamePiece == null)
             return defaultPosition;
 
-        final double gamePieceYaw = targetGamePiece.getYaw();
-
-        return calculatePositionOnCollection(gamePieceYaw);
+        return calculateGamePiecePosition(targetGamePiece.getYaw());
     }
 
     /**
@@ -77,7 +74,7 @@ public class CollectionCamera extends PhotonCamera {
         }
     }
 
-    private double calculatePositionOnCollection(double gamePieceYaw) {
+    private double calculateGamePiecePosition(double gamePieceYaw) {
         return Maths.calculatePolynomial(
                 gamePieceYaw,
                 YAW_TO_POSITION_POLYNOMIAL_A,
