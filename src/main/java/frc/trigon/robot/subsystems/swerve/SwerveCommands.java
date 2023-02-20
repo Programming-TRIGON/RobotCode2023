@@ -18,12 +18,13 @@ public class SwerveCommands {
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     /**
-     * @return a command that brakes the swerve modules and then coasts them
+     * @return a command that brakes the swerve modules and then coasts them, runs when disabled
      */
     public static Command getBrakeAndCoastCommand() {
         return SwerveCommands.getSetSwerveBrakeCommand(true)
                 .andThen(new WaitCommand(SWERVE.getBrakeTimeSeconds()))
-                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false));
+                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
+                .ignoringDisable(true);
     }
 
     /**

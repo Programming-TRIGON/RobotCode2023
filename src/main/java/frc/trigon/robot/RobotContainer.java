@@ -12,17 +12,19 @@ import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
 public class RobotContainer {
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-    private final Transform3d forwardLimelightToRobotCenter = new Transform3d(
-            new Translation3d(0, 0, 0),
-            new Rotation3d(0, 0, 0)
+    private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera(
+            "limelight-forward",
+            new Transform3d(
+                    new Translation3d(0, 0, 0),
+                    new Rotation3d(0, 0, 0)
+            )
     );
-    private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera("limelight-forward", forwardLimelightToRobotCenter);
 
     public RobotContainer() {
         setPoseEstimatorRobotPoseSources();
     }
 
     private void setPoseEstimatorRobotPoseSources() {
-        poseEstimator.setRobotPoseSources(forwardLimelight);
+        poseEstimator.addRobotPoseSources(forwardLimelight);
     }
 }

@@ -12,7 +12,9 @@ import frc.trigon.robot.robotposesources.RobotPoseSource;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class PoseEstimator extends SubsystemBase implements Loggable {
@@ -22,7 +24,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
     @Log
     private final Field2d field = new Field2d();
-    private RobotPoseSource[] robotPoseSources = {};
+    private final List<RobotPoseSource> robotPoseSources = new ArrayList<>();
 
     private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -70,12 +72,12 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     /**
-     * Sets the robot pose sources to use for the pose estimator.
+     * Adds robot pose sources to use for the pose estimator.
      *
-     * @param robotPoseSources the pose sources to use
+     * @param robotPoseSources the pose sources
      */
-    public void setRobotPoseSources(RobotPoseSource... robotPoseSources) {
-        this.robotPoseSources = robotPoseSources;
+    public void addRobotPoseSources(RobotPoseSource... robotPoseSources) {
+        this.robotPoseSources.addAll(List.of(robotPoseSources));
     }
 
     private void updatePoseEstimator() {
