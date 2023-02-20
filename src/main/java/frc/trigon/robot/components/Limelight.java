@@ -152,6 +152,20 @@ public class Limelight {
         return hostname;
     }
 
+    /**
+     * @return the json dump of the Limelight
+     */
+    public LimelightJsonDump getJsonDump() {
+        final String jsonString = json.getString("");
+        if (jsonString.isEmpty())
+            return new LimelightJsonDump();
+
+        return JsonHandler.parseJsonStringToObject(
+                jsonString,
+                LimelightJsonDump.class
+        );
+    }
+
     private Pose3d robotPoseArrayToPose3d(double[] robotPoseArray) {
         final Translation3d robotTranslation = new Translation3d(
                 robotPoseArray[0],
@@ -173,17 +187,6 @@ public class Limelight {
             return null;
 
         return results.getFiducialFromId(id);
-    }
-
-    private LimelightJsonDump getJsonDump() {
-        final String jsonString = json.getString("");
-        if (jsonString.isEmpty())
-            return new LimelightJsonDump();
-
-        return JsonHandler.parseJsonStringToObject(
-                jsonString,
-                LimelightJsonDump.class
-        );
     }
 
     public enum LedMode {
