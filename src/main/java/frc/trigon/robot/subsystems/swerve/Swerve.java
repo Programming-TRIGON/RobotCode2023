@@ -70,6 +70,11 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     protected abstract ProfiledPIDController getRotationController();
 
     /**
+     * Makes the wheels of the swerve be X shaped so it'll be hard to move the swerve.
+     */
+    protected abstract void xShapeModules();
+
+    /**
      * @return the heading of the robot
      */
     @Log(name = "heading", methodName = "getDegrees")
@@ -81,12 +86,12 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      * @return the robot's current velocity
      */
     public ChassisSpeeds getCurrentVelocity() {
-        return getKinematics().toChassisSpeeds(
-                getModules()[0].getCurrentState(),
-                getModules()[1].getCurrentState(),
-                getModules()[2].getCurrentState(),
-                getModules()[3].getCurrentState()
-        );
+        final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
+
+        for (int i = 0; i < getModules().length; i++)
+            states[i] = getModules()[i].getCurrentState();
+
+        return getKinematics().toChassisSpeeds(states);
     }
 
     /**

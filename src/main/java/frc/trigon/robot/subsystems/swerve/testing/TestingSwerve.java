@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve.testing;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveModule;
@@ -71,6 +72,14 @@ public class TestingSwerve extends Swerve {
     @Override
     protected ProfiledPIDController getRotationController() {
         return TestingSwerveConstants.ROTATION_CONTROLLER;
+    }
+
+    @Override
+    protected void xShapeModules() {
+        swerveModules[0].setTargetAngle(new Rotation2d(-45));
+        swerveModules[1].setTargetAngle(new Rotation2d(45));
+        swerveModules[2].setTargetAngle(new Rotation2d(45));
+        swerveModules[3].setTargetAngle(new Rotation2d(-45));
     }
 }
 

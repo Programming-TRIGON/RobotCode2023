@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class SwerveCommands {
     public static Command getStopSwerveFromMovingCommand() {
         final Command
                 stopDriveCommand = new InstantCommand(SwerveCommands::stopDrive),
-                xShapeWheelsCommand = new InstantCommand(SwerveCommands::xShapeWheels);
+                xShapeWheelsCommand = new InstantCommand(SWERVE::xShapeModules);
 
         return stopDriveCommand
                 .andThen(SwerveCommands.getSetSwerveBrakeCommand(true))
@@ -201,17 +200,6 @@ public class SwerveCommands {
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
-        );
-    }
-
-    private static void xShapeWheels() {
-        final Rotation2d angle = Rotation2d.fromDegrees(135);
-
-        Arrays.stream(SWERVE.getModules()).forEach(
-                module -> {
-                    module.setTargetAngle(angle);
-                    angle.rotateBy(Rotation2d.fromDegrees(90));
-                }
         );
     }
 
