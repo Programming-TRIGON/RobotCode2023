@@ -14,16 +14,13 @@ public class Gripper extends SubsystemBase {
     }
 
     private Gripper() {
-        PowerDistributionManager.getInstance().setPortRequirements(
-                GripperConstants.HOLD_TRIGGER_CONFIG,
-                () -> setState(GripperConstants.GripperState.HOLD)
-        );
+        setPowerDistributionPortRequirements();
     }
 
     /**
-     * @return a command that runs the gripper at the collect power
+     * @return a command that makes the gripper collect, and stops the gripper at the end of it
      */
-    public StartEndCommand collect() {
+    public StartEndCommand getCollectCommand() {
         return new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.COLLECT),
                 () -> setState(GripperConstants.GripperState.STOP),
@@ -32,9 +29,9 @@ public class Gripper extends SubsystemBase {
     }
 
     /**
-     * @return a command that runs the gripper at the eject power
+     * @return a command that makes the gripper eject, and stops the gripper at the end of it
      */
-    public StartEndCommand eject() {
+    public StartEndCommand getEjectCommand() {
         return new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.EJECT),
                 () -> setState(GripperConstants.GripperState.STOP),
@@ -43,13 +40,20 @@ public class Gripper extends SubsystemBase {
     }
 
     /**
-     * @return a command that runs the gripper at the hold power
+     * @return a command that makes the gripper hold, and stops the gripper at the end of it
      */
-    public StartEndCommand hold() {
+    public StartEndCommand getHoldCommand() {
         return new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.HOLD),
                 () -> setState(GripperConstants.GripperState.STOP),
                 this
+        );
+    }
+
+    private void setPowerDistributionPortRequirements() {
+        PowerDistributionManager.getInstance().setPortRequirements(
+                GripperConstants.HOLD_TRIGGER_CONFIG,
+                () -> setState(GripperConstants.GripperState.HOLD)
         );
     }
 

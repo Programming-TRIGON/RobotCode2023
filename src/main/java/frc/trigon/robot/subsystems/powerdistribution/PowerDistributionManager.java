@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 /**
  * A subsystem that manages the power distribution.
- * This subsystem will run the callback when the trigger is reached.
+ * This subsystem will run the callback when a trigger is reached.
  */
 public class PowerDistributionManager extends SubsystemBase {
     private final static PowerDistributionManager INSTANCE = new PowerDistributionManager();
@@ -52,16 +52,17 @@ public class PowerDistributionManager extends SubsystemBase {
 
     private void checkCurrent(CurrentLimitConfig config) {
         double current = powerDistribution.getCurrent(config.powerDistributionPort);
-        double triggeredDuration = Timer.getFPGATimestamp() - config.lastUpdatedTimestamp;
+        double timeDifference = Timer.getFPGATimestamp() - config.lastUpdatedTimestamp;
 
         if (current < config.callbackTriggerCurrent) {
             config.lastUpdatedTimestamp = Timer.getFPGATimestamp();
             return;
         }
 
-        if (triggeredDuration >= config.callbackTriggerDuration) {
+        if (timeDifference >= config.callbackTriggerDuration) {
             Runnable runnable = requirements.get(config);
-            if (runnable != null) runnable.run();
+            if (runnable != null)
+                runnable.run();
         }
     }
 
