@@ -70,9 +70,9 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     protected abstract ProfiledPIDController getRotationController();
 
     /**
-     * Makes the wheels of the swerve be X shaped so it'll be hard to move the swerve.
+     * Locks the swerve, so it'll be hard to move it.
      */
-    protected abstract void xShapeModules();
+    protected abstract void lockSwerve();
 
     /**
      * @return the heading of the robot

@@ -14,7 +14,7 @@ public class TestingSwerveModuleConstants {
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
     private static final double VOLTAGE_COMP_SATURATION = 12;
 
-    private static final int
+    static final int
             FRONT_LEFT_ID = 0,
             FRONT_RIGHT_ID = 1,
             REAR_LEFT_ID = 2,

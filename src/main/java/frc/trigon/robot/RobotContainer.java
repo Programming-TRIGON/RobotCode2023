@@ -50,9 +50,8 @@ public class RobotContainer {
                     this::toggleFieldAndSelfDriven
             );
 
-
     public RobotContainer() {
-        setPoseEstimatorRobotPoseSources();
+        setPoseEstimatorPoseSources();
         bindCommands();
     }
 
@@ -70,7 +69,7 @@ public class RobotContainer {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromControllerCommand);
     }
 
-    private void setPoseEstimatorRobotPoseSources() {
+    private void setPoseEstimatorPoseSources() {
         poseEstimator.addRobotPoseSources(forwardLimelight);
     }
 

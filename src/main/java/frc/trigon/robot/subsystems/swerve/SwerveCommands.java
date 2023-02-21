@@ -18,15 +18,15 @@ public class SwerveCommands {
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     /**
-     * Creates a command that makes the wheels of the swerve be X shaped and brakes them.
-     * This should be used when you want to make moving the swerve hard.
+     * Creates a command that locks the swerve and brakes it.
+     * This should be used when you want to make it hard to move the swerve.
      *
      * @return the command
      */
-    public static Command getStopSwerveFromMovingCommand() {
+    public static Command getLockSwerveCommand() {
         final Command
                 stopDriveCommand = new InstantCommand(SwerveCommands::stopDrive),
-                xShapeWheelsCommand = new InstantCommand(SWERVE::xShapeModules);
+                xShapeWheelsCommand = new InstantCommand(SWERVE::lockSwerve);
 
         return stopDriveCommand
                 .andThen(SwerveCommands.getSetSwerveBrakeCommand(true))
