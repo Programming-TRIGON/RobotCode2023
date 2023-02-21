@@ -205,11 +205,12 @@ public class SwerveCommands {
     }
 
     private static void xShapeWheels() {
-        int angle = 135;
+        final Rotation2d angle = Rotation2d.fromDegrees(135);
 
         Arrays.stream(SWERVE.getModules()).forEach(
                 module -> {
-                    module.setTargetAngle(Rotation2d.fromDegrees(angle));
+                    module.setTargetAngle(angle);
+                    angle.rotateBy(Rotation2d.fromDegrees(90));
                 }
         );
     }
