@@ -72,11 +72,6 @@ public class MoveBothSidesLEDCommand extends LedCommand {
     }
 
     @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    @Override
     public boolean runsWhenDisabled() {
         return true;
     }

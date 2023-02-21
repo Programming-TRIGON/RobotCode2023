@@ -37,7 +37,6 @@ public class MovingColorsLEDCommand extends LedCommand {
             else
                 colors[i] = backgroundColor;
         }
-
         ledStrip.setLedsColors(colors);
     }
 

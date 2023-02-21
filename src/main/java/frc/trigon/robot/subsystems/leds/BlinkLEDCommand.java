@@ -15,7 +15,6 @@ public class BlinkLEDCommand extends LedCommand {
         this.ledStrip = ledStrip;
     }
 
-
     @Override
     public void execute() {
         Color[] colors = new Color[ledStrip.getLength()];
