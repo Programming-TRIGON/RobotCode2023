@@ -85,6 +85,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     /**
      * @return the robot's current velocity
      */
+    @Log(name = "velocity", methodName = "toString")
     public ChassisSpeeds getCurrentVelocity() {
         final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
 

@@ -16,6 +16,7 @@ public class TrihardSwerveModule extends SwerveModule {
     private final DutyCycleEncoder steerEncoder;
     private final double offset;
     private final String name;
+    private Rotation2d targetAngle = Rotation2d.fromDegrees(0);
 
     TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules swerveModule) {
         final TrihardSwerveModuleConstants moduleConstants = swerveModule.swerveModuleConstants;
@@ -34,7 +35,12 @@ public class TrihardSwerveModule extends SwerveModule {
 
     @Log(name = "steerEncoderDifference")
     private double getSteerEncoderDifference() {
-        return getRawSteerAngle() - Conversions.offsetWrite(getCurrentAngle().getRotations(), offset);
+        return Conversions.offsetRead(getRawSteerAngle(), offset) - getCurrentAngle().getRotations();
+    }
+
+    @Override
+    protected Rotation2d getTargetAngle() {
+        return targetAngle;
     }
 
     @Override
@@ -75,18 +81,16 @@ public class TrihardSwerveModule extends SwerveModule {
 
     @Override
     protected void setTargetAngle(Rotation2d rotation2d) {
-        double targetSystemDegrees = rotation2d.getDegrees();
-        double targetMotorDegrees = Conversions.systemToMotor(targetSystemDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
+        targetAngle = rotation2d;
+        double targetScopedDegrees = scope(rotation2d);
+        double targetMotorDegrees = Conversions.systemToMotor(targetScopedDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
         double targetMotorTicks = Conversions.degreesToFalconTicks(targetMotorDegrees);
         steerMotor.set(ControlMode.Position, targetMotorTicks);
     }
 
     @Override
     protected SwerveModuleState optimizeState(SwerveModuleState state) {
-        final SwerveModuleState optimizedState = SwerveModuleState.optimize(state, getCurrentAngle());
-        optimizedState.angle = scope(optimizedState.angle);
-
-        return optimizedState;
+        return SwerveModuleState.optimize(state, getCurrentAngle());
     }
 
     @Override
@@ -111,15 +115,15 @@ public class TrihardSwerveModule extends SwerveModule {
         return name;
     }
 
-    private Rotation2d scope(Rotation2d targetRotation2d) {
-        double rawCurrentDegrees = getCurrentAngle().getDegrees() % 360;
-        double rawTargetDegrees = targetRotation2d.getDegrees() % 360;
-        double difference = rawTargetDegrees - rawCurrentDegrees;
+    private double scope(Rotation2d targetRotation2d) {
+        double currentDegrees = getCurrentAngle().getDegrees() % 360;
+        double targetDegrees = targetRotation2d.getDegrees() % 360;
+        double difference = targetDegrees - currentDegrees;
         if (difference < -180)
             difference += 360;
         else if (difference > 180)
             difference -= 360;
 
-        return Rotation2d.fromDegrees(difference).plus(getCurrentAngle());
+        return difference + getCurrentAngle().getDegrees();
     }
 }

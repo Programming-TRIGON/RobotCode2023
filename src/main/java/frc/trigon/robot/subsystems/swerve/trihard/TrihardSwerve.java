@@ -76,9 +76,10 @@ public class TrihardSwerve extends Swerve {
 
     @Override
     protected void lockSwerve() {
-        swerveModules[TrihardSwerveModuleConstants.FRONT_LEFT_ID].setTargetAngle(new Rotation2d(-45));
-        swerveModules[TrihardSwerveModuleConstants.FRONT_RIGHT_ID].setTargetAngle(new Rotation2d(45));
-        swerveModules[TrihardSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(new Rotation2d(45));
-        swerveModules[TrihardSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(new Rotation2d(-45));
+        setBrake(true);
+        swerveModules[TrihardSwerveModuleConstants.FRONT_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
+        swerveModules[TrihardSwerveModuleConstants.FRONT_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
+        swerveModules[TrihardSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
+        swerveModules[TrihardSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
     }
 }

@@ -76,10 +76,11 @@ public class TestingSwerve extends Swerve {
 
     @Override
     protected void lockSwerve() {
-        swerveModules[TestingSwerveModuleConstants.FRONT_LEFT_ID].setTargetAngle(new Rotation2d(-45));
-        swerveModules[TestingSwerveModuleConstants.FRONT_RIGHT_ID].setTargetAngle(new Rotation2d(45));
-        swerveModules[TestingSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(new Rotation2d(45));
-        swerveModules[TestingSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(new Rotation2d(-45));
+        setBrake(true);
+        swerveModules[TestingSwerveModuleConstants.FRONT_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
+        swerveModules[TestingSwerveModuleConstants.FRONT_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
+        swerveModules[TestingSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
+        swerveModules[TestingSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
     }
 }
 

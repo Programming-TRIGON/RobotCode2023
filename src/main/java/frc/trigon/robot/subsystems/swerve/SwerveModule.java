@@ -10,6 +10,7 @@ import io.github.oblarg.oblog.annotations.Log;
 public abstract class SwerveModule implements Loggable {
     private SwerveModuleState targetState = new SwerveModuleState();
     private boolean driveMotorClosedLoop = false;
+    private double targetVelocity = 0;
 
     @Override
     public String configureLogName() {
@@ -61,16 +62,14 @@ public abstract class SwerveModule implements Loggable {
      * @return the target angle of the module
      */
     @Log(name = "targetAngle", methodName = "getDegrees")
-    private Rotation2d getTargetAngle() {
-        return getTargetState().angle;
-    }
+    protected abstract Rotation2d getTargetAngle();
 
     /**
      * @return the target velocity of the module
      */
     @Log(name = "targetVelocity")
     private double getTargetVelocity() {
-        return getTargetState().speedMetersPerSecond;
+        return targetVelocity;
     }
 
     /**
@@ -80,6 +79,7 @@ public abstract class SwerveModule implements Loggable {
      */
     @Config(name = "setTargetVelocity")
     private void setTargetVelocity(double velocity) {
+        targetVelocity = velocity;
         if (driveMotorClosedLoop)
             setTargetClosedLoopVelocity(velocity);
         else

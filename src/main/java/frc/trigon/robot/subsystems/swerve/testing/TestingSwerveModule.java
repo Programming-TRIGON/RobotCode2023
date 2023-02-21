@@ -17,6 +17,7 @@ public class TestingSwerveModule extends SwerveModule {
     private final CANSparkMax steerMotor;
     private final SparkMaxAbsoluteEncoder steerEncoder;
     private final String moduleName;
+    private Rotation2d targetAngle = Rotation2d.fromDegrees(0);
 
     TestingSwerveModule(TestingSwerveModuleConstants.TestingSwerveModules swerveModule) {
         final TestingSwerveModuleConstants moduleConstants = swerveModule.swerveModuleConstants;
@@ -25,6 +26,11 @@ public class TestingSwerveModule extends SwerveModule {
         steerMotor = moduleConstants.steerMotor;
         steerEncoder = steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
         this.moduleName = swerveModule.name();
+    }
+
+    @Override
+    protected Rotation2d getTargetAngle() {
+        return targetAngle;
     }
 
     @Override
@@ -62,6 +68,7 @@ public class TestingSwerveModule extends SwerveModule {
 
     @Override
     protected void setTargetAngle(Rotation2d rotation2d) {
+        targetAngle = rotation2d;
         steerMotor.getPIDController().setReference(rotation2d.getDegrees(), ControlType.kPosition);
     }
 

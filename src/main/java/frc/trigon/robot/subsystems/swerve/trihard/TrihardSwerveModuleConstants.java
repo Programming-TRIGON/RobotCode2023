@@ -5,6 +5,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Notifier;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModuleConstants {
@@ -53,7 +54,7 @@ public class TrihardSwerveModuleConstants {
             REAR_LEFT_STEER_MOTOR = new WPI_TalonFX(REAR_LEFT_STEER_MOTOR_ID),
             REAR_RIGHT_STEER_MOTOR = new WPI_TalonFX(REAR_RIGHT_STEER_MOTOR_ID);
 
-    private static final int ENCODER_UPDATE_TIME_MS = 2000;
+    private static final double ENCODER_UPDATE_TIME_SECONDS = 3;
     private static final int ENCODER_CHANNEL_OFFSET = 1;
     private static final int
             FRONT_LEFT_ENCODER_CHANNEL = FRONT_LEFT_ID + ENCODER_CHANNEL_OFFSET,
@@ -61,10 +62,10 @@ public class TrihardSwerveModuleConstants {
             REAR_LEFT_ENCODER_CHANNEL = REAR_LEFT_ID + ENCODER_CHANNEL_OFFSET,
             REAR_RIGHT_ENCODER_CHANNEL = REAR_RIGHT_ID + ENCODER_CHANNEL_OFFSET;
     private static final double
-            FRONT_LEFT_ENCODER_OFFSET = 0.893134,
+            FRONT_LEFT_ENCODER_OFFSET = 0.408134 - 0.5,
             FRONT_RIGHT_ENCODER_OFFSET = 0.512212,
-            REAR_LEFT_ENCODER_OFFSET = 0.196470,
-            REAR_RIGHT_ENCODER_OFFSET = 0.567767;
+            REAR_LEFT_ENCODER_OFFSET = 0.694301 - 0.5,
+            REAR_RIGHT_ENCODER_OFFSET = 0.059744 + 0.5;
     private static final DutyCycleEncoder
             FRONT_LEFT_ENCODER = new DutyCycleEncoder(FRONT_LEFT_ENCODER_CHANNEL),
             FRONT_RIGHT_ENCODER = new DutyCycleEncoder(FRONT_RIGHT_ENCODER_CHANNEL),
@@ -154,24 +155,13 @@ public class TrihardSwerveModuleConstants {
         steerMotor.config_kI(0, STEER_MOTOR_I);
         steerMotor.config_kD(0, STEER_MOTOR_D);
 
-        steerMotor.setSelectedSensorPosition(getSteerMotorPosition());
+        new Notifier(this::setSteerMotorPositionToAbsolute).startSingle(ENCODER_UPDATE_TIME_SECONDS);
     }
 
-    private int getSteerMotorPosition() {
-        if (steerEncoder.getSourceChannel() == FRONT_LEFT_ENCODER_CHANNEL)
-            waitForSteerEncoderToUpdate();
-
+    private void setSteerMotorPositionToAbsolute() {
         double encoderPosition = Conversions.offsetRead(steerEncoder.getAbsolutePosition(), encoderOffset);
         double motorPosition = Conversions.systemToMotor(encoderPosition, STEER_GEAR_RATIO);
-        return (int) Conversions.revolutionsToFalconTicks(motorPosition);
-    }
-
-    private void waitForSteerEncoderToUpdate() {
-        try {
-            Thread.sleep(ENCODER_UPDATE_TIME_MS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        steerMotor.setSelectedSensorPosition(Conversions.revolutionsToFalconTicks(motorPosition));
     }
 
     enum TrihardSwerveModules {

@@ -23,14 +23,8 @@ public class SwerveCommands {
      *
      * @return the command
      */
-    public static Command getLockSwerveCommand() {
-        final Command
-                stopDriveCommand = new InstantCommand(SwerveCommands::stopDrive),
-                xShapeWheelsCommand = new InstantCommand(SWERVE::lockSwerve);
-
-        return stopDriveCommand
-                .andThen(SwerveCommands.getSetSwerveBrakeCommand(true))
-                .andThen(xShapeWheelsCommand);
+    public static StartEndCommand getLockSwerveCommand() {
+        return new StartEndCommand(SWERVE::lockSwerve, () -> {}, SWERVE);
     }
 
     /**
@@ -79,7 +73,7 @@ public class SwerveCommands {
         final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {   },
+                (pose2d) -> {},
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
                 SWERVE.getRotationPIDConstants(),
