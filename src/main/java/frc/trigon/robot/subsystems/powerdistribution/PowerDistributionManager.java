@@ -1,4 +1,4 @@
-package frc.trigon.robot.utilities;
+package frc.trigon.robot.subsystems.powerdistribution;
 
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Timer;
