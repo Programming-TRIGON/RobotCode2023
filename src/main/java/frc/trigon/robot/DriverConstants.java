@@ -1,6 +1,6 @@
 package frc.trigon.robot;
 
-import frc.trigon.robot.componenets.XboxController;
+import frc.trigon.robot.components.XboxController;
 
 public class DriverConstants {
     private static final int DRIVE_CONTROLLER_PORT = 0;

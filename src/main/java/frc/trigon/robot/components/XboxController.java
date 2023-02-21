@@ -1,4 +1,4 @@
-package frc.trigon.robot.componenets;
+package frc.trigon.robot.components;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
