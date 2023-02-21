@@ -7,26 +7,21 @@ public class BlinkLEDCommand extends LedCommand {
     private final Color[] colors;
     private final double cycleTime;
     private final LedStrip ledStrip;
-    public BlinkLEDCommand(Color[] colors, double cycleTime, LedStrip ledStrip){
+
+    public BlinkLEDCommand(Color[] colors, double cycleTime, LedStrip ledStrip) {
         super(ledStrip);
         this.colors = colors;
         this.cycleTime = cycleTime * 2;
         this.ledStrip = ledStrip;
     }
 
-    @Override
-    public void initialize() {
-        super.initialize();
-    }
 
     @Override
     public void execute() {
         Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++) {
-            colors[i] = this.colors[(int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % this.colors.length];
-        }
-
-
+        int wantedColor = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % colors.length;
+        for (int i = 0; i < ledStrip.getLength(); i++)
+            colors[i] = this.colors[wantedColor];
         ledStrip.setLedsColors(colors);
     }
 
@@ -38,7 +33,7 @@ public class BlinkLEDCommand extends LedCommand {
     @Override
     public void end(boolean interrupted) {
         Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++){
+        for (int i = 0; i < ledStrip.getLength(); i++) {
             colors[i] = Color.kBlack;
         }
         ledStrip.setLedsColors(colors);

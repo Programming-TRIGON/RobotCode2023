@@ -1,46 +1,36 @@
 package frc.trigon.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.logging.Logger;
 
 public class LedStrip extends SubsystemBase {
     private final int startingPosition, endingPosition;
-    private final boolean invert;
-    private static final AddressableLED leds = LedsConstants.LED;
-    private static final AddressableLEDBuffer LED_BUFFER = new AddressableLEDBuffer(LedsConstants.LEDS_LENGTH);
-    public static final ArrayList<LedStrip> ledStrips = new ArrayList<>();
+    private final boolean inverted;
+    private final AddressableLED led = LedsConstants.LED;
+    public static final ArrayList<LedStrip> LED_STRIPS = new ArrayList<>();
     private final int virtualLength;
 
-    static {
-        LedsConstants.LED.setLength(LED_BUFFER.getLength());
-        LedsConstants.LED.setData(LED_BUFFER);
-        LedsConstants.LED.start();
-    }
-
     /**
      * Constructs a new LedStrip.
      * LedStrip represents a subsection of the one long LED strip on the robot.
      *
-     * @param startingPosition the first LED in the strip
-     * @param endingPosition   the last LED in the strip
-     * @param invert           whether the strip is inverted.
+     * @param startingPosition the first LED of the strip
+     * @param endingPosition   the last LED of the strip
+     * @param inverted         whether the strip is inverted
      * @param virtualLength    the length of a virtual strip that is not connected to the robot.
      */
-    public LedStrip(int startingPosition, int endingPosition, boolean invert, int virtualLength) {
+    public LedStrip(int startingPosition, int endingPosition, boolean inverted, int virtualLength) {
         this.startingPosition = startingPosition;
         this.endingPosition = endingPosition;
-        this.invert = invert;
+        this.inverted = inverted;
         this.virtualLength = virtualLength;
-        ledStrips.add(this);
+        LED_STRIPS.add(this);
     }
 
 
@@ -50,13 +40,16 @@ public class LedStrip extends SubsystemBase {
      *
      * @param startingPosition the first LED in the strip
      * @param endingPosition   the last LED in the strip
-     * @param invert whether the strip is inverted.
+     * @param inverted         whether the strip is inverted.
      */
-    public LedStrip(int startingPosition, int endingPosition, boolean invert) {
-        this(startingPosition, endingPosition, invert, endingPosition - startingPosition + 1);
+    public LedStrip(int startingPosition, int endingPosition, boolean inverted) {
+        this(startingPosition, endingPosition, inverted, endingPosition - startingPosition + 1);
     }
 
-    public void setLedsColors(Color[] colors) {
+    /**
+     * sets the color of the LEDs in the strip.
+     */
+    void setLedsColors(Color[] colors) {
         if (colors.length != getLength() || getLength() < endingPosition - startingPosition + 1) {
             Logger.getGlobal().warning("frc.trigon.robot.subsystems.leds.LedStrip.setLedsColors(): Tried to apply a array that not in the correct size");
             if (getCurrentCommand() != null)
@@ -64,13 +57,16 @@ public class LedStrip extends SubsystemBase {
             return;
         }
         for (int i = startingPosition; i < endingPosition + 1; i++) {
-            int idx = invert ? endingPosition + startingPosition - i : i;
-            LED_BUFFER.setLED(i, convertToTrihardColorIfIsReal(applyBrightness(colors[idx - startingPosition], 1)));
+            int invertedIndex = inverted ? endingPosition + startingPosition - i : i;
+            LedsConstants.LED_BUFFER.setLED(i, convertToTrihardColorIfReal(applyBrightness(colors[invertedIndex - startingPosition], 1)));
         }
-        leds.setData(LED_BUFFER);
+        led.setData(LedsConstants.LED_BUFFER);
     }
 
-    public int getLength() {
+    /**
+     * returns the length of the strip.
+     */
+    int getLength() {
         return virtualLength;
     }
 
@@ -91,24 +87,21 @@ public class LedStrip extends SubsystemBase {
 
     }
 
-
-    private static Color convertToTrihardColorIfIsReal(Color color) {
-        if (Robot.isReal()) {
-            return rgbToGrb(balance(color));
-        } else return color;
+    private Color convertToTrihardColorIfReal(Color color) {
+        if (Robot.isReal()) return rgbToGrb(balance(color));
+        else return color;
     }
 
-    private static void InvertArray(Color[] colors) {
-        Collections.reverse(Arrays.asList(colors));
-    }
-
-    boolean isOverlapping(LedStrip otherLedStrip) {
+    private boolean isOverlapping(LedStrip otherLedStrip) {
         return (otherLedStrip.startingPosition >= this.startingPosition && otherLedStrip.startingPosition <= this.endingPosition)
                 || (otherLedStrip.endingPosition >= this.startingPosition && otherLedStrip.endingPosition <= this.endingPosition);
     }
 
+    /**
+     * cancels all commands that are overlapping with this strip.
+     */
     void cancelOverlapping() {
-        for (LedStrip ledStrip : ledStrips) {
+        for (LedStrip ledStrip : LED_STRIPS) {
             if (ledStrip == this)
                 continue;
 

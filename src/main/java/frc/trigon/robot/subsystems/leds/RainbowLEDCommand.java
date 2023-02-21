@@ -7,7 +7,9 @@ public class RainbowLEDCommand extends LedCommand {
 
     private final LedStrip ledStrip;
 
-
+    /**
+     * @param ledStrip the led strip
+     */
     public RainbowLEDCommand(LedStrip ledStrip) {
         super(ledStrip);
         this.ledStrip = ledStrip;
@@ -25,21 +27,11 @@ public class RainbowLEDCommand extends LedCommand {
     }
 
     @Override
-    public void execute() {
-    }
-
-    @Override
     public void end(boolean interrupted) {
         Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++){
+        for (int i = 0; i < ledStrip.getLength(); i++)
             colors[i] = Color.kBlack;
-        }
         ledStrip.setLedsColors(colors);
-    }
-
-    @Override
-    public boolean isFinished() {
-        return false;
     }
 
     @Override

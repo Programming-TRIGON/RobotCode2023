@@ -6,12 +6,19 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 
 public class MovingColorsLEDCommand extends LedCommand {
-    Color backgroundColor;
-    Color primeColor;
-    double cycleTime;
-    int amountOfMovingLeds;
+    private final Color backgroundColor;
+    private final Color primeColor;
+    private final double cycleTime;
+    private final int amountOfMovingLeds;
     private final LedStrip ledStrip;
 
+    /**
+     * @param backgroundColor    The color of the background
+     * @param primeColor         The color of the moving leds
+     * @param cycleTime          The time it takes for the moving leds to go from one pixel to the other
+     * @param amountOfMovingLeds The amount of leds that are moving
+     * @param ledStrip           The led strip
+     */
     public MovingColorsLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
         super(ledStrip);
         this.backgroundColor = backgroundColor;
@@ -19,11 +26,6 @@ public class MovingColorsLEDCommand extends LedCommand {
         this.cycleTime = cycleTime;
         this.amountOfMovingLeds = amountOfMovingLeds - 1;
         this.ledStrip = ledStrip;
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
     }
 
     @Override
@@ -49,9 +51,8 @@ public class MovingColorsLEDCommand extends LedCommand {
     @Override
     public void end(boolean interrupted) {
         Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++) {
+        for (int i = 0; i < ledStrip.getLength(); i++)
             colors[i] = Color.kBlack;
-        }
         ledStrip.setLedsColors(colors);
     }
 

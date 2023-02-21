@@ -4,12 +4,19 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class MovingAndStopInMiddleLEDCommand extends LedCommand {
-    Color backgroundColor;
-    Color primeColor;
-    double cycleTime;
-    int amountOfMovingLeds;
+    private final Color backgroundColor;
+    private final Color primeColor;
+    private final double cycleTime;
+    private final int amountOfMovingLeds;
     private final LedStrip ledStrip;
 
+    /**
+     * @param backgroundColor the color of the background
+     * @param primeColor      the color of the moving leds
+     * @param cycleTime       the time it takes for the leds to move from one pixel to the other
+     * @param amountOfMovingLeds the amount of leds that move
+     * @param ledStrip  led strip
+     */
     public MovingAndStopInMiddleLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
         super(ledStrip);
         this.backgroundColor = backgroundColor;
@@ -17,11 +24,6 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
         this.cycleTime = cycleTime;
         this.amountOfMovingLeds = amountOfMovingLeds - 1;
         this.ledStrip = ledStrip;
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
     }
 
     @Override
@@ -60,11 +62,6 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
             colors[i] = Color.kBlack;
         }
         ledStrip.setLedsColors(colors);
-    }
-
-    @Override
-    public boolean isFinished() {
-        return false;
     }
 
     @Override

@@ -2,21 +2,22 @@ package frc.trigon.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.util.Color;
 
-
 public class StaticColorLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
     private final Color[] colors;
     private final int[] lengthOfEveryStrip;
 
+    /**
+     * @param ledStrip the led strip
+     * @param colors the colors of the led strip
+     * @param lengthOfEveryStrip the length of every strip
+     */
     public StaticColorLEDCommand(LedStrip ledStrip, Color[] colors, int[] lengthOfEveryStrip) {
         super(ledStrip);
         this.ledStrip = ledStrip;
         this.colors = colors;
         this.lengthOfEveryStrip = lengthOfEveryStrip;
-
     }
-
-
 
     @Override
     public void initialize() {
@@ -40,20 +41,10 @@ public class StaticColorLEDCommand extends LedCommand {
     }
 
     @Override
-    public void execute() {
-    }
-
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    @Override
     public void end(boolean interrupted) {
         Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++){
+        for (int i = 0; i < ledStrip.getLength(); i++)
             colors[i] = Color.kBlack;
-        }
         ledStrip.setLedsColors(colors);
     }
 
