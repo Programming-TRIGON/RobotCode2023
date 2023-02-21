@@ -1,10 +1,8 @@
 package frc.trigon.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class RainbowLEDCommand extends LedCommand {
-
     private final LedStrip ledStrip;
 
     /**

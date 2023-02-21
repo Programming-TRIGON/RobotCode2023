@@ -29,10 +29,18 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
     @Override
     public void execute() {
         Color[] colors = new Color[ledStrip.getLength()];
-        int firstInMovingRange = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % (ledStrip.getLength() / 2);
+        int firstInMovingRange = getFirstInMovingRange(ledStrip.getLength());
         int lastInMovingRange = (firstInMovingRange + amountOfMovingLeds) % ledStrip.getLength();
         DefineTheArrayOfTheColors(colors, firstInMovingRange, lastInMovingRange);
         ledStrip.setLedsColors(colors);
+    }
+
+    private int getFirstInMovingRange(){
+        return (int) ((Timer.getFPGATimestamp() / cycleTime) * 2);
+    }
+
+    private int getFirstInMovingRange(int lengthOfStrip){
+        return (getFirstInMovingRange() % lengthOfStrip);
     }
 
     private boolean shouldBePrimeColor(int index, int firstInMovingRange, int lastInMovingRange) {
