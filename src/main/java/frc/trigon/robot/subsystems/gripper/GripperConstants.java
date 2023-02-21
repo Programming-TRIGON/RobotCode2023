@@ -9,7 +9,7 @@ public class GripperConstants {
     private static final double
             HOLD_TRIGGER_DURATION = 0.2,
             HOLD_TRIGGER_CURRENT = 6;
-    static final PowerDistributionManager.CurrentLimitConfig POWER_DISTRIBUTION_CONFIG = new PowerDistributionManager.CurrentLimitConfig(
+    static final PowerDistributionManager.CurrentLimitConfig HOLD_TRIGGER_CONFIG = new PowerDistributionManager.CurrentLimitConfig(
             POWER_DISTRIBUTION_PORT,
             HOLD_TRIGGER_DURATION,
             HOLD_TRIGGER_CURRENT
@@ -18,7 +18,7 @@ public class GripperConstants {
     static final WPI_TalonFX MOTOR = new WPI_TalonFX(MOTOR_ID);
 
     enum GripperState {
-        STOPPED(0),
+        STOP(0),
         COLLECT(-0.9),
         EJECT(0.9),
         HOLD(-0.075);

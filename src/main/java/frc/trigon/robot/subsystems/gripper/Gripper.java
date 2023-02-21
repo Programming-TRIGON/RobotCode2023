@@ -15,7 +15,7 @@ public class Gripper extends SubsystemBase {
 
     private Gripper() {
         PowerDistributionManager.getInstance().setPortRequirements(
-                GripperConstants.POWER_DISTRIBUTION_CONFIG,
+                GripperConstants.HOLD_TRIGGER_CONFIG,
                 () -> setState(GripperConstants.GripperState.HOLD)
         );
     }
@@ -26,7 +26,7 @@ public class Gripper extends SubsystemBase {
     public StartEndCommand collect() {
         return new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.COLLECT),
-                () -> setState(GripperConstants.GripperState.STOPPED),
+                () -> setState(GripperConstants.GripperState.STOP),
                 this
         );
     }
@@ -37,7 +37,7 @@ public class Gripper extends SubsystemBase {
     public StartEndCommand eject() {
         return new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.EJECT),
-                () -> setState(GripperConstants.GripperState.STOPPED),
+                () -> setState(GripperConstants.GripperState.STOP),
                 this
         );
     }
@@ -48,7 +48,7 @@ public class Gripper extends SubsystemBase {
     public StartEndCommand hold() {
         return new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.HOLD),
-                () -> setState(GripperConstants.GripperState.STOPPED),
+                () -> setState(GripperConstants.GripperState.STOP),
                 this
         );
     }
