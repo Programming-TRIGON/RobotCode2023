@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * A class that estimates the robot's pose using a {@link SwerveDrivePoseEstimator}.
+ * A class that estimates the robot's pose using a {@link SwerveDrivePoseEstimator}, and robot pose sources.
  *
  * @author Shriqui
  */

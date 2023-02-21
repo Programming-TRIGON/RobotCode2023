@@ -29,8 +29,8 @@ public class RobotContainer {
 
     private final Command
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / 6,
-                    () -> driverController.getLeftX() /6,
+                    driverController::getLeftY,
+                    driverController::getLeftX,
                     driverController::getRightX
             ),
             selfRelativeDriveFromSticksCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
@@ -39,8 +39,8 @@ public class RobotContainer {
                     driverController::getRightX
             ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
-                    () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / 2,
-                    () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / 2,
+                    () -> -Math.cos(Units.degreesToRadians(driverController.getPov())) / 5,
+                    () -> Math.sin(Units.degreesToRadians(driverController.getPov())) / 5,
                     () -> 0
             ),
             resetPoseCommand = new InstantCommand(
