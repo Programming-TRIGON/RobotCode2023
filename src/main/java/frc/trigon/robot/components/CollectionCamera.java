@@ -35,7 +35,7 @@ public class CollectionCamera extends PhotonCamera {
     /**
      * @return the position of the target game piece on the collection system, in meters. Returns the default position if no game piece is detected
      */
-    public double getTargetGamePiecePosition(double defaultPosition) {
+    public double getGamePiecePosition(double defaultPosition) {
         final PhotonTrackedTarget targetGamePiece = getTargetGamePiece();
         if (targetGamePiece == null)
             return defaultPosition;

@@ -36,7 +36,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static Command getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(() -> driveInitialize(true));
+        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
@@ -60,7 +60,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static Command getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(() -> driveInitialize(true));
+        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {   },
@@ -98,7 +98,7 @@ public class SwerveCommands {
     public static CommandBase getFieldRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                () -> driveInitialize(true),
+                () -> initializeDrive(true),
                 () -> SwerveCommands.fieldRelativeDriveFromSuppliers(x, y, theta),
                 (interrupted) -> stopDrive(),
                 () -> false,
@@ -118,7 +118,7 @@ public class SwerveCommands {
     public static CommandBase getSelfRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                () -> driveInitialize(true),
+                () -> initializeDrive(true),
                 () -> selfRelativeDriveFromSuppliers(x, y, theta),
                 (interrupted) -> stopDrive(),
                 () -> false,
@@ -139,7 +139,7 @@ public class SwerveCommands {
     public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
         return new FunctionalCommand(
-                () -> driveInitialize(false),
+                () -> initializeDrive(false),
                 () -> fieldRelativeDriveFromSuppliers(x, y, angle),
                 (interrupted) -> stopDrive(),
                 () -> false,
@@ -159,7 +159,7 @@ public class SwerveCommands {
     public static CommandBase getSelfRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                () -> driveInitialize(false),
+                () -> initializeDrive(false),
                 () -> selfRelativeDriveFromSuppliers(x, y, theta),
                 (interrupted) -> stopDrive(),
                 () -> false,
@@ -179,7 +179,7 @@ public class SwerveCommands {
     public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
-                () -> driveInitialize(false),
+                () -> initializeDrive(false),
                 () -> SwerveCommands.fieldRelativeDriveFromSuppliers(x, y, theta),
                 (interrupted) -> stopDrive(),
                 () -> false,
@@ -187,7 +187,7 @@ public class SwerveCommands {
         );
     }
 
-    private static void driveInitialize(boolean closedLoop) {
+    private static void initializeDrive(boolean closedLoop) {
         SWERVE.setBrake(true);
         SWERVE.setClosedLoop(closedLoop);
     }
