@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,22 @@ import java.util.function.Supplier;
 public class SwerveCommands {
     private static final Swerve SWERVE = RobotContainer.SWERVE;
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+
+    /**
+     * Creates a command that makes the wheels of the swerve be X shaped and brakes them.
+     * This should be used when you want to make moving the swerve hard.
+     *
+     * @return the command
+     */
+    public static Command getStopSwerveFromMovingCommand() {
+        final Command
+                stopDriveCommand = new InstantCommand(SwerveCommands::stopDrive),
+                xShapeWheelsCommand = new InstantCommand(SwerveCommands::xShapeWheels);
+
+        return stopDriveCommand
+                .andThen(SwerveCommands.getSetSwerveBrakeCommand(true))
+                .andThen(xShapeWheelsCommand);
+    }
 
     /**
      * @return a command that brakes the swerve modules and then coasts them, runs when disabled
@@ -184,6 +201,16 @@ public class SwerveCommands {
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
+        );
+    }
+
+    private static void xShapeWheels() {
+        int angle = 135;
+
+        Arrays.stream(SWERVE.getModules()).forEach(
+                module -> {
+                    module.setTargetAngle(Rotation2d.fromDegrees(angle));
+                }
         );
     }
 
