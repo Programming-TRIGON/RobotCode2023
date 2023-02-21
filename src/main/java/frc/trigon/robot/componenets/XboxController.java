@@ -71,7 +71,6 @@ public class XboxController extends CommandXboxController {
             return 0;
 
         final double exponentiatedValue = Math.pow(value, exponent);
-        value = Math.abs(exponentiatedValue) * Math.signum(value);
-        return value;
+        return Math.abs(exponentiatedValue) * Math.signum(value);
     }
 }
