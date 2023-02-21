@@ -16,7 +16,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
+/**
+ * A class that estimates the robot's pose using a {@link SwerveDrivePoseEstimator}.
+ *
+ * @author Shriqui
+ */
 public class PoseEstimator extends SubsystemBase implements Loggable {
     private final static PoseEstimator INSTANCE = new PoseEstimator();
 
