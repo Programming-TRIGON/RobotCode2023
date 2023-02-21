@@ -66,9 +66,8 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
     @Override
     public void end(boolean interrupted) {
         Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++) {
+        for (int i = 0; i < ledStrip.getLength(); i++)
             colors[i] = Color.kBlack;
-        }
         ledStrip.setLedsColors(colors);
     }
 
