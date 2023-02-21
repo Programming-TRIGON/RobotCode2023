@@ -8,7 +8,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
-public class Limelight {
+public class FiducialLimelight {
     private final String hostname;
     private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
 
@@ -17,7 +17,7 @@ public class Limelight {
      *
      * @param hostname the name of the Limelight
      */
-    public Limelight(String hostname) {
+    public FiducialLimelight(String hostname) {
         this.hostname = hostname;
         final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
