@@ -19,7 +19,7 @@ public class XboxController extends CommandXboxController {
      * Construct an instance of a controller.
      *
      * @param port     the port index on the Driver Station that the controller is plugged into
-     * @param exponent how much to exponentiate the raw values by
+     * @param exponent how much to exponentiate the raw values of the sticks by
      * @param deadband the deadband for the controller
      */
     public XboxController(int port, int exponent, double deadband) {
@@ -29,7 +29,7 @@ public class XboxController extends CommandXboxController {
     }
 
     /**
-     * Sets the exponent for the controller, which will exponentiate the raw values by the exponent.
+     * Sets the exponent for the controller, which will exponentiate the raw values of the stick by the exponent.
      *
      * @param exponent the exponent
      */
@@ -67,10 +67,11 @@ public class XboxController extends CommandXboxController {
     }
 
     private double calculateValue(double value) {
-        final double exponentiatedValue = Math.pow(value, exponent);
-        value = Math.abs(exponentiatedValue) * Math.signum(value);
         if (Math.abs(value) < deadband)
             return 0;
+
+        final double exponentiatedValue = Math.pow(value, exponent);
+        value = Math.abs(exponentiatedValue) * Math.signum(value);
         return value;
     }
 }
