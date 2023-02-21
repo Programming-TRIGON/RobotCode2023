@@ -8,8 +8,8 @@ public class StaticColorLEDCommand extends LedCommand {
     private final int[] lengthOfEveryLedGroup;
 
     /**
-     * @param ledStrip the led strip
-     * @param colors the colors of the led strip
+     * @param ledStrip              the led strip
+     * @param colors                the colors of the led strip
      * @param lengthOfEveryLedGroup the length of every strip
      */
     public StaticColorLEDCommand(LedStrip ledStrip, Color[] colors, int[] lengthOfEveryLedGroup) {

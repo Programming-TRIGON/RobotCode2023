@@ -9,8 +9,8 @@ public class BlinkLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * @param ledStrip the led strip
-     * @param colors the colors of the led strip
+     * @param ledStrip  the led strip
+     * @param colors    the colors of the led strip
      * @param cycleTime the time that takes to move from one pixel to the other
      */
     public BlinkLEDCommand(Color[] colors, double cycleTime, LedStrip ledStrip) {

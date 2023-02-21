@@ -11,11 +11,11 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * @param backgroundColor the color of the background
-     * @param primeColor      the color of the moving leds
-     * @param cycleTime       the time it takes for the leds to move from one pixel to the other
+     * @param backgroundColor    the color of the background
+     * @param primeColor         the color of the moving leds
+     * @param cycleTime          the time it takes for the leds to move from one pixel to the other
      * @param amountOfMovingLeds the amount of leds that move
-     * @param ledStrip  led strip
+     * @param ledStrip           led strip
      */
     public MovingAndStopInMiddleLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
         super(ledStrip);
@@ -35,11 +35,11 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
         ledStrip.setLedsColors(colors);
     }
 
-    private int getFirstInMovingRange(){
+    private int getFirstInMovingRange() {
         return (int) ((Timer.getFPGATimestamp() / cycleTime) * 2);
     }
 
-    private int getFirstInMovingRange(int lengthOfStrip){
+    private int getFirstInMovingRange(int lengthOfStrip) {
         return (getFirstInMovingRange() % lengthOfStrip);
     }
 

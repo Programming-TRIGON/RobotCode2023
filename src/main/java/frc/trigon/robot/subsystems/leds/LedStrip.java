@@ -17,9 +17,6 @@ public class LedStrip extends SubsystemBase {
     private final int virtualLength;
 
     /**
-     * Constructs a new LedStrip.
-     * LedStrip represents a subsection of the one long LED strip on the robot.
-     *
      * @param startingPosition the first LED of the strip
      * @param endingPosition   the last LED of the strip
      * @param inverted         whether the strip is inverted
@@ -35,9 +32,6 @@ public class LedStrip extends SubsystemBase {
 
 
     /**
-     * Constructs a new LedStrip.
-     * LedStrip represents a subsection of the one long LED strip on the robot.
-     *
      * @param startingPosition the first LED in the strip
      * @param endingPosition   the last LED in the strip
      * @param inverted         whether the strip is inverted.
