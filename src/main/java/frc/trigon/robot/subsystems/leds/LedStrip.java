@@ -29,7 +29,7 @@ public class LedStrip extends SubsystemBase {
         this.virtualLength = virtualLength;
         LED_STRIPS.add(this);
     }
-    
+
     /**
      * @param startingPosition the first LED in the strip
      * @param endingPosition   the last LED in the strip
