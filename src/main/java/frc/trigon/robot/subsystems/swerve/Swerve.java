@@ -2,6 +2,7 @@ package frc.trigon.robot.subsystems.swerve;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -67,6 +68,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     /**
      * @return the swerve's profiled pid controller for rotation
      */
+    @Log(name = "rotationController")
     protected abstract ProfiledPIDController getRotationController();
 
     /**
@@ -79,7 +81,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      */
     @Log(name = "heading", methodName = "getDegrees")
     public Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(getGyro().getYaw());
+        return Rotation2d.fromDegrees(MathUtil.inputModulus(getGyro().getYaw(), -180, 180));
     }
 
     /**
@@ -184,6 +186,16 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
         for (int i = 0; i < getModules().length; i++)
             getModules()[i].setTargetState(swerveModuleStates[i]);
+    }
+
+    @Log(name = "rotationController/error")
+    private double getRotationControllerError() {
+        return getRotationController().getPositionError();
+    }
+
+    @Log(name = "rotationController/setpoint")
+    private double getRotationControllerSetpoint() {
+        return getRotationController().getSetpoint().position;
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {

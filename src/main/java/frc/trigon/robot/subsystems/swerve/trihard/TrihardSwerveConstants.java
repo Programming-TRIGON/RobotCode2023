@@ -38,17 +38,18 @@ public class TrihardSwerveConstants {
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
-            MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND,
+            1,
             0.5
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            ROTATION_PID_CONSTANTS.kP,
-            ROTATION_PID_CONSTANTS.kI,
-            ROTATION_PID_CONSTANTS.kD,
+            0.01,
+            0,
+            0,
             ROTATION_CONSTRAINTS
     );
 
     static {
+        ROTATION_CONTROLLER.enableContinuousInput(-180, 180);
         GYRO.configFactoryDefault();
 
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_1_General, 200);

@@ -140,12 +140,14 @@ public class SwerveCommands {
      * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in open loop mode.
      * All velocities are in percent output from -1 to 1.
      * The angle should be the target angle of the robot, not the target angular velocity.
+     * NOT WORKING
      *
      * @param x     the target forwards velocity
      * @param y     the target leftwards velocity
      * @param angle the target angle of the robot
      * @return the command
      */
+    @Deprecated
     public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
         return new FunctionalCommand(
@@ -203,14 +205,14 @@ public class SwerveCommands {
     }
 
     private static void fieldRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
+        SWERVE.getRotationController().setGoal(angle.get().getDegrees());
         SWERVE.fieldRelativeDrive(
                 new Translation2d(
                         x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
                         y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
                 ),
-                new Rotation2d(
-                        SWERVE.getRotationController()
-                                .calculate(SWERVE.getGyro().getYaw(), angle.get().getDegrees())
+                Rotation2d.fromDegrees(
+                        SWERVE.getRotationController().calculate(SWERVE.getHeading().getDegrees())
                 )
         );
     }
