@@ -46,7 +46,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static SequentialCommandGroup getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(true));
+        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(false));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
@@ -70,7 +70,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(true));
+        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(false));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
