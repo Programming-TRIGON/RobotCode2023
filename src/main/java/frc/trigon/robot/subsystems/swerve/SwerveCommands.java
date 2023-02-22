@@ -30,7 +30,7 @@ public class SwerveCommands {
     /**
      * @return a command that brakes the swerve modules and then coasts them, runs when disabled
      */
-    public static Command getBrakeAndCoastCommand() {
+    public static WrapperCommand getBrakeAndCoastCommand() {
         return SwerveCommands.getSetSwerveBrakeCommand(true)
                 .andThen(new WaitCommand(SWERVE.getBrakeTimeSeconds()))
                 .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
@@ -45,7 +45,7 @@ public class SwerveCommands {
      * @param useAllianceColor whether to use the alliance color
      * @return the command
      */
-    public static Command getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
+    public static SequentialCommandGroup getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
         final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -69,7 +69,7 @@ public class SwerveCommands {
      * @param useAllianceColor whether to use the alliance color
      * @return the command
      */
-    public static Command getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
+    public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
         final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(true));
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -92,7 +92,7 @@ public class SwerveCommands {
      * @param brake whether the drive motors should brake or coast
      * @return the command
      */
-    public static CommandBase getSetSwerveBrakeCommand(boolean brake) {
+    public static InstantCommand getSetSwerveBrakeCommand(boolean brake) {
         return new InstantCommand(() -> SWERVE.setBrake(brake), SWERVE);
     }
 
@@ -105,7 +105,7 @@ public class SwerveCommands {
      * @param theta the target theta velocity, CCW+
      * @return the command
      */
-    public static CommandBase getFieldRelativeClosedLoopSupplierDriveCommand(
+    public static FunctionalCommand getFieldRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(true),
@@ -125,7 +125,7 @@ public class SwerveCommands {
      * @param theta the target theta velocity, CCW+
      * @return the command
      */
-    public static CommandBase getSelfRelativeClosedLoopSupplierDriveCommand(
+    public static FunctionalCommand getSelfRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(true),
@@ -148,7 +148,7 @@ public class SwerveCommands {
      * @return the command
      */
     @Deprecated
-    public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
+    public static FunctionalCommand getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
         return new FunctionalCommand(
                 () -> initializeDrive(false),
@@ -168,7 +168,7 @@ public class SwerveCommands {
      * @param theta the target theta velocity, CCW+
      * @return the command
      */
-    public static CommandBase getSelfRelativeOpenLoopSupplierDriveCommand(
+    public static FunctionalCommand getSelfRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(false),
@@ -188,7 +188,7 @@ public class SwerveCommands {
      * @param theta the target theta velocity, CCW+
      * @return the command
      */
-    public static CommandBase getFieldRelativeOpenLoopSupplierDriveCommand(
+    public static FunctionalCommand getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(false),

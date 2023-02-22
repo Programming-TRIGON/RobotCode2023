@@ -2,7 +2,7 @@ package frc.trigon.robot;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import frc.trigon.robot.components.XboxController;
@@ -27,7 +27,7 @@ public class RobotContainer {
     );
     private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
 
-    private final Command
+    private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     driverController::getLeftY,
                     driverController::getLeftX,
