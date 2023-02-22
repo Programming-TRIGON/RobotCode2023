@@ -1,6 +1,7 @@
 package frc.trigon.robot;
 
-import frc.trigon.robot.componenets.XboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.trigon.robot.components.XboxController;
 
 public class DriverConstants {
     private static final int DRIVE_CONTROLLER_PORT = 0;
@@ -9,4 +10,12 @@ public class DriverConstants {
     static final XboxController DRIVE_CONTROLLER = new XboxController(
             DRIVE_CONTROLLER_PORT, DRIVE_CONTROLLER_EXPONENT, DRIVE_CONTROLLER_DEADBAND
     );
+    static final double POV_DIVIDER = 5;
+
+    static final Trigger
+            RESET_POSE_TRIGGER = DRIVE_CONTROLLER.y(),
+            TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER = DRIVE_CONTROLLER.x(),
+            LOCK_SWERVE_TRIGGER = DRIVE_CONTROLLER.a(),
+            DRIVE_FROM_DPAD_TRIGGER = new Trigger(() -> DRIVE_CONTROLLER.getPov() != -1);
+
 }
