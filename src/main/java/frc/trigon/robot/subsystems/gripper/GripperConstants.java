@@ -1,5 +1,6 @@
 package frc.trigon.robot.subsystems.gripper;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import frc.trigon.robot.subsystems.powerdistribution.PowerDistributionManager;
 
@@ -24,13 +25,14 @@ public class GripperConstants {
         MOTOR.configFactoryDefault();
 
         MOTOR.setInverted(INVERTED);
+        MOTOR.setNeutralMode(NeutralMode.Brake);
     }
 
     enum GripperState {
         STOP(0),
         COLLECT(-0.9),
-        EJECT(0.2),
-        HOLD(-0.075);
+        EJECT(0.43),
+        HOLD(-0.1);
 
         final double power;
 

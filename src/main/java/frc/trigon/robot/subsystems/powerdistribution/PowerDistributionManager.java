@@ -13,7 +13,7 @@ import java.util.HashMap;
 public class PowerDistributionManager extends SubsystemBase {
     private final static PowerDistributionManager INSTANCE = new PowerDistributionManager();
 
-    private final PowerDistribution powerDistribution = new PowerDistribution();
+    private final PowerDistribution powerDistribution = new PowerDistribution(1, PowerDistribution.ModuleType.kRev);
     private final HashMap<CurrentLimitConfig, Runnable> requirements = new HashMap<>();
 
     private PowerDistributionManager() {
