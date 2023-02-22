@@ -1,35 +1,34 @@
 package frc.trigon.robot.subsystems.swerve;
 
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import frc.trigon.robot.utilities.Conversions;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Config;
+import io.github.oblarg.oblog.annotations.Log;
 
-public class SwerveModule implements Sendable {
-    private final WPI_TalonFX driveMotor;
-    private final CANSparkMax steerMotor;
-    private final SparkMaxAbsoluteEncoder steerEncoder;
-    private double encoderOffset;
+public abstract class SwerveModule implements Loggable {
     private SwerveModuleState targetState = new SwerveModuleState();
+    private boolean driveMotorClosedLoop = false;
+    private double targetVelocity = 0;
 
-    public SwerveModule(SwerveModuleConstants moduleConstants) {
-        this.driveMotor = moduleConstants.driveMotor;
-        this.steerMotor = moduleConstants.steerMotor;
-        this.steerEncoder = this.steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-        this.encoderOffset = moduleConstants.encoderOffset;
+    @Override
+    public String configureLogName() {
+        return getModuleName();
     }
 
     /**
-     * @return the target state of the module
+     * @return the current position of the module
      */
-    public SwerveModuleState getTargetState() {
-        return targetState;
+    protected SwerveModulePosition getCurrentPosition() {
+        return new SwerveModulePosition(getDriveDistance(), getCurrentAngle());
+    }
+
+    /**
+     * @return the current state of the module
+     */
+    protected SwerveModuleState getCurrentState() {
+        return new SwerveModuleState(getCurrentVelocity(), getCurrentAngle());
     }
 
     /**
@@ -37,44 +36,59 @@ public class SwerveModule implements Sendable {
      *
      * @param targetState the target state
      */
-    public void setTargetState(SwerveModuleState targetState) {
+    protected void setTargetState(SwerveModuleState targetState) {
         this.targetState = targetState = optimizeState(targetState);
-        setTargetAngle(targetState.angle.getDegrees());
+        setTargetAngle(targetState.angle);
         setTargetVelocity(targetState.speedMetersPerSecond);
     }
 
     /**
-     * @return the current state of the module
+     * Sets whether the drive motor should be in closed loop control, or in open loop control.
+     *
+     * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
      */
-    public SwerveModuleState getCurrentState() {
-        return new SwerveModuleState(getCurrentVelocity(), Rotation2d.fromDegrees(getCurrentAngle()));
+    protected void setDriveMotorClosedLoop(boolean closedLoop) {
+        driveMotorClosedLoop = closedLoop;
     }
 
+    /**
+     * @return the target state of the module
+     */
+    private SwerveModuleState getTargetState() {
+        return targetState;
+    }
+
+    /**
+     * @return the target angle of the module
+     */
+    @Log(name = "targetAngle", methodName = "getDegrees")
+    protected abstract Rotation2d getTargetAngle();
+
+    /**
+     * @return the target velocity of the module
+     */
+    @Log(name = "targetVelocity")
+    private double getTargetVelocity() {
+        return targetVelocity;
+    }
+
+    /**
+     * Sets the target velocity for the module.
+     *
+     * @param velocity the target velocity
+     */
+    @Config(name = "setTargetVelocity")
     private void setTargetVelocity(double velocity) {
-        double power = velocity / SwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
-        driveMotor.set(power);
+        targetVelocity = velocity;
+        if (driveMotorClosedLoop)
+            setTargetClosedLoopVelocity(velocity);
+        else
+            setTargetOpenLoopVelocity(velocity);
     }
 
-    private void setTargetAngle(double targetAngle) {
-        steerMotor.getPIDController().setReference(targetAngle, ControlType.kPosition);
-    }
-
-    /**
-     * @return the module's current velocity in mps
-     */
-    private double getCurrentVelocity() {
-        double motorTicksPer100Ms = driveMotor.getSelectedSensorVelocity();
-        double motorRevolutionsPer100Ms = Conversions.falconTicksToRevolutions(motorTicksPer100Ms);
-        double motorRps = Conversions.perHundredMsToPerSecond(motorRevolutionsPer100Ms);
-        double wheelRps = Conversions.motorToSystem(motorRps, SwerveModuleConstants.DRIVE_GEAR_RATIO);
-        return Conversions.revolutionsToDistance(wheelRps, SwerveModuleConstants.WHEEL_DIAMETER_METERS);
-    }
-
-    /**
-     * @return the module's current angle in degrees
-     */
-    private double getCurrentAngle() {
-        return steerEncoder.getPosition();
+    @Config(name = "setTargetAngle")
+    private void setTargetDegrees(double degrees) {
+        setTargetAngle(Rotation2d.fromDegrees(degrees));
     }
 
     /**
@@ -82,58 +96,61 @@ public class SwerveModule implements Sendable {
      *
      * @param brake true if the drive motor should brake, false if it should coast
      */
-    public void setBrake(boolean brake) {
-        driveMotor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
-    }
+    protected abstract void setBrake(boolean brake);
 
     /**
      * Stops the module from moving.
      */
-    public void stop() {
-        driveMotor.disable();
-        steerMotor.disable();
-    }
+    protected abstract void stop();
 
     /**
-     * Minimize the change in the heading the target swerve module state would require
-     * by potentially reversing the direction the wheel spins. Customized from WPILib's
-     * version to include placing in appropriate scope for closed loop control on the motor controller.
-     *
-     * @param state the target angle for the module
+     * @return the module's current angle
      */
-    private SwerveModuleState optimizeState(SwerveModuleState state) {
-        SwerveModuleState optimized = SwerveModuleState.optimize(state, Rotation2d.fromDegrees(getCurrentAngle()));
-        optimized.angle = Rotation2d.fromDegrees(scope(optimized.angle.getDegrees()));
-        return optimized;
-    }
+    @Log(name = "angle", methodName = "getDegrees")
+    protected abstract Rotation2d getCurrentAngle();
 
     /**
-     * Returns an angle that's equivalent to the given angle,
-     * but is within 180 degrees of the reference angle.
-     *
-     * @param angle the angle to scope in degrees
-     * @return the scoped angle
+     * @return the module's current velocity in meters per second
      */
-    private double scope(double angle) {
-        double rawCurrentAngle = getCurrentAngle() % 360;
-        double rawTargetAngle = angle % 360;
-        double difference = rawTargetAngle - rawCurrentAngle;
-        if(difference < -180)
-            difference += 360;
-        else if(difference > 180)
-            difference -= 360;
+    @Log(name = "velocity")
+    protected abstract double getCurrentVelocity();
 
-        return difference + getCurrentAngle();
-    }
+    /**
+     * @return the module's current drive distance in meters
+     */
+    protected abstract double getDriveDistance();
 
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("angle", this::getCurrentAngle, null);
-        builder.addDoubleProperty("velocity", this::getCurrentVelocity, null);
-        builder.addDoubleProperty("targetAngle", () -> targetState.angle.getDegrees(), this::setTargetAngle);
-        builder.addDoubleProperty("targetVelocity", () -> targetState.speedMetersPerSecond, this::setTargetVelocity);
-        builder.addDoubleProperty(
-                "rawAngleDeg", () -> Conversions.revolutionsToDegrees(steerEncoder.getPosition()), null);
-    }
+    /**
+     * Sets the module's target angle.
+     *
+     * @param rotation2d the target angle
+     */
+    protected abstract void setTargetAngle(Rotation2d rotation2d);
+
+    /**
+     * Optimizes the module state.
+     *
+     * @param state the state to optimize
+     * @return the optimized state
+     */
+    protected abstract SwerveModuleState optimizeState(SwerveModuleState state);
+
+    /**
+     * Sets the module's target velocity in closed loop control.
+     *
+     * @param velocity the target velocity
+     */
+    protected abstract void setTargetClosedLoopVelocity(double velocity);
+
+    /**
+     * Sets the module's target velocity in open loop control.
+     *
+     * @param velocity the target velocity
+     */
+    protected abstract void setTargetOpenLoopVelocity(double velocity);
+
+    /**
+     * @return the module's name
+     */
+    protected abstract String getModuleName();
 }
-

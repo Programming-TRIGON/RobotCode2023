@@ -1,4 +1,4 @@
-package frc.trigon.robot.componenets;
+package frc.trigon.robot.components;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -64,6 +64,16 @@ public class XboxController extends CommandXboxController {
     @Override
     public double getRightY() {
         return calculateValue(super.getRightY());
+    }
+
+    /**
+     * Get the angle in degrees of the default POV (index 0) on the HID.
+     * The POV angles start at 0 in the up direction, and increase clockwise (e.g. right is 90, upper-left is 315).
+     *
+     * @return the angle of the POV in degrees, or -1 if the POV is not pressed
+     */
+    public double getPov() {
+        return super.getHID().getPOV();
     }
 
     private double calculateValue(double value) {
