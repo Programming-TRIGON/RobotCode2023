@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * A class that estimates the robot's pose using a {@link SwerveDrivePoseEstimator}, and robot pose sources.
  *
- * @author Shriqui - Captain, and Omer - Programing Captain
+ * @author Shriqui - Captain, Omer - Programing Captain
  */
 public class PoseEstimator extends SubsystemBase implements Loggable {
     private final static PoseEstimator INSTANCE = new PoseEstimator();
