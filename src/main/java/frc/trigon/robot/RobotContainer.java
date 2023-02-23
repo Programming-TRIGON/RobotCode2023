@@ -3,21 +3,26 @@ package frc.trigon.robot;
 import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
+import frc.trigon.robot.constants.AutonomousConstants;
+import frc.trigon.robot.constants.DriverConstants;
 import frc.trigon.robot.robotposesources.AprilTagPhotonCamera;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
-import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
+import frc.trigon.robot.subsystems.swerve.testing.TestingSwerve;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class RobotContainer {
     @Log
-    public static final Swerve SWERVE = TrihardSwerve.getInstance();
+    public static final Swerve SWERVE = TestingSwerve.getInstance();
+    @Log
+    private final SendableChooser<String> autonomousPathChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
     private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera(
             "limelight-forward",
@@ -30,13 +35,13 @@ public class RobotContainer {
 
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / calculateShiftModeValue(),
-                    () -> driverController.getRightX() / calculateShiftModeValue()
+                    driverController::getLeftY,
+                    driverController::getLeftX,
+                    driverController::getRightX
             ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
-                    () -> -Math.cos(Units.degreesToRadians(driverController.getPov())) / DriverConstants.POV_DIVIDER / calculateShiftModeValue(),
-                    () -> Math.sin(Units.degreesToRadians(driverController.getPov())) / DriverConstants.POV_DIVIDER / calculateShiftModeValue(),
+                    () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / DriverConstants.POV_DIVIDER,
+                    () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / DriverConstants.POV_DIVIDER,
                     () -> 0
             ),
             resetPoseCommand = new InstantCommand(
@@ -57,8 +62,27 @@ public class RobotContainer {
             );
 
     public RobotContainer() {
+        configureAutonomousChooser();
         setPoseEstimatorPoseSources();
         bindCommands();
+    }
+
+    /**
+     * @return the command to run in autonomous mode
+     */
+    CommandBase getAutonomousCommand() {
+        if (autonomousPathChooser.getSelected() == null) {
+            return null;
+        }
+
+        return Commands.getAutonomousCommand(autonomousPathChooser.getSelected());
+    }
+
+    private void configureAutonomousChooser() {
+        autonomousPathChooser.setDefaultOption("None", null);
+        for (String currentPathName : AutonomousConstants.AUTONOMOUS_PATHS_NAMES) {
+            autonomousPathChooser.addOption(currentPathName, currentPathName);
+        }
     }
 
     private void bindCommands() {
@@ -71,17 +95,12 @@ public class RobotContainer {
         DriverConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
         DriverConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
         DriverConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
+        DriverConstants.RT_TRIGGER.whileTrue(drive5MetersCommand);
     }
 
-    @Log(methodName = "getDegrees")
+    @Log(name = "stickDegrees", methodName = "getDegrees")
     private Rotation2d getRightStickAsRotation2d() {
         return new Rotation2d(driverController.getRightX(), driverController.getRightY());
-    }
-
-    private double calculateShiftModeValue() {
-        final double squaredShiftModeValue = Math.pow(DriverConstants.DRIVE_CONTROLLER.getLeftTriggerAxis(), 2);
-
-        return 1 + squaredShiftModeValue * DriverConstants.MINIMUM_SHIT_VALUE_COEFFICIENT;
     }
 
     private void bindDefaultCommands() {
@@ -97,6 +116,8 @@ public class RobotContainer {
             SWERVE.setDefaultCommand(fieldRelativeDrivenAngleFromSticksCommand);
             fieldRelativeDrivenAngleFromSticksCommand.schedule();
         } else {
+            SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
+            fieldRelativeDriveFromSticksCommand.schedule();
         }
     }
 }
