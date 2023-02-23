@@ -55,7 +55,7 @@ public class RobotContainer {
                     () -> PoseEstimator.getInstance().getCurrentPose().plus(new Transform2d(new Translation2d(5, 0), new Rotation2d())),
                     false
             ),
-            fieldRelativeDriveAndAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
+            fieldRelativeDrivenAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     driverController::getLeftY,
                     driverController::getLeftX,
                     this::getRightStickAsRotation2d
@@ -113,8 +113,8 @@ public class RobotContainer {
 
     private void toggleFieldAndSelfDrivenAngle() {
         if (SWERVE.getDefaultCommand().equals(fieldRelativeDriveFromSticksCommand)) {
-            SWERVE.setDefaultCommand(fieldRelativeDriveAndAngleFromSticksCommand);
-            fieldRelativeDriveAndAngleFromSticksCommand.schedule();
+            SWERVE.setDefaultCommand(fieldRelativeDrivenAngleFromSticksCommand);
+            fieldRelativeDrivenAngleFromSticksCommand.schedule();
         } else {
             SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
             fieldRelativeDriveFromSticksCommand.schedule();
