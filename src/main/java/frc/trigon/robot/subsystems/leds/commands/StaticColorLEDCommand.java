@@ -1,6 +1,8 @@
-package frc.trigon.robot.subsystems.leds;
+package frc.trigon.robot.subsystems.leds.commands;
 
 import edu.wpi.first.wpilibj.util.Color;
+import frc.trigon.robot.subsystems.leds.LedCommand;
+import frc.trigon.robot.subsystems.leds.LedStrip;
 
 public class StaticColorLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
@@ -23,23 +25,10 @@ public class StaticColorLEDCommand extends LedCommand {
     public void initialize() {
         super.initialize();
         Color[] colors = new Color[ledStrip.getLength()];
-        ledStrip.setLedsColors(setTheColorsArray(colors));
+        setLeds(setColorsArray(colors));
     }
 
-    @Override
-    public void end(boolean interrupted) {
-        Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++)
-            colors[i] = Color.kBlack;
-        ledStrip.setLedsColors(colors);
-    }
-
-    @Override
-    public boolean runsWhenDisabled() {
-        return true;
-    }
-
-    private Color[] setTheColorsArray(Color[] colors) {
+    private Color[] setColorsArray(Color[] colors) {
         boolean end = false;
         int counter = 0;
         while (!end) {

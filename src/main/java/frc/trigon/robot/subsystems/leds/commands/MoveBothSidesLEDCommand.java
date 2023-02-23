@@ -1,9 +1,11 @@
-package frc.trigon.robot.subsystems.leds;
+package frc.trigon.robot.subsystems.leds.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.trigon.robot.subsystems.leds.LedCommand;
+import frc.trigon.robot.subsystems.leds.LedStrip;
 
-public class MovingAndStopInMiddleLEDCommand extends LedCommand {
+public class MoveBothSidesLEDCommand extends LedCommand {
     private final Color backgroundColor;
     private final Color primeColor;
     private final double cycleTime;
@@ -17,7 +19,7 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
      * @param amountOfMovingLeds the amount of leds that move
      * @param ledStrip           led strip
      */
-    public MovingAndStopInMiddleLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
+    public MoveBothSidesLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
         super(ledStrip);
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;
@@ -32,7 +34,7 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
         int firstInMovingRange = getFirstInMovingRange(ledStrip.getLength());
         int lastInMovingRange = (firstInMovingRange + amountOfMovingLeds) % ledStrip.getLength();
         DefineTheArrayOfTheColors(colors, firstInMovingRange, lastInMovingRange);
-        ledStrip.setLedsColors(colors);
+        setLeds(colors);
     }
 
     private int getFirstInMovingRange() {
@@ -44,11 +46,27 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
     }
 
     private boolean shouldBePrimeColor(int index, int firstInMovingRange, int lastInMovingRange) {
-        return (index >= firstInMovingRange && index <= lastInMovingRange) ||
-                (index >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds && index <= lastInMovingRange % ledStrip.getLength()) ||
-                ((ledStrip.getLength() - index) >= firstInMovingRange && (LedsConstants.LEDS_LENGTH - index) <= lastInMovingRange) ||
-                ((ledStrip.getLength() - index) >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
-                        (ledStrip.getLength() - index) <= lastInMovingRange % ledStrip.getLength());
+        return isPositionInLedInRange(firstInMovingRange, lastInMovingRange, index) ||
+                isSplitByEnd(firstInMovingRange, lastInMovingRange)||
+                isInvertedPositionInLedInRange(firstInMovingRange, lastInMovingRange, index);
+    }
+
+    private boolean isPositionInLedInRange(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
+        return positionInLED >= firstInMovingRange && positionInLED <= lastInMovingRange;
+    }
+
+    private boolean isSplitByEnd(int lastInMovingRange, int positionInLED) {
+        return positionInLED >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
+                positionInLED <= lastInMovingRange % ledStrip.getLength();
+    }
+
+    private boolean isInvertedPositionInLedInRange( int firstInMovingRange, int lastInMovingRange, int positionInLED) {
+        return ((ledStrip.getLength() - positionInLED) >= firstInMovingRange && (ledStrip.getLength() - positionInLED) <= lastInMovingRange);
+    }
+
+    private boolean isInvertedSplitByEnd(int lastInMovingRange, int positionInLED) {
+        return ((ledStrip.getLength() - positionInLED) >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
+                (ledStrip.getLength() - positionInLED) <= lastInMovingRange % ledStrip.getLength());
     }
 
     private void DefineTheArrayOfTheColors(Color[] colors, int firstInMovingRange, int lastInMovingRange) {
@@ -61,18 +79,5 @@ public class MovingAndStopInMiddleLEDCommand extends LedCommand {
                 colors[i] = backgroundColor;
             }
         }
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++)
-            colors[i] = Color.kBlack;
-        ledStrip.setLedsColors(colors);
-    }
-
-    @Override
-    public boolean runsWhenDisabled() {
-        return true;
     }
 }

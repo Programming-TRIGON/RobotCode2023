@@ -1,7 +1,9 @@
-package frc.trigon.robot.subsystems.leds;
+package frc.trigon.robot.subsystems.leds.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.trigon.robot.subsystems.leds.LedCommand;
+import frc.trigon.robot.subsystems.leds.LedStrip;
 
 public class BlinkLEDCommand extends LedCommand {
     private final Color[] colors;
@@ -9,9 +11,9 @@ public class BlinkLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * @param ledStrip  the led strip
      * @param colors    the colors of the led strip
      * @param cycleTime the time that takes to move from one pixel to the other
+     * @param ledStrip  the led strip
      */
     public BlinkLEDCommand(Color[] colors, double cycleTime, LedStrip ledStrip) {
         super(ledStrip);
@@ -26,19 +28,6 @@ public class BlinkLEDCommand extends LedCommand {
         int wantedColor = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % colors.length;
         for (int i = 0; i < ledStrip.getLength(); i++)
             colors[i] = this.colors[wantedColor];
-        ledStrip.setLedsColors(colors);
-    }
-
-    @Override
-    public boolean runsWhenDisabled() {
-        return true;
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++)
-            colors[i] = Color.kBlack;
-        ledStrip.setLedsColors(colors);
+        setLeds(colors);
     }
 }

@@ -57,9 +57,9 @@ public class LedStrip extends SubsystemBase {
     }
 
     /**
-     * returns the length of the strip.
+     * @return the length of the strip.
      */
-    int getLength() {
+    public int getLength() {
         return virtualLength;
     }
 
@@ -77,11 +77,11 @@ public class LedStrip extends SubsystemBase {
         double newV = Math.max(Math.max(nc.red, nc.green), nc.blue);
         double ratio = v / newV;
         return new Color(nc.red * ratio, nc.green * ratio, nc.blue * ratio);
-
     }
 
     private Color convertToTrihardColorIfReal(Color color) {
-        if (Robot.isReal()) return rgbToGrb(balance(color));
+        if (Robot.isReal())
+            return rgbToGrb(balance(color));
         else return color;
     }
 

@@ -1,7 +1,9 @@
-package frc.trigon.robot.subsystems.leds;
+package frc.trigon.robot.subsystems.leds.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.trigon.robot.subsystems.leds.LedCommand;
+import frc.trigon.robot.subsystems.leds.LedStrip;
 
 public class MovingColorsLEDCommand extends LedCommand {
     private final Color backgroundColor;
@@ -31,39 +33,38 @@ public class MovingColorsLEDCommand extends LedCommand {
         Color[] colors = new Color[ledStrip.getLength()];
         int firstInMovingRange = getFirstInMovingRange(ledStrip.getLength());
         int lastInMovingRange = firstInMovingRange + amountOfMovingLeds;
-        for (int i = 0; i < ledStrip.getLength(); i++) {
-            if (shouldBePrimeColor(firstInMovingRange, lastInMovingRange, i))
-                colors[i] = primeColor;
-            else
-                colors[i] = backgroundColor;
-        }
-        ledStrip.setLedsColors(colors);
+            defineTheArrayOfTheColors(colors, firstInMovingRange, lastInMovingRange);
+        setLeds(colors);
     }
 
     private int getFirstInMovingRange(){
         return (int) ((Timer.getFPGATimestamp() / cycleTime) * 2);
     }
 
+    private void defineTheArrayOfTheColors(Color[] colors, int firstInMovingRange, int lastInMovingRange) {
+        for (int i = 0; i < ledStrip.getLength(); i++) {
+            if (shouldBePrimeColor(firstInMovingRange, lastInMovingRange, i))
+                colors[i] = primeColor;
+            else
+                colors[i] = backgroundColor;
+        }
+    }
+
     private int getFirstInMovingRange(int lengthOfStrip){
         return (getFirstInMovingRange() % lengthOfStrip);
     }
 
-    @Override
-    public boolean runsWhenDisabled() {
-        return true;
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-        Color[] colors = new Color[ledStrip.getLength()];
-        for (int i = 0; i < ledStrip.getLength(); i++)
-            colors[i] = Color.kBlack;
-        ledStrip.setLedsColors(colors);
-    }
-
     private boolean shouldBePrimeColor(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
-        return (positionInLED >= firstInMovingRange && positionInLED <= lastInMovingRange) ||
-                (positionInLED >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
-                        positionInLED <= lastInMovingRange % ledStrip.getLength());
+        return isPositionInLedInRange(firstInMovingRange, lastInMovingRange, positionInLED) ||
+                isSplitByEnd(firstInMovingRange, lastInMovingRange);
     }
+
+    private boolean isPositionInLedInRange(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
+        return positionInLED >= firstInMovingRange && positionInLED <= lastInMovingRange;
+    }
+
+     private boolean isSplitByEnd(int lastInMovingRange, int positionInLED) {
+         return positionInLED >= lastInMovingRange % ledStrip.getLength() - amountOfMovingLeds &&
+                 positionInLED <= lastInMovingRange % ledStrip.getLength();
+     }
 }
