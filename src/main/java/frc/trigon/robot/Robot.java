@@ -67,4 +67,8 @@ public class Robot extends TimedRobot {
             e.printStackTrace();
         }
     }
+
+
+//    private static final double MINIMUM_SHIFT_VALUE = 0.1;
+//    static final double MINIMUM_SHIT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
 }
