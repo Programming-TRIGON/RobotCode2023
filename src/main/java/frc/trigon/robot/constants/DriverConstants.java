@@ -10,7 +10,9 @@ public class DriverConstants {
     public static final XboxController DRIVE_CONTROLLER = new XboxController(
             DRIVE_CONTROLLER_PORT, DRIVE_CONTROLLER_EXPONENT, DRIVE_CONTROLLER_DEADBAND
     );
-    public static final double POV_DIVIDER = 5;
+    public static final double POV_DIVIDER = 3;
+    private static final double MINIMUM_SHIFT_VALUE = 0.1;
+    public static final double MINIMUM_SHIT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
 
     public static final Trigger
             RESET_POSE_TRIGGER = DRIVE_CONTROLLER.y(),

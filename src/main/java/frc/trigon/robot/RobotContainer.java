@@ -35,13 +35,13 @@ public class RobotContainer {
 
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    driverController::getLeftY,
-                    driverController::getLeftX,
-                    driverController::getRightX
+                    () -> driverController.getLeftY() / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / calculateShiftModeValue(),
+                    () -> driverController.getRightX() / calculateShiftModeValue()
             ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
-                    () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / DriverConstants.POV_DIVIDER,
-                    () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / DriverConstants.POV_DIVIDER,
+                    () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / DriverConstants.POV_DIVIDER / calculateShiftModeValue(),
+                    () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / DriverConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> 0
             ),
             resetPoseCommand = new InstantCommand(
@@ -76,6 +76,12 @@ public class RobotContainer {
         }
 
         return Commands.getAutonomousCommand(autonomousPathChooser.getSelected());
+    }
+
+    private double calculateShiftModeValue() {
+        final double squaredShiftModeValue = Math.pow(driverController.getRightTriggerAxis(), 2);
+
+        return 1 - squaredShiftModeValue * DriverConstants.MINIMUM_SHIT_VALUE_COEFFICIENT;
     }
 
     private void configureAutonomousChooser() {
