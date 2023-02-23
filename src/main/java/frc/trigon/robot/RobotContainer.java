@@ -1,10 +1,7 @@
 package frc.trigon.robot;
 
 import com.pathplanner.lib.PathConstraints;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -13,6 +10,8 @@ import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.DriverConstants;
+import frc.trigon.robot.robotposesources.AprilTagPhotonCamera;
+import frc.trigon.robot.robotposesources.RobotPoseSource;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
@@ -25,13 +24,13 @@ public class RobotContainer {
     @Log
     private final SendableChooser<String> autonomousPathChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-//    private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera(
-//            "limelight-forward",
-//            new Transform3d(
-//                    new Translation3d(0, 0, 0),
-//                    new Rotation3d(0, 0, 0)
-//            )
-//    );
+    private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera(
+            "limelight-forward",
+            new Transform3d(
+                    new Translation3d(0, 0, 0),
+                    new Rotation3d(0, 0, 0)
+            )
+    );
     private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
 
     private final CommandBase
@@ -127,7 +126,7 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-//        poseEstimator.addRobotPoseSources(forwardLimelight);
+        poseEstimator.addRobotPoseSources(forwardLimelight);
     }
 
     private void toggleFieldAndSelfDrivenAngle() {
