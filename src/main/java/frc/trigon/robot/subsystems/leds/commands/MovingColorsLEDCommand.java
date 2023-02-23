@@ -38,7 +38,7 @@ public class MovingColorsLEDCommand extends LedCommand {
     }
 
     private int getFirstInMovingRange(){
-        return (int) (Timer.getFPGATimestamp() / cycleTime) * 2;
+        return (int) (Timer.getFPGATimestamp() / cycleTime);
     }
 
     private int getFirstInMovingRange(int lengthOfStrip){
@@ -56,7 +56,7 @@ public class MovingColorsLEDCommand extends LedCommand {
 
     private boolean shouldBePrimeColor(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
         return isPositionInLedInRange(firstInMovingRange, lastInMovingRange, positionInLED) ||
-                isSplitByEnd(firstInMovingRange, lastInMovingRange);
+                isSplitByEnd(lastInMovingRange, positionInLED);
     }
 
     private boolean isPositionInLedInRange(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
