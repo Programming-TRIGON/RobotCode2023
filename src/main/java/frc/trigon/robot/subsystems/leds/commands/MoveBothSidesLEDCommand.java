@@ -38,16 +38,17 @@ public class MoveBothSidesLEDCommand extends LedCommand {
     }
 
     private int getFirstInMovingRange() {
-        return (int) ((Timer.getFPGATimestamp() / cycleTime) * 2);
+        return (int) (Timer.getFPGATimestamp() / cycleTime) * 2;
     }
 
     private int getFirstInMovingRange(int lengthOfStrip) {
-        return (getFirstInMovingRange() % lengthOfStrip);
+        return getFirstInMovingRange() % lengthOfStrip;
     }
 
     private boolean shouldBePrimeColor(int index, int firstInMovingRange, int lastInMovingRange) {
         return isPositionInLedInRange(firstInMovingRange, lastInMovingRange, index) ||
                 isSplitByEnd(firstInMovingRange, lastInMovingRange)||
+                isInvertedSplitByEnd(lastInMovingRange, index)||
                 isInvertedPositionInLedInRange(firstInMovingRange, lastInMovingRange, index);
     }
 

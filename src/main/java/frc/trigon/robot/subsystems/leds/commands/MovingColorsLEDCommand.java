@@ -38,7 +38,11 @@ public class MovingColorsLEDCommand extends LedCommand {
     }
 
     private int getFirstInMovingRange(){
-        return (int) ((Timer.getFPGATimestamp() / cycleTime) * 2);
+        return (int) (Timer.getFPGATimestamp() / cycleTime) * 2;
+    }
+
+    private int getFirstInMovingRange(int lengthOfStrip){
+        return getFirstInMovingRange() % lengthOfStrip;
     }
 
     private void defineTheArrayOfTheColors(Color[] colors, int firstInMovingRange, int lastInMovingRange) {
@@ -48,10 +52,6 @@ public class MovingColorsLEDCommand extends LedCommand {
             else
                 colors[i] = backgroundColor;
         }
-    }
-
-    private int getFirstInMovingRange(int lengthOfStrip){
-        return (getFirstInMovingRange() % lengthOfStrip);
     }
 
     private boolean shouldBePrimeColor(int firstInMovingRange, int lastInMovingRange, int positionInLED) {
