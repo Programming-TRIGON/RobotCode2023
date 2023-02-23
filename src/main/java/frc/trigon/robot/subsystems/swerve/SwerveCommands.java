@@ -46,7 +46,10 @@ public class SwerveCommands {
      * @return the command
      */
     public static SequentialCommandGroup getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(false));
+        final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
+            initializeDrive(false);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(pathGroup.get(0).getEndState().poseMeters);
+        });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
@@ -59,7 +62,7 @@ public class SwerveCommands {
                 SWERVE
         );
 
-        return initializeSwerveCommand.andThen(swerveAutoBuilder.fullAuto(pathGroup));
+        return initializeDriveAndPutTargetCommand.andThen(swerveAutoBuilder.fullAuto(pathGroup));
     }
 
     /**
@@ -70,7 +73,10 @@ public class SwerveCommands {
      * @return the command
      */
     public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
-        final Command initializeSwerveCommand = new InstantCommand(() -> initializeDrive(false));
+        final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
+            initializeDrive(false);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
+        });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
@@ -83,7 +89,7 @@ public class SwerveCommands {
                 SWERVE
         );
 
-        return initializeSwerveCommand.andThen(swerveAutoBuilder.followPath(path));
+        return initializeDriveAndPutTargetCommand.andThen(swerveAutoBuilder.followPath(path));
     }
 
     /**

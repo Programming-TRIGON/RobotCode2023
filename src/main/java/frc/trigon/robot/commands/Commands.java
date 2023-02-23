@@ -33,7 +33,7 @@ public class Commands {
     }
 
     /**
-     * Creates a command that drives to a pose. This command will also put the target pose on the field.
+     * Creates a command that drives to a pose.
      *
      * @param driveConstraints   the drive constraints
      * @param targetPoseSupplier the target pose supplier
@@ -45,7 +45,6 @@ public class Commands {
             final Pose2d
                     currentPose = POSE_ESTIMATOR.getCurrentPose(),
                     targetPose = targetPoseSupplier.get();
-            POSE_ESTIMATOR.getField().getObject("target").setPose(targetPose);
             final PathPoint currentPoint = new PathPoint(
                     currentPose.getTranslation(),
                     currentPose.getRotation(),

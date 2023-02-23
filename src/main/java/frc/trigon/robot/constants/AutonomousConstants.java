@@ -32,7 +32,7 @@ public class AutonomousConstants {
             return;
 
         for (File file : files) {
-            if (file.isFile() && file.getName().endsWith(".path"))
+            if (!file.isFile() || !file.getName().endsWith(".path"))
                 continue;
 
             AUTONOMOUS_PATHS_NAMES.add(file.getName().substring(0, file.getName().length() - 5));
