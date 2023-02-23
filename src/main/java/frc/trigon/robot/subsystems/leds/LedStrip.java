@@ -44,7 +44,7 @@ public class LedStrip extends SubsystemBase {
      */
     void setLedsColors(Color[] colors) {
         if (colors.length != getLength() || getLength() < endingPosition - startingPosition + 1) {
-            Logger.getGlobal().warning("frc.trigon.robot.subsystems.leds.LedStrip.setLedsColors(): Tried to apply a array that not in the correct size");
+            Logger.getGlobal().warning("frc.trigon.robot.subsystems.leds.LedStrip.setLedsColors(): Tried to apply an array with incorrect size");
             if (getCurrentCommand() != null)
                 getCurrentCommand().cancel();
             return;
