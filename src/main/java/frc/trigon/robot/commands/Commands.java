@@ -6,7 +6,6 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.constants.AutonomousConstants;
@@ -27,9 +26,8 @@ public class Commands {
      */
     public static SequentialCommandGroup getAutonomousCommand(String pathName) {
         final List<PathPlannerTrajectory> autonomousPathGroup = PathPlanner.loadPathGroup(pathName, AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
-        final InstantCommand resetPoseCommand = new InstantCommand(() -> POSE_ESTIMATOR.resetPose(autonomousPathGroup.get(0).getInitialHolonomicPose()));
 
-        return resetPoseCommand.andThen(SwerveCommands.getFollowPathGroupCommand(autonomousPathGroup, AutonomousConstants.EVENT_MAP, true));
+        return SwerveCommands.getFollowPathGroupCommand(autonomousPathGroup, AutonomousConstants.EVENT_MAP, true);
     }
 
     /**

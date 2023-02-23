@@ -48,11 +48,11 @@ public class SwerveCommands {
     public static SequentialCommandGroup getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            POSE_ESTIMATOR.getField().getObject("target").setPose(pathGroup.get(0).getEndState().poseMeters);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(pathGroup.get(pathGroup.size() - 1).getEndState().poseMeters);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                (pose2d) -> {},
+                POSE_ESTIMATOR::resetPose,
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
                 SWERVE.getRotationPIDConstants(),
@@ -146,14 +146,12 @@ public class SwerveCommands {
      * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in open loop mode.
      * All velocities are in percent output from -1 to 1.
      * The angle should be the target angle of the robot, not the target angular velocity.
-     * NOT WORKING
      *
      * @param x     the target forwards velocity
      * @param y     the target leftwards velocity
      * @param angle the target angle of the robot
      * @return the command
      */
-    @Deprecated
     public static FunctionalCommand getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
         return new FunctionalCommand(

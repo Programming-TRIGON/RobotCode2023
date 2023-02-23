@@ -1,7 +1,10 @@
 package frc.trigon.robot;
 
 import com.pathplanner.lib.PathConstraints;
-import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -10,8 +13,6 @@ import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.DriverConstants;
-import frc.trigon.robot.robotposesources.AprilTagPhotonCamera;
-import frc.trigon.robot.robotposesources.RobotPoseSource;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
@@ -24,13 +25,13 @@ public class RobotContainer {
     @Log
     private final SendableChooser<String> autonomousPathChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-    private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera(
-            "limelight-forward",
-            new Transform3d(
-                    new Translation3d(0, 0, 0),
-                    new Rotation3d(0, 0, 0)
-            )
-    );
+//    private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera(
+//            "limelight-forward",
+//            new Transform3d(
+//                    new Translation3d(0, 0, 0),
+//                    new Rotation3d(0, 0, 0)
+//            )
+//    );
     private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
 
     private final CommandBase
@@ -56,8 +57,8 @@ public class RobotContainer {
                     false
             ),
             fieldRelativeDrivenAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    driverController::getLeftY,
-                    driverController::getLeftX,
+                    () -> driverController.getLeftY() / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / calculateShiftModeValue(),
                     this::getRightStickAsRotation2d
             );
 
@@ -86,9 +87,9 @@ public class RobotContainer {
 
     private void configureAutonomousChooser() {
         autonomousPathChooser.setDefaultOption("None", null);
-        for (String currentPathName : AutonomousConstants.AUTONOMOUS_PATHS_NAMES) {
+
+        for (String currentPathName : AutonomousConstants.AUTONOMOUS_PATHS_NAMES)
             autonomousPathChooser.addOption(currentPathName, currentPathName);
-        }
     }
 
     private void bindCommands() {
@@ -106,7 +107,19 @@ public class RobotContainer {
 
     @Log(name = "stickDegrees", methodName = "getDegrees")
     private Rotation2d getRightStickAsRotation2d() {
-        return new Rotation2d(driverController.getRightX(), driverController.getRightY());
+        if (isRightStickStill())
+            return SWERVE.getHeading();
+
+        return snapToClosest45Degrees(new Rotation2d(driverController.getRightY(), driverController.getRightX()));
+    }
+
+    private Rotation2d snapToClosest45Degrees(Rotation2d rotation2d) {
+        return Rotation2d.fromDegrees(Math.round(rotation2d.getDegrees() / 45) * 45);
+    }
+
+    private boolean isRightStickStill() {
+        return Math.abs(driverController.getRightY()) - DriverConstants.DRIVE_CONTROLLER_DEADBAND <= 0 &&
+                Math.abs(driverController.getRightX()) - DriverConstants.DRIVE_CONTROLLER_DEADBAND <= 0;
     }
 
     private void bindDefaultCommands() {
@@ -114,7 +127,7 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(forwardLimelight);
+//        poseEstimator.addRobotPoseSources(forwardLimelight);
     }
 
     private void toggleFieldAndSelfDrivenAngle() {

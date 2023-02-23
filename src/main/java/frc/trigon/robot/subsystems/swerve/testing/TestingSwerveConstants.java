@@ -38,11 +38,11 @@ public class TestingSwerveConstants {
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
-            1,
-            0.5
+            720,
+            1200
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            0.5,
+            12,
             0,
             0,
             ROTATION_CONSTRAINTS

@@ -6,11 +6,11 @@ import frc.trigon.robot.components.XboxController;
 public class DriverConstants {
     private static final int DRIVE_CONTROLLER_PORT = 0;
     private static final int DRIVE_CONTROLLER_EXPONENT = 2;
-    private static final double DRIVE_CONTROLLER_DEADBAND = 0.1;
+    public static final double DRIVE_CONTROLLER_DEADBAND = 0.1;
     public static final XboxController DRIVE_CONTROLLER = new XboxController(
             DRIVE_CONTROLLER_PORT, DRIVE_CONTROLLER_EXPONENT, DRIVE_CONTROLLER_DEADBAND
     );
-    public static final double POV_DIVIDER = 3;
+    public static final double POV_DIVIDER = 2;
     private static final double MINIMUM_SHIFT_VALUE = 0.1;
     public static final double MINIMUM_SHIT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
 

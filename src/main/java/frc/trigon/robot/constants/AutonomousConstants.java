@@ -11,7 +11,7 @@ import java.util.List;
 
 public class AutonomousConstants {
     public static final HashMap<String, Command> EVENT_MAP = new HashMap<>();
-    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(3, 2);
+    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(1, 1);
     public static final List<String> AUTONOMOUS_PATHS_NAMES = new ArrayList<>();
     private static final File PATH_PLANNER_DIRECTORY = new File(FilesHandler.DEPLOY_PATH + "pathplanner");
 
