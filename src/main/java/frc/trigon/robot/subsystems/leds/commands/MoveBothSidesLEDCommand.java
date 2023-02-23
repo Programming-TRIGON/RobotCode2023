@@ -38,7 +38,7 @@ public class MoveBothSidesLEDCommand extends LedCommand {
     }
 
     private int getFirstInMovingRange() {
-        return (int) (Timer.getFPGATimestamp() / cycleTime) * 2;
+        return (int) (Timer.getFPGATimestamp() / cycleTime) ;
     }
 
     private int getFirstInMovingRange(int lengthOfStrip) {

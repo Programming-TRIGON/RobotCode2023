@@ -18,13 +18,13 @@ public class LedStrip extends SubsystemBase {
 
     /**
      * @param startingPosition the first LED of the strip
-     * @param endingPosition   the last LED of the strip
+     * @param length           length of the strip
      * @param inverted         whether the strip is inverted
      * @param virtualLength    the length of a virtual strip that is not connected to the robot.
      */
-    public LedStrip(int startingPosition, int endingPosition, boolean inverted, int virtualLength) {
+    public LedStrip(int startingPosition, int length, boolean inverted, int virtualLength) {
         this.startingPosition = startingPosition;
-        this.endingPosition = endingPosition;
+        this.endingPosition = getEndingPosition(length);
         this.inverted = inverted;
         this.virtualLength = virtualLength;
         LED_STRIPS.add(this);
@@ -32,11 +32,15 @@ public class LedStrip extends SubsystemBase {
 
     /**
      * @param startingPosition the first LED in the strip
-     * @param endingPosition   the last LED in the strip
-     * @param inverted         whether the strip is inverted.
+     * @param length           length of the strip
+     * @param inverted         whether the strip is inverted
      */
-    public LedStrip(int startingPosition, int endingPosition, boolean inverted) {
-        this(startingPosition, endingPosition, inverted, endingPosition - startingPosition + 1);
+    public LedStrip(int startingPosition, int length, boolean inverted) {
+        this(startingPosition, length, inverted, length);
+    }
+
+    private int getEndingPosition(int length) {
+        return length - startingPosition - 1;
     }
 
     /**
