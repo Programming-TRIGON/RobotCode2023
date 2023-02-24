@@ -5,10 +5,12 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.constants.AutonomousConstants;
+import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 
@@ -42,7 +44,7 @@ public class Commands {
         final Supplier<Command> driveToPointCommandSupplier = () -> {
             final Pose2d
                     currentPose = POSE_ESTIMATOR.getCurrentPose(),
-                    targetPose = targetPoseSupplier.get();
+                    targetPose = useAllianceColor ? toAlliancePose(targetPoseSupplier.get()) : targetPoseSupplier.get();
             final PathPoint currentPoint = new PathPoint(
                     currentPose.getTranslation(),
                     currentPose.getRotation(),
@@ -55,10 +57,19 @@ public class Commands {
             );
             final PathPlannerTrajectory path = PathPlanner.generatePath(driveConstraints, currentPoint, targetPoint);
 
-            return SwerveCommands.getFollowPathCommand(path, useAllianceColor);
+            return SwerveCommands.getFollowPathCommand(path, false);
         };
-
         return new ProxyCommand(driveToPointCommandSupplier);
     }
 
+    private static Pose2d toAlliancePose(Pose2d pose) {
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
+            return pose;
+
+        return new Pose2d(
+                FieldConstants.FIELD_LENGTH_METERS - pose.getX(),
+                pose.getY(),
+                pose.getRotation().unaryMinus()
+        );
+    }
 }

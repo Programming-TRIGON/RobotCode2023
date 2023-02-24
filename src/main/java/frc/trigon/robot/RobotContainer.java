@@ -1,6 +1,5 @@
 package frc.trigon.robot;
 
-import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -22,14 +21,21 @@ public class RobotContainer {
     @Log
     public static final Swerve SWERVE = TestingSwerve.getInstance();
     @Log
-    private final SendableChooser<String> autonomousPathChooser = new SendableChooser<>();
+    private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-    private final RobotPoseSource forwardLimelight = new AprilTagPhotonCamera(
+//    private final RobotPoseSource testingForwardLimelight = new AprilTagPhotonCamera(
+//            "limelight-forward",
+//            new Transform3d(
+//                    new Translation3d(-0.0355, 0.2, -1.04),
+//                    new Rotation3d(0, Math.toRadians(69.1045), Math.toRadians(-7.6346))
+//            )
+//    );
+    private final RobotPoseSource trihardForwardLimelight = new AprilTagPhotonCamera(
             "limelight-forward",
-            new Transform3d(
-                    new Translation3d(0, 0, 0),
-                    new Rotation3d(0, 0, 0)
-            )
+        new Transform3d(
+                new Translation3d(0.03, 0, -0.8),
+                new Rotation3d(0, Math.toRadians(13), 0)
+        )
     );
     private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
 
@@ -50,11 +56,6 @@ public class RobotContainer {
             toggleFieldAndSelfDrivenCommand = new InstantCommand(
                     this::toggleFieldAndSelfDrivenAngle
             ),
-            drive5MetersCommand = Commands.getDriveToPoseCommand(
-                    new PathConstraints(1, 0.4),
-                    () -> PoseEstimator.getInstance().getCurrentPose().plus(new Transform2d(new Translation2d(5, 0), new Rotation2d())),
-                    false
-            ),
             fieldRelativeDrivenAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / calculateShiftModeValue(),
                     () -> driverController.getLeftX() / calculateShiftModeValue(),
@@ -68,14 +69,13 @@ public class RobotContainer {
     }
 
     /**
-     * @return the command to run in autonomous mode
+     * @return the command to run in autonomous mode, from the autonomous chooser
      */
     CommandBase getAutonomousCommand() {
-        if (autonomousPathChooser.getSelected() == null) {
+        if (autonomousPathNameChooser.getSelected() == null)
             return null;
-        }
 
-        return Commands.getAutonomousCommand(autonomousPathChooser.getSelected());
+        return Commands.getAutonomousCommand(autonomousPathNameChooser.getSelected());
     }
 
     private double calculateShiftModeValue() {
@@ -85,10 +85,10 @@ public class RobotContainer {
     }
 
     private void configureAutonomousChooser() {
-        autonomousPathChooser.setDefaultOption("None", null);
+        autonomousPathNameChooser.setDefaultOption("None", null);
 
         for (String currentPathName : AutonomousConstants.AUTONOMOUS_PATHS_NAMES)
-            autonomousPathChooser.addOption(currentPathName, currentPathName);
+            autonomousPathNameChooser.addOption(currentPathName, currentPathName);
     }
 
     private void bindCommands() {
@@ -101,7 +101,6 @@ public class RobotContainer {
         DriverConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
         DriverConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
         DriverConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
-        DriverConstants.RT_TRIGGER.whileTrue(drive5MetersCommand);
     }
 
     @Log(name = "stickDegrees", methodName = "getDegrees")
@@ -126,7 +125,7 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(forwardLimelight);
+        poseEstimator.addRobotPoseSources(trihardForwardLimelight);
     }
 
     private void toggleFieldAndSelfDrivenAngle() {

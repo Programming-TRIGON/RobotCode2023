@@ -42,7 +42,7 @@ public class TestingSwerveConstants {
             1200
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            12,
+            10,
             0,
             0,
             ROTATION_CONSTRAINTS
