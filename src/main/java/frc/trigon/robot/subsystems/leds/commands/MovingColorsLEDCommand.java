@@ -33,7 +33,7 @@ public class MovingColorsLEDCommand extends LedCommand {
         Color[] colors = new Color[ledStrip.getLength()];
         int firstInMovingRange = getFirstInMovingRange(ledStrip.getLength());
         int lastInMovingRange = firstInMovingRange + amountOfMovingLeds;
-            defineTheArrayOfTheColors(colors, firstInMovingRange, lastInMovingRange);
+        defineTheArrayOfTheColors(colors, firstInMovingRange, lastInMovingRange);
         setLeds(colors);
     }
 
