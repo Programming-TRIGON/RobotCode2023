@@ -3,14 +3,17 @@ package frc.trigon.robot.subsystems.swerve;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
-import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
+import frc.trigon.robot.constants.FieldConstants;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -49,16 +52,14 @@ public class SwerveCommands {
      * @return the command
      */
     public static SequentialCommandGroup getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap, boolean useAllianceColor) {
-        final PathPlannerTrajectory transformedFinalPath = useAllianceColor ?
-                PathPlannerTrajectory.transformTrajectoryForAlliance(pathGroup.get(pathGroup.size() - 1), DriverStation.getAlliance()) :
-                pathGroup.get(pathGroup.size() - 1);
+        final Pose2d targetPose = getTargetPose(pathGroup.get(pathGroup.size() - 1), useAllianceColor);
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            POSE_ESTIMATOR.getField().getObject("target").setPose(transformedFinalPath.getEndState().poseMeters);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(targetPose);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
-                POSE_ESTIMATOR::getCurrentPose,
-                POSE_ESTIMATOR::resetPose,
+                useAllianceColor ? SwerveCommands::getCurrentAlliancePose : POSE_ESTIMATOR::getCurrentPose,
+                useAllianceColor ? SwerveCommands::resetPoseToAlliancePose : POSE_ESTIMATOR::resetPose,
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
                 SWERVE.getRotationPIDConstants(),
@@ -75,28 +76,27 @@ public class SwerveCommands {
      * Creates a command that will drive the robot using the given path and event map.
      *
      * @param path             the path group to follow
-     * @param useAllianceColor whether to use the alliance color
      * @return the command
      */
-    public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path, boolean useAllianceColor) {
-        final PathPlannerTrajectory transformedPath = useAllianceColor ?
-                PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.getAlliance()) : path;
+    public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path) {
+        final Pose2d targetPose = path.getEndState().poseMeters;
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            POSE_ESTIMATOR.getField().getObject("target").setPose(transformedPath.getEndState().poseMeters);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(targetPose);
         });
-        final PPSwerveControllerCommand followPathCommand = new PPSwerveControllerCommand(
-                path,
+        final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
+                (pose2d) -> {},
                 SWERVE.getKinematics(),
-                pidControllerFromConstants(SWERVE.getTranslationPIDConstants()),
-                pidControllerFromConstants(SWERVE.getTranslationPIDConstants()),
-                pidControllerFromConstants(SWERVE.getRotationPIDConstants()),
+                SWERVE.getTranslationPIDConstants(),
+                SWERVE.getRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
-                useAllianceColor
+                new HashMap<>(),
+                false,
+                SWERVE
         );
 
-        return initializeDriveAndPutTargetCommand.andThen(followPathCommand);
+        return initializeDriveAndPutTargetCommand.andThen(swerveAutoBuilder.followPath(path));
     }
 
     /**
@@ -207,6 +207,36 @@ public class SwerveCommands {
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
+        );
+    }
+
+    private static Pose2d getTargetPose(PathPlannerTrajectory path, boolean useAllianceColor) {
+        if (!useAllianceColor)
+            return path.getEndState().poseMeters;
+
+        final PathPlannerTrajectory transformedTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.getAlliance());
+        final Pose2d alliancePose = toAlliancePose(transformedTrajectory.getEndState().poseMeters);
+        final Transform2d invertDegrees = new Transform2d(new Translation2d(), Rotation2d.fromRotations(0.5));
+
+        return alliancePose.plus(invertDegrees);
+    }
+
+    private static void resetPoseToAlliancePose(Pose2d currentPose) {
+        POSE_ESTIMATOR.resetPose(toAlliancePose(currentPose));
+    }
+
+    private static Pose2d getCurrentAlliancePose() {
+        return toAlliancePose(POSE_ESTIMATOR.getCurrentPose());
+    }
+
+    private static Pose2d toAlliancePose(Pose2d pose) {
+        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
+            return pose;
+
+        return new Pose2d(
+                FieldConstants.FIELD_LENGTH_METERS - pose.getX(),
+                FieldConstants.FIELD_WIDTH_METERS - pose.getY(),
+                pose.getRotation().minus(Rotation2d.fromRotations(0.5))
         );
     }
 

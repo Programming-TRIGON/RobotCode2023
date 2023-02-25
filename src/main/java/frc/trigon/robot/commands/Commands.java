@@ -5,6 +5,7 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
@@ -44,7 +45,7 @@ public class Commands {
         final Supplier<Command> driveToPointCommandSupplier = () -> {
             final Pose2d
                     currentPose = POSE_ESTIMATOR.getCurrentPose(),
-                    targetPose = useAllianceColor ? toAlliancePose(targetPoseSupplier.get()) : targetPoseSupplier.get();
+                    targetPose = useAllianceColor ? mirrorPoseRelativeToColor(targetPoseSupplier.get()) : targetPoseSupplier.get();
             final PathPoint currentPoint = new PathPoint(
                     currentPose.getTranslation(),
                     currentPose.getRotation(),
@@ -57,19 +58,23 @@ public class Commands {
             );
             final PathPlannerTrajectory path = PathPlanner.generatePath(driveConstraints, currentPoint, targetPoint);
 
-            return SwerveCommands.getFollowPathCommand(path, false);
+            return SwerveCommands.getFollowPathCommand(path);
         };
         return new ProxyCommand(driveToPointCommandSupplier);
     }
 
-    private static Pose2d toAlliancePose(Pose2d pose) {
+    private static Pose2d mirrorPoseRelativeToColor(Pose2d pose) {
         if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
             return pose;
 
         return new Pose2d(
                 FieldConstants.FIELD_LENGTH_METERS - pose.getX(),
                 pose.getY(),
-                pose.getRotation().unaryMinus()
+                mirrorRotation(pose.getRotation(), FieldConstants.FIELD_MIRRORING_LINE)
         );
+    }
+
+    private static Rotation2d mirrorRotation(Rotation2d rotation, Rotation2d mirroringLine) {
+        return rotation.plus(mirroringLine).unaryMinus().minus(mirroringLine);
     }
 }

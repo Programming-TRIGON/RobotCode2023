@@ -1,5 +1,6 @@
 package frc.trigon.robot;
 
+import com.pathplanner.lib.server.PathPlannerServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -18,6 +19,7 @@ public class Robot extends TimedRobot {
         robotContainer = new RobotContainer();
 
         Logger.configureLoggingAndConfig(robotContainer, false);
+        PathPlannerServer.startServer(5811);
         setDeployFolderToMaxPermissions();
     }
 
@@ -42,7 +44,7 @@ public class Robot extends TimedRobot {
         if (autonomousCommand == null)
             return;
 
-        robotContainer.getAutonomousCommand().schedule();
+        autonomousCommand.schedule();
     }
 
     @Override

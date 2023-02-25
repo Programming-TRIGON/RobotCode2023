@@ -20,23 +20,23 @@ import io.github.oblarg.oblog.annotations.Log;
 public class RobotContainer {
     @Log
     public static final Swerve SWERVE = TestingSwerve.getInstance();
-    @Log
+    @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-//    private final RobotPoseSource testingForwardLimelight = new AprilTagPhotonCamera(
+    private final RobotPoseSource testingForwardLimelight = new AprilTagPhotonCamera(
+            "limelight-forward",
+            new Transform3d(
+                    new Translation3d(0.03, 0, -0.8),
+                    new Rotation3d(0, Math.toRadians(13), 0)
+            )
+    );
+    //    private final RobotPoseSource trihardForwardLimelight = new AprilTagPhotonCamera(
 //            "limelight-forward",
 //            new Transform3d(
 //                    new Translation3d(-0.0355, 0.2, -1.04),
 //                    new Rotation3d(0, Math.toRadians(69.1045), Math.toRadians(-7.6346))
 //            )
 //    );
-    private final RobotPoseSource trihardForwardLimelight = new AprilTagPhotonCamera(
-            "limelight-forward",
-        new Transform3d(
-                new Translation3d(0.03, 0, -0.8),
-                new Rotation3d(0, Math.toRadians(13), 0)
-        )
-    );
     private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
 
     private final CommandBase
@@ -69,7 +69,7 @@ public class RobotContainer {
     }
 
     /**
-     * @return the command to run in autonomous mode, from the autonomous chooser
+     * @return the command to run in autonomous mode
      */
     CommandBase getAutonomousCommand() {
         if (autonomousPathNameChooser.getSelected() == null)
@@ -78,10 +78,20 @@ public class RobotContainer {
         return Commands.getAutonomousCommand(autonomousPathNameChooser.getSelected());
     }
 
-    private double calculateShiftModeValue() {
-        final double squaredShiftModeValue = Math.pow(driverController.getRightTriggerAxis(), 2);
+    private void bindCommands() {
+        bindControllerCommands();
+        bindDefaultCommands();
+    }
 
-        return 1 - squaredShiftModeValue * DriverConstants.MINIMUM_SHIT_VALUE_COEFFICIENT;
+    private void bindDefaultCommands() {
+        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
+    }
+
+    private void bindControllerCommands() {
+        DriverConstants.RESET_POSE_TRIGGER.onTrue(resetPoseCommand);
+        DriverConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
+        DriverConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
+        DriverConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
     }
 
     private void configureAutonomousChooser() {
@@ -91,16 +101,10 @@ public class RobotContainer {
             autonomousPathNameChooser.addOption(currentPathName, currentPathName);
     }
 
-    private void bindCommands() {
-        bindControllerCommands();
-        bindDefaultCommands();
-    }
+    private double calculateShiftModeValue() {
+        final double squaredShiftModeValue = Math.pow(driverController.getRightTriggerAxis(), 2);
 
-    private void bindControllerCommands() {
-        DriverConstants.RESET_POSE_TRIGGER.onTrue(resetPoseCommand);
-        DriverConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
-        DriverConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
-        DriverConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
+        return 1 - squaredShiftModeValue * DriverConstants.MINIMUM_SHIT_VALUE_COEFFICIENT;
     }
 
     @Log(name = "stickDegrees", methodName = "getDegrees")
@@ -120,12 +124,8 @@ public class RobotContainer {
                 Math.abs(driverController.getRightX()) - DriverConstants.DRIVE_CONTROLLER_DEADBAND <= 0;
     }
 
-    private void bindDefaultCommands() {
-        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-    }
-
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(trihardForwardLimelight);
+        poseEstimator.addRobotPoseSources(testingForwardLimelight);
     }
 
     private void toggleFieldAndSelfDrivenAngle() {
