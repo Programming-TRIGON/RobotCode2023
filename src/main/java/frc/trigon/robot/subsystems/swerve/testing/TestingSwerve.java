@@ -82,5 +82,15 @@ public class TestingSwerve extends Swerve {
         swerveModules[TestingSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
         swerveModules[TestingSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
     }
+
+    @Override
+    protected double getTranslationTolerance() {
+        return TestingSwerveConstants.TRANSLATION_TOLERANCE;
+    }
+
+    @Override
+    protected double getRotationTolerance() {
+        return TestingSwerveConstants.ROTATION_TOLERANCE;
+    }
 }
 

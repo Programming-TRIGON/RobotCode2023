@@ -82,4 +82,14 @@ public class TrihardSwerve extends Swerve {
         swerveModules[TrihardSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
         swerveModules[TrihardSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
     }
+
+    @Override
+    protected double getTranslationTolerance() {
+        return TrihardSwerveConstants.TRANSLATION_TOLERANCE;
+    }
+
+    @Override
+    protected double getRotationTolerance() {
+        return TrihardSwerveConstants.ROTATION_TOLERANCE;
+    }
 }

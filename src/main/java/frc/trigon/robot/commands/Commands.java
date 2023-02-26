@@ -58,7 +58,7 @@ public class Commands {
             );
             final PathPlannerTrajectory path = PathPlanner.generatePath(driveConstraints, currentPoint, targetPoint);
 
-            return SwerveCommands.getFollowPathCommand(path);
+            return SwerveCommands.getFollowPathCommand(path).andThen(SwerveCommands.getDriveToPoseWithPIDCommand(targetPose));
         };
         return new ProxyCommand(driveToPointCommandSupplier);
     }

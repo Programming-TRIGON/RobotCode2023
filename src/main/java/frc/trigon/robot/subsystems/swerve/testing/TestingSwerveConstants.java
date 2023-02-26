@@ -47,6 +47,9 @@ public class TestingSwerveConstants {
             0,
             ROTATION_CONSTRAINTS
     );
+    static final double
+            TRANSLATION_TOLERANCE = 0.2,
+            ROTATION_TOLERANCE = 1;
 
     static {
         ROTATION_CONTROLLER.enableContinuousInput(-180, 180);

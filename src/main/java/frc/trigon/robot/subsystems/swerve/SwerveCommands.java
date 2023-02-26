@@ -163,10 +163,37 @@ public class SwerveCommands {
     public static FunctionalCommand getFieldRelativeOpenLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
         return new FunctionalCommand(
-                () -> initializeDrive(false),
+                () -> {
+                    initializeDrive(false);
+                    SWERVE.getRotationController().reset(SWERVE.getHeading().getDegrees());
+                },
                 () -> fieldRelativeDriveFromSuppliers(x, y, angle),
                 (interrupted) -> stopDrive(),
                 () -> false,
+                SWERVE
+        );
+    }
+
+    /**
+     * Creates a command that drives the swerve to the target pose, and ends when the robot is at the pose with a tolerance.
+     *
+     * @param targetPose the target pose
+     * @return the command
+     */
+    public static FunctionalCommand getDriveToPoseWithPIDCommand(Pose2d targetPose) {
+        final PIDController
+                xPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants()),
+                yPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants()),
+                thetaPIDController = pidConstantsToController(SWERVE.getRotationPIDConstants());
+
+        return new FunctionalCommand(
+                () -> {
+                    initializeDrive(false);
+                    setPosePIDControllersSetpoint(xPIDController, yPIDController, thetaPIDController, targetPose);
+                },
+                () -> driveToFromPosePIDControllers(xPIDController, yPIDController, thetaPIDController),
+                (interrupted) -> stopDrive(),
+                () -> isAtPose(targetPose),
                 SWERVE
         );
     }
@@ -209,6 +236,49 @@ public class SwerveCommands {
                 () -> false,
                 SWERVE
         );
+    }
+
+    private static void setPosePIDControllersSetpoint(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController, Pose2d targetPose) {
+        xPIDController.setSetpoint(targetPose.getTranslation().getX());
+        yPIDController.setSetpoint(targetPose.getTranslation().getY());
+        thetaPIDController.setSetpoint(targetPose.getRotation().getDegrees());
+    }
+
+    private static void driveToFromPosePIDControllers(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController) {
+        final Pose2d currentPose = POSE_ESTIMATOR.getCurrentPose();
+        final Translation2d driveTranslation = new Translation2d(
+                xPIDController.calculate(currentPose.getTranslation().getX()),
+                yPIDController.calculate(currentPose.getTranslation().getY())
+        );
+        final Rotation2d driveRotation = Rotation2d.fromDegrees(
+                thetaPIDController.calculate(currentPose.getRotation().getDegrees())
+        );
+        SWERVE.fieldRelativeDrive(
+                driveTranslation,
+                driveRotation
+        );
+    }
+
+    private static boolean isAtPose(Pose2d pose) {
+        final Pose2d currentPose = POSE_ESTIMATOR.getCurrentPose();
+
+        final double
+                currentX = currentPose.getTranslation().getX(),
+                currentY = currentPose.getTranslation().getY(),
+                currentHeading = currentPose.getRotation().getDegrees();
+
+        final double
+                targetX = pose.getTranslation().getX(),
+                targetY = pose.getTranslation().getY(),
+                targetHeading = pose.getRotation().getDegrees();
+
+        return currentX - targetX <= SWERVE.getTranslationTolerance() &&
+                currentY - targetY <= SWERVE.getTranslationTolerance() &&
+                currentHeading - targetHeading <= SWERVE.getRotationTolerance();
+    }
+
+    private static PIDController pidConstantsToController(PIDConstants pidConstants) {
+        return new PIDController(pidConstants.kP, pidConstants.kI, pidConstants.kD, pidConstants.period);
     }
 
     private static Pose2d getTargetPose(PathPlannerTrajectory path, boolean useAllianceColor) {
@@ -257,10 +327,6 @@ public class SwerveCommands {
                         SWERVE.getRotationController().calculate(SWERVE.getHeading().getDegrees())
                 )
         );
-    }
-
-    private static PIDController pidControllerFromConstants(PIDConstants constants) {
-        return new PIDController(constants.kP, constants.kI, constants.kD, constants.period);
     }
 
     private static void fieldRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
