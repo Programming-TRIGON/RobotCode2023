@@ -97,10 +97,10 @@ public class LedStrip extends SubsystemBase {
 
     private static Color balance(Color color) {
         double v = Math.max(Math.max(color.red, color.green), color.blue);
-        var nc = new Color(color.red, color.green / 2, color.blue / 4);
-        double newV = Math.max(Math.max(nc.red, nc.green), nc.blue);
+        Color newColor = new Color(color.red, color.green / 2, color.blue / 4);
+        double newV = Math.max(Math.max(newColor.red, newColor.green), newColor.blue);
         double ratio = v / newV;
-        return new Color(nc.red * ratio, nc.green * ratio, nc.blue * ratio);
+        return new Color(newColor.red * ratio, newColor.green * ratio, newColor.blue * ratio);
     }
 
     private Color convertToTrihardColorIfReal(Color color) {
