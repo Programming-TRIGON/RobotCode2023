@@ -7,9 +7,13 @@ import frc.trigon.robot.robotposesources.AprilTagPhotonCamera;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
 
 public class CameraConstants {
+//    private static final Transform3d FORWARD_LIMELIGHT_TO_ROBOT = new Transform3d(
+//            new Translation3d(-0.0355, 0.2, -1.04),
+//            new Rotation3d(0, Math.toRadians(69.1045), Math.toRadians(-7.6346))
+//    );
     private static final Transform3d FORWARD_LIMELIGHT_TO_ROBOT = new Transform3d(
-            new Translation3d(-0.0355, 0.2, -1.04),
-            new Rotation3d(0, Math.toRadians(69.1045), Math.toRadians(-7.6346))
+            new Translation3d(0, 0, -1.04),
+        new Rotation3d()
     );
     public static final RobotPoseSource FORWARD_LIMELIGHT = new AprilTagPhotonCamera(
             "limelight-forward",

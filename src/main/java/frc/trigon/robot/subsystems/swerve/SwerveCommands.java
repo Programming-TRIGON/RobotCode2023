@@ -186,10 +186,15 @@ public class SwerveCommands {
                 yPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants()),
                 thetaPIDController = pidConstantsToController(SWERVE.getRotationPIDConstants());
 
+        thetaPIDController.enableContinuousInput(-180, 180);
+
         return new FunctionalCommand(
                 () -> {
                     initializeDrive(false);
                     setPosePIDControllersSetpoint(xPIDController, yPIDController, thetaPIDController, targetPose);
+                    xPIDController.reset();
+                    yPIDController.reset();
+                    thetaPIDController.reset();
                 },
                 () -> driveToFromPosePIDControllers(xPIDController, yPIDController, thetaPIDController),
                 (interrupted) -> stopDrive(),
@@ -272,9 +277,12 @@ public class SwerveCommands {
                 targetY = pose.getTranslation().getY(),
                 targetHeading = pose.getRotation().getDegrees();
 
-        return currentX - targetX <= SWERVE.getTranslationTolerance() &&
+        return (currentX - targetX <= SWERVE.getTranslationTolerance() &&
                 currentY - targetY <= SWERVE.getTranslationTolerance() &&
-                currentHeading - targetHeading <= SWERVE.getRotationTolerance();
+                currentHeading - targetHeading <= SWERVE.getRotationTolerance()) &&
+                (SWERVE.getCurrentVelocity().vxMetersPerSecond < 0.05 &&
+                        SWERVE.getCurrentVelocity().vyMetersPerSecond < 0.05 &&
+                        SWERVE.getCurrentVelocity().omegaRadiansPerSecond < 0.05);
     }
 
     private static PIDController pidConstantsToController(PIDConstants pidConstants) {

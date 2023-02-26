@@ -9,7 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class TrihardSwerveConstants {
-    static final double BRAKE_TIME_SECONDS = 0.3;
+    static final double BRAKE_TIME_SECONDS = 2;
     static final double
             MAX_SPEED_METERS_PER_SECOND = 4.25,
             MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND = 12.03;
@@ -33,8 +33,8 @@ public class TrihardSwerveConstants {
     };
     static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
-            TRANSLATION_PID_CONSTANTS = new PIDConstants(12, 0, 0),
-            ROTATION_PID_CONSTANTS = new PIDConstants(15, 0, 0);
+            TRANSLATION_PID_CONSTANTS = new PIDConstants(6, 0, 0),
+            ROTATION_PID_CONSTANTS = new PIDConstants(5, 0, 0);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
@@ -42,7 +42,7 @@ public class TrihardSwerveConstants {
             1200
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            12,
+            2,
             0,
             0,
             ROTATION_CONSTRAINTS
