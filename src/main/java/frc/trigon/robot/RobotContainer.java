@@ -1,6 +1,7 @@
 package frc.trigon.robot;
 
-import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -8,35 +9,20 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
+import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.DriverConstants;
-import frc.trigon.robot.robotposesources.AprilTagPhotonCamera;
-import frc.trigon.robot.robotposesources.RobotPoseSource;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
-import frc.trigon.robot.subsystems.swerve.testing.TestingSwerve;
+import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class RobotContainer {
     @Log
-    public static final Swerve SWERVE = TestingSwerve.getInstance();
+    public static final Swerve SWERVE = TrihardSwerve.getInstance();
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-    private final RobotPoseSource testingForwardLimelight = new AprilTagPhotonCamera(
-            "limelight-forward",
-            new Transform3d(
-                    new Translation3d(0.03, 0, -0.8),
-                    new Rotation3d(0, Math.toRadians(13), 0)
-            )
-    );
-    //    private final RobotPoseSource trihardForwardLimelight = new AprilTagPhotonCamera(
-//            "limelight-forward",
-//            new Transform3d(
-//                    new Translation3d(-0.0355, 0.2, -1.04),
-//                    new Rotation3d(0, Math.toRadians(69.1045), Math.toRadians(-7.6346))
-//            )
-//    );
     private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
 
     private final CommandBase
@@ -125,7 +111,7 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(testingForwardLimelight);
+        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
     }
 
     private void toggleFieldAndSelfDrivenAngle() {
