@@ -92,5 +92,15 @@ public class TestingSwerve extends Swerve {
     protected double getRotationTolerance() {
         return TestingSwerveConstants.ROTATION_TOLERANCE;
     }
+
+    @Override
+    protected double getTranslationVelocityTolerance() {
+        return TestingSwerveConstants.TRANSLATION_VELOCITY_TOLERANCE;
+    }
+
+    @Override
+    protected double getRotationVelocityTolerance() {
+        return TestingSwerveConstants.ROTATION_VELOCITY_TOLERANCE;
+    }
 }
 

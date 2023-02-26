@@ -92,4 +92,15 @@ public class TrihardSwerve extends Swerve {
     protected double getRotationTolerance() {
         return TrihardSwerveConstants.ROTATION_TOLERANCE;
     }
+
+    @Override
+    protected double getTranslationVelocityTolerance() {
+        return TrihardSwerveConstants.TRANSLATION_VELOCITY_TOLERANCE;
+    }
+
+    @Override
+    protected double getRotationVelocityTolerance() {
+        return TrihardSwerveConstants.ROTATION_VELOCITY_TOLERANCE;
+    }
+
 }

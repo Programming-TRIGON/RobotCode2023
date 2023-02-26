@@ -191,14 +191,11 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 () -> {
                     initializeDrive(false);
-                    setPosePIDControllersSetpoint(xPIDController, yPIDController, thetaPIDController, targetPose);
-                    xPIDController.reset();
-                    yPIDController.reset();
-                    thetaPIDController.reset();
+                    initializePosePIDControllers(xPIDController, yPIDController, thetaPIDController, targetPose);
                 },
                 () -> driveToFromPosePIDControllers(xPIDController, yPIDController, thetaPIDController),
                 (interrupted) -> stopDrive(),
-                () -> isAtPose(targetPose),
+                () -> isStoppedAtPose(targetPose),
                 SWERVE
         );
     }
@@ -243,6 +240,13 @@ public class SwerveCommands {
         );
     }
 
+    private static void initializePosePIDControllers(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController, Pose2d targetPose) {
+        setPosePIDControllersSetpoint(xPIDController, yPIDController, thetaPIDController, targetPose);
+        xPIDController.reset();
+        yPIDController.reset();
+        thetaPIDController.reset();
+    }
+
     private static void setPosePIDControllersSetpoint(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController, Pose2d targetPose) {
         xPIDController.setSetpoint(targetPose.getTranslation().getX());
         yPIDController.setSetpoint(targetPose.getTranslation().getY());
@@ -264,6 +268,10 @@ public class SwerveCommands {
         );
     }
 
+    private static boolean isStoppedAtPose(Pose2d pose) {
+        return isAtPose(pose) && isSwerveStill();
+    }
+
     private static boolean isAtPose(Pose2d pose) {
         final Pose2d currentPose = POSE_ESTIMATOR.getCurrentPose();
 
@@ -279,10 +287,13 @@ public class SwerveCommands {
 
         return (currentX - targetX <= SWERVE.getTranslationTolerance() &&
                 currentY - targetY <= SWERVE.getTranslationTolerance() &&
-                currentHeading - targetHeading <= SWERVE.getRotationTolerance()) &&
-                (SWERVE.getCurrentVelocity().vxMetersPerSecond < 0.05 &&
-                        SWERVE.getCurrentVelocity().vyMetersPerSecond < 0.05 &&
-                        SWERVE.getCurrentVelocity().omegaRadiansPerSecond < 0.05);
+                currentHeading - targetHeading <= SWERVE.getRotationTolerance());
+    }
+
+    private static boolean isSwerveStill() {
+        return SWERVE.getCurrentVelocity().vxMetersPerSecond < SWERVE.getTranslationVelocityTolerance() &&
+                SWERVE.getCurrentVelocity().vyMetersPerSecond < SWERVE.getTranslationVelocityTolerance() &&
+                SWERVE.getCurrentVelocity().omegaRadiansPerSecond < SWERVE.getRotationVelocityTolerance();
     }
 
     private static PIDController pidConstantsToController(PIDConstants pidConstants) {

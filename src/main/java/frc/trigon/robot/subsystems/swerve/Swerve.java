@@ -87,6 +87,16 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     protected abstract double getRotationTolerance();
 
     /**
+     * @return the tolerance for translation velocity in meters per second
+     */
+    protected abstract double getTranslationVelocityTolerance();
+
+    /**
+     * @return the tolerance for rotation velocity in radians per second
+     */
+    protected abstract double getRotationVelocityTolerance();
+
+    /**
      * @return the heading of the robot
      */
     @Log(name = "heading", methodName = "getDegrees")

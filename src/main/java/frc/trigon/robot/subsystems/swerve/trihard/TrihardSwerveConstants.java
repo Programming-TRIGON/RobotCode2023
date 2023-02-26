@@ -49,7 +49,9 @@ public class TrihardSwerveConstants {
     );
     static final double
             TRANSLATION_TOLERANCE = 0.01,
-            ROTATION_TOLERANCE = 1;
+            ROTATION_TOLERANCE = 1,
+            TRANSLATION_VELOCITY_TOLERANCE = 0.05,
+            ROTATION_VELOCITY_TOLERANCE = 0.05;
 
     static {
         ROTATION_CONTROLLER.enableContinuousInput(-180, 180);
