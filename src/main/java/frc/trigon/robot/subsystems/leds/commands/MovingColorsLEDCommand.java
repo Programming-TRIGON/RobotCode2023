@@ -13,6 +13,8 @@ public class MovingColorsLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
+     * Construct a new MovingColorsLEDCommand.
+     *
      * @param backgroundColor    The color of the background
      * @param primeColor         The color of the moving leds
      * @param cycleTime          The time it takes for the moving leds to go from one pixel to the other

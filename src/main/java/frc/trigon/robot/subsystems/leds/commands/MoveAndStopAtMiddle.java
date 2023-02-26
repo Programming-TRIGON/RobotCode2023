@@ -5,20 +5,22 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
 
-public class MovingAndStopInMiddleLEDCommand extends LedCommand {
+public class MoveAndStopAtMiddle extends LedCommand {
     private final Color backgroundColor;
     private final Color primeColor;
     private final double cycleTime;
-    int amountOfMovingLeds;
+    private final int amountOfMovingLeds;
     private final LedStrip ledStrip;
 
     /**
+     * Construct a new MovingAndStopInMiddleLEDCommand.
+     * 
      * @param backgroundColor the background color of the led strip
      * @param primeColor      the prime color of the led strip
      * @param cycleTime       the time that takes to move from one pixel to the other
      * @param ledStrip        the led strip
      */
-    public MovingAndStopInMiddleLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
+    public MoveAndStopAtMiddle(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
         super(ledStrip);
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;

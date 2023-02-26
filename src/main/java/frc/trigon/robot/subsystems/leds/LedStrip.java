@@ -17,6 +17,8 @@ public class LedStrip extends SubsystemBase {
     private final int virtualLength;
 
     /**
+     * construct a new LedStrip
+     *
      * @param startingPosition the first LED of the strip
      * @param length           length of the strip
      * @param inverted         whether the strip is inverted
@@ -31,6 +33,8 @@ public class LedStrip extends SubsystemBase {
     }
 
     /**
+     * Construct a new LedStrip.
+     *
      * @param startingPosition the first LED in the strip
      * @param length           length of the strip
      * @param inverted         whether the strip is inverted
@@ -39,12 +43,15 @@ public class LedStrip extends SubsystemBase {
         this(startingPosition, length, inverted, length);
     }
 
-    private int getEndingPosition(int length) {
-        return length - startingPosition - 1;
+    /**
+     * @return the length of the strip.
+     */
+    public int getLength() {
+        return virtualLength;
     }
 
     /**
-     * sets the color of the LEDs in the strip.
+     * Sets the color of the LEDs in the strip.
      */
     void setLedsColors(Color[] colors) {
         if (colors.length != getLength() || getLength() < endingPosition - startingPosition + 1) {
@@ -61,10 +68,23 @@ public class LedStrip extends SubsystemBase {
     }
 
     /**
-     * @return the length of the strip.
+     * cancels all commands that are overlapping with this strip.
      */
-    public int getLength() {
-        return virtualLength;
+    void cancelOverlapping() {
+        for (LedStrip ledStrip : LED_STRIPS) {
+            if (ledStrip == this)
+                continue;
+
+            if (isOverlapping(ledStrip)) {
+                Command cmd = ledStrip.getCurrentCommand();
+                if (cmd != null)
+                    cmd.cancel();
+            }
+        }
+    }
+
+    private int getEndingPosition(int length) {
+        return length - startingPosition - 1;
     }
 
     private static Color applyBrightness(Color color, double brightness) {
@@ -92,21 +112,5 @@ public class LedStrip extends SubsystemBase {
     private boolean isOverlapping(LedStrip otherLedStrip) {
         return (otherLedStrip.startingPosition >= this.startingPosition && otherLedStrip.startingPosition <= this.endingPosition)
                 || (otherLedStrip.endingPosition >= this.startingPosition && otherLedStrip.endingPosition <= this.endingPosition);
-    }
-
-    /**
-     * cancels all commands that are overlapping with this strip.
-     */
-    void cancelOverlapping() {
-        for (LedStrip ledStrip : LED_STRIPS) {
-            if (ledStrip == this)
-                continue;
-
-            if (isOverlapping(ledStrip)) {
-                Command cmd = ledStrip.getCurrentCommand();
-                if (cmd != null)
-                    cmd.cancel();
-            }
-        }
     }
 }

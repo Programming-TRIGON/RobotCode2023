@@ -6,10 +6,12 @@ import frc.trigon.robot.subsystems.leds.LedStrip;
 
 public class RainbowLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
-    private final int saturation = 255;
-    private final int value = 128;
+    private static final int saturation = 255;
+    private static final int value = 128;
 
     /**
+     * Construct a new RainbowLEDCommand.
+     *
      * @param ledStrip the led strip
      */
     public RainbowLEDCommand(LedStrip ledStrip) {

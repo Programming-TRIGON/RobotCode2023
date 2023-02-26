@@ -11,6 +11,8 @@ public class BlinkLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
+     * Construct a new BlinkLEDCommand.
+     *
      * @param colors    the colors of the led strip
      * @param cycleTime the time that takes to move from one pixel to the other
      * @param ledStrip  the led strip

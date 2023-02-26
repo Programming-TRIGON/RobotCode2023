@@ -9,6 +9,8 @@ public abstract class LedCommand extends CommandBase {
     private final LedStrip ledStrip;
 
     /**
+     * Construct a new LedCommand.
+     *
      * @param ledStrip the led strip
      */
     protected LedCommand(LedStrip ledStrip) {
@@ -21,16 +23,6 @@ public abstract class LedCommand extends CommandBase {
         ledStrip.cancelOverlapping();
     }
 
-    private void turnOffLeds() {
-        Color[] colors = new Color[ledStrip.getLength()];
-        Arrays.fill(colors, Color.kBlack);
-        ledStrip.setLedsColors(colors);
-    }
-
-    protected void setLeds(Color[] colors) {
-        ledStrip.setLedsColors(colors);
-    }
-
     @Override
     public void end(boolean interrupted) {
         turnOffLeds();
@@ -39,5 +31,15 @@ public abstract class LedCommand extends CommandBase {
     @Override
     public boolean runsWhenDisabled() {
         return true;
+    }
+
+    protected void setLeds(Color[] colors) {
+        ledStrip.setLedsColors(colors);
+    }
+
+    private void turnOffLeds() {
+        Color[] colors = new Color[ledStrip.getLength()];
+        Arrays.fill(colors, Color.kBlack);
+        ledStrip.setLedsColors(colors);
     }
 }
