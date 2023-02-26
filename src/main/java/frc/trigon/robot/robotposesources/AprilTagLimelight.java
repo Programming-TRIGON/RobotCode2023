@@ -14,11 +14,6 @@ public class AprilTagLimelight extends RobotPoseSource {
     }
 
     @Override
-    public Pose3d getCameraPose() {
-        return fiducialLimelight.getRobotPoseFromJsonDump();
-    }
-
-    @Override
     public double getLastResultTimestamp() {
         return fiducialLimelight.getLastResultTimestamp();
     }
@@ -26,5 +21,15 @@ public class AprilTagLimelight extends RobotPoseSource {
     @Override
     public String getName() {
         return fiducialLimelight.getName();
+    }
+
+    @Override
+    protected Pose3d getCameraPose() {
+        return fiducialLimelight.getRobotPoseFromJsonDump();
+    }
+
+    @Override
+    protected boolean hasResult() {
+        return fiducialLimelight.hasResults();
     }
 }

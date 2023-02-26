@@ -33,20 +33,25 @@ public class TestingSwerveConstants {
     };
     static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
-            TRANSLATION_PID_CONSTANTS = new PIDConstants(7, 0, 0),
-            ROTATION_PID_CONSTANTS = new PIDConstants(9, 0, 0);
+            TRANSLATION_PID_CONSTANTS = new PIDConstants(12, 0, 0),
+            ROTATION_PID_CONSTANTS = new PIDConstants(15, 0, 0);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
-            1,
-            0.5
+            720,
+            1200
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            0.5,
+            10,
             0,
             0,
             ROTATION_CONSTRAINTS
     );
+    static final double
+            TRANSLATION_TOLERANCE = 0.2,
+            ROTATION_TOLERANCE = 1,
+            TRANSLATION_VELOCITY_TOLERANCE = 0.05,
+            ROTATION_VELOCITY_TOLERANCE = 0.05;
 
     static {
         ROTATION_CONTROLLER.enableContinuousInput(-180, 180);
