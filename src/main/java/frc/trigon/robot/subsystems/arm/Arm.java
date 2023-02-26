@@ -54,6 +54,14 @@ public class Arm extends SubsystemBase implements Loggable {
         );
     }
 
+    boolean atGoal() {
+        return
+                Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE &&
+                        Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE &&
+                        Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE &&
+                        Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
+    }
+
     public static Arm getInstance() {
         return INSTANCE;
     }
@@ -78,16 +86,11 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     public Command getGoToStateCommand(ArmConstants.ArmStates state) {
-        return new StartEndCommand(
-                () -> setTargetState(state),
-                () -> {},
-                this
-        ).ignoringDisable(true);
+        return getGoToStateCommand(state, true);
     }
 
     private void setTargetState(ArmStates targetState, boolean byOrder) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder
-        );
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder);
     }
 
     private void setTargetState(ArmStates targetState) {
@@ -110,11 +113,7 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle) {
-        return new StartEndCommand(
-                () -> setTargetState(firstJointAngle, secondJointAngle, false),
-                () -> {},
-                this
-        );
+        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true);
     }
 
     public void setNeutralMode(boolean brake) {

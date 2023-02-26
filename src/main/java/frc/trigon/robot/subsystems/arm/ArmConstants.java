@@ -16,7 +16,7 @@ public class ArmConstants {
     FIRST_JOINT_LENGTH = 85.88525,
     SECOND_JOINT_LENGTH = 55;
 
-    static final double RETRACTED_DEGREES = 60;
+    static final double RETRACTED_DEGREES = 130;
     private static final int
             FIRST_JOINT_FIRST_MOTOR_ID = 9,
             FIRST_JOINT_SECOND_MOTOR_ID = 10,
@@ -32,11 +32,17 @@ public class ArmConstants {
             SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID + 1);
 
     static final double
-            DESCEND_PROFILE_COMPLETION_PERCENTAGE = 0.86,
+            DESCEND_PROFILE_COMPLETION_PERCENTAGE = 1,
             RISE_PROFILE_COMPLETION_PERCENTAGE = 0.43;
 
+    static final double
+            FIRST_JOINT_TOLERANCE = 2,
+            SECOND_JOINT_TOLERANCE = 2,
+            FIRST_JOINT_VELOCITY_TOLERANCE = 2,
+            SECOND_JOINT_VELOCITY_TOLERANCE = 2;
+
     private static final double
-            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 20,
+            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 28,
             FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2,
             SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 30,
             SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2;
@@ -71,11 +77,11 @@ public class ArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 180,
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 360,
             SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 90;
 
     private static final double
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 180,
+            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 540,
             SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 60;
 
     static final TrapezoidProfile.Constraints
@@ -194,8 +200,8 @@ public class ArmConstants {
         CUBE_MIDDLE_1(-51, 113),
         CUBE_HIGH_1(-5, 35),
         CONE_HYBRID_1(FIRST_JOINT_CLOSED, 110),
-        CONE_MIDDLE_1(-37, 110),
-        CONE_MIDDLE_2(-75, 108),
+        CONE_MIDDLE_1(-35, 92),
+        CONE_MIDDLE_2(-75, 92),
         CONE_HIGH_1(15, 37),
         CONE_HIGH_2(-8, 43);
 
