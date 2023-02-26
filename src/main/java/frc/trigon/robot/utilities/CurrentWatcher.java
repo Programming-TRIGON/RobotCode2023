@@ -1,6 +1,5 @@
 package frc.trigon.robot.utilities;
 
-import edu.wpi.first.util.CircularBuffer;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -56,7 +55,7 @@ public class CurrentWatcher implements Closeable {
             this.timeThreshold = timeThreshold;
         }
 
-        public CurrentWatcher build(Runnable callback) {
+        public CurrentWatcher setup(Runnable callback) {
             return new CurrentWatcher(currentSupplier, currentThreshold, timeThreshold, callback);
         }
     }

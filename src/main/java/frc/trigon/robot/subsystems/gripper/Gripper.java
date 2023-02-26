@@ -51,7 +51,7 @@ public class Gripper extends SubsystemBase implements Loggable {
     }
 
     private void setPowerDistributionPortRequirements() {
-            GripperConstants.HOLD_TRIGGER_CONFIG.build(
+            GripperConstants.HOLD_TRIGGER_CONFIG.setup(
                     () -> setState(GripperConstants.GripperState.HOLD)
             );
     }

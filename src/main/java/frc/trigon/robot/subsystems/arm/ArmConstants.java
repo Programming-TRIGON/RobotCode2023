@@ -8,6 +8,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.trigon.robot.utilities.Conversions;
+import frc.trigon.robot.utilities.CurrentWatcher;
 
 public class ArmConstants {
     static final double
@@ -34,11 +35,23 @@ public class ArmConstants {
             DESCEND_PROFILE_COMPLETION_PERCENTAGE = 0.86,
             RISE_PROFILE_COMPLETION_PERCENTAGE = 0.43;
 
-    static final double
+    private static final double
             FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 20,
             FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2,
-            SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 30,
-            SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 0.2;
+            SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 30,
+            SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2;
+
+    static final CurrentWatcher.CurrentWatcherConfig
+            FIRST_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
+            FIRST_JOINT_FIRST_MOTOR::getStatorCurrent,
+            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
+            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD
+    ),
+            SECOND_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
+                    SECOND_JOINT_MOTOR::getStatorCurrent,
+                    SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
+                    SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD
+            );
 
     private static final boolean
             FIRST_JOINT_MOTOR_INVERTED = false,
@@ -158,7 +171,7 @@ public class ArmConstants {
         FIRST_JOINT_FIRST_MOTOR.config_kP(0, FIRST_JOINT_P);
         FIRST_JOINT_FIRST_MOTOR.config_kI(0, FIRST_JOINT_I);
         FIRST_JOINT_FIRST_MOTOR.config_kD(0, FIRST_JOINT_D);
-        FIRST_JOINT_FIRST_MOTOR.configAllowableClosedloopError(0, 6);
+        FIRST_JOINT_FIRST_MOTOR.configAllowableClosedloopError(0, Conversions.degreesToMagTicks(1));
 
         SECOND_JOINT_MOTOR.config_kP(0, SECOND_JOINT_P);
         SECOND_JOINT_MOTOR.config_kI(0, SECOND_JOINT_I);

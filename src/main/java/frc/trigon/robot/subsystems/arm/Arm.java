@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.utilities.Conversions;
-import frc.trigon.robot.utilities.CurrentWatcher;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
@@ -41,22 +40,16 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     private void setCurrentLimits() {
-        new CurrentWatcher(
-                firstMotor::getStatorCurrent,
-                ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
-                ArmConstants.FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
+        ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CONFIG.setup(
                 () -> {
                     firstMotorProfile = null;
                     DriverStation.reportWarning("Arm first motor current draw is too high!\t" + firstMotor.getStatorCurrent(), false);
                 }
         );
-        new CurrentWatcher(
-                secondMotor::getStatorCurrent,
-                ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
-                ArmConstants.SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
+        ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CONFIG.setup(
                 () -> {
                     secondMotorProfile = null;
-                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + firstMotor.getStatorCurrent(), false);
+                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + secondMotor.getStatorCurrent(), false);
                 }
         );
     }
