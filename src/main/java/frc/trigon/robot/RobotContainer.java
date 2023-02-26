@@ -106,8 +106,8 @@ public class RobotContainer {
     }
 
     private boolean isRightStickStill() {
-        return Math.abs(driverController.getRightY()) - OperatorConstants.DRIVE_CONTROLLER_DEADBAND <= 0 &&
-                Math.abs(driverController.getRightX()) - OperatorConstants.DRIVE_CONTROLLER_DEADBAND <= 0;
+        return Math.abs(driverController.getRightY()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND&&
+                Math.abs(driverController.getRightX()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND;
     }
 
     private void setPoseEstimatorPoseSources() {
