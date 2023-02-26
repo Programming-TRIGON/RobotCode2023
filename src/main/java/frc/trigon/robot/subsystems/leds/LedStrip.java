@@ -84,7 +84,7 @@ public class LedStrip extends SubsystemBase {
     }
 
     private int getEndingPosition(int length) {
-        return length - startingPosition - 1;
+        return length + startingPosition - 1;
     }
 
     private static Color applyBrightness(Color color, double brightness) {
