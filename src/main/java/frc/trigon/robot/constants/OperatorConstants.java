@@ -3,7 +3,7 @@ package frc.trigon.robot.constants;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.components.XboxController;
 
-public class DriverConstants {
+public class OperatorConstants {
     private static final int DRIVE_CONTROLLER_PORT = 0;
     private static final int DRIVE_CONTROLLER_EXPONENT = 2;
     public static final double DRIVE_CONTROLLER_DEADBAND = 0.1;
@@ -18,6 +18,5 @@ public class DriverConstants {
             RESET_POSE_TRIGGER = DRIVE_CONTROLLER.y(),
             TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER = DRIVE_CONTROLLER.x(),
             LOCK_SWERVE_TRIGGER = DRIVE_CONTROLLER.a(),
-            DRIVE_FROM_DPAD_TRIGGER = new Trigger(() -> DRIVE_CONTROLLER.getPov() != -1),
-            RT_TRIGGER = DRIVE_CONTROLLER.leftBumper();
+            DRIVE_FROM_DPAD_TRIGGER = new Trigger(() -> DRIVE_CONTROLLER.getPov() != -1);
 }

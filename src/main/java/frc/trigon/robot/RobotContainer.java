@@ -10,7 +10,7 @@ import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
-import frc.trigon.robot.constants.DriverConstants;
+import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
@@ -23,7 +23,7 @@ public class RobotContainer {
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-    private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
+    private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
 
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
@@ -32,8 +32,8 @@ public class RobotContainer {
                     () -> driverController.getRightX() / calculateShiftModeValue()
             ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
-                    () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / DriverConstants.POV_DIVIDER / calculateShiftModeValue(),
-                    () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / DriverConstants.POV_DIVIDER / calculateShiftModeValue(),
+                    () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
+                    () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> 0
             ),
             resetPoseCommand = new InstantCommand(
@@ -74,10 +74,10 @@ public class RobotContainer {
     }
 
     private void bindControllerCommands() {
-        DriverConstants.RESET_POSE_TRIGGER.onTrue(resetPoseCommand);
-        DriverConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
-        DriverConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
-        DriverConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
+        OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetPoseCommand);
+        OperatorConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
+        OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
+        OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
     }
 
     private void configureAutonomousChooser() {
@@ -90,7 +90,7 @@ public class RobotContainer {
     private double calculateShiftModeValue() {
         final double squaredShiftModeValue = Math.pow(driverController.getRightTriggerAxis(), 2);
 
-        return 1 - squaredShiftModeValue * DriverConstants.MINIMUM_SHIT_VALUE_COEFFICIENT;
+        return 1 - squaredShiftModeValue * OperatorConstants.MINIMUM_SHIT_VALUE_COEFFICIENT;
     }
 
     @Log(name = "stickDegrees", methodName = "getDegrees")
@@ -106,8 +106,8 @@ public class RobotContainer {
     }
 
     private boolean isRightStickStill() {
-        return Math.abs(driverController.getRightY()) - DriverConstants.DRIVE_CONTROLLER_DEADBAND <= 0 &&
-                Math.abs(driverController.getRightX()) - DriverConstants.DRIVE_CONTROLLER_DEADBAND <= 0;
+        return Math.abs(driverController.getRightY()) - OperatorConstants.DRIVE_CONTROLLER_DEADBAND <= 0 &&
+                Math.abs(driverController.getRightX()) - OperatorConstants.DRIVE_CONTROLLER_DEADBAND <= 0;
     }
 
     private void setPoseEstimatorPoseSources() {
