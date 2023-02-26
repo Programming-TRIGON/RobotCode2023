@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 public class LedStrip extends SubsystemBase {
+    public static final ArrayList<LedStrip> LED_STRIPS = new ArrayList<>();
     private final int startingPosition, endingPosition;
     private final boolean inverted;
     private final AddressableLED led = LedsConstants.LED;
-    public static final ArrayList<LedStrip> LED_STRIPS = new ArrayList<>();
     private final int virtualLength;
 
     /**
