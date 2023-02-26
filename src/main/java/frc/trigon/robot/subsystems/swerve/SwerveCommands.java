@@ -74,6 +74,7 @@ public class SwerveCommands {
 
     /**
      * Creates a command that will drive the robot using the given path and event map.
+     * This cannot use "useAllianceColor" because the current pose that generates this path is not the alliance pose.
      *
      * @param path             the path group to follow
      * @return the command
