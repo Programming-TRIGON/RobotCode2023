@@ -12,7 +12,7 @@ public class OperatorConstants {
     );
     public static final double POV_DIVIDER = 2;
     private static final double MINIMUM_SHIFT_VALUE = 0.1;
-    public static final double MINIMUM_SHIT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
+    public static final double MINIMUM_SHIFT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
 
     public static final Trigger
             RESET_POSE_TRIGGER = DRIVE_CONTROLLER.y(),

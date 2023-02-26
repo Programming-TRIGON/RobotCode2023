@@ -90,7 +90,7 @@ public class RobotContainer {
     private double calculateShiftModeValue() {
         final double squaredShiftModeValue = Math.pow(driverController.getRightTriggerAxis(), 2);
 
-        return 1 - squaredShiftModeValue * OperatorConstants.MINIMUM_SHIT_VALUE_COEFFICIENT;
+        return 1 - squaredShiftModeValue * OperatorConstants.MINIMUM_SHIFT_VALUE_COEFFICIENT;
     }
 
     @Log(name = "stickDegrees", methodName = "getDegrees")
