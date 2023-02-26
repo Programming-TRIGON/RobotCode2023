@@ -54,6 +54,13 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     }
 
     /**
+     * @return the field widget
+     */
+    public Field2d getField() {
+        return field;
+    }
+
+    /**
      * Resets the pose estimator to the given pose, and the gyro to the given pose's heading.
      *
      * @param currentPose the pose to reset to
@@ -92,20 +99,19 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
 
     private void attemptToUpdateWithRobotPoseSources() {
         for (RobotPoseSource robotPoseSource : robotPoseSources) {
-            if (robotPoseSource.isNewTimestamp())
-                updateWithRobotPoseSource(robotPoseSource);
+            if (robotPoseSource.hasNewResult())
+                updateFromPoseSource(robotPoseSource);
         }
     }
 
-    private void updateWithRobotPoseSource(RobotPoseSource robotPoseSource) {
+    private void updateFromPoseSource(RobotPoseSource robotPoseSource) {
         final Pose2d robotPose = robotPoseSource.getRobotPose();
 
+        field.getObject(robotPoseSource.getName()).setPose(robotPose);
         swerveDrivePoseEstimator.addVisionMeasurement(
                 robotPose,
                 robotPoseSource.getLastResultTimestamp()
         );
-
-        field.getObject(robotPoseSource.getName()).setPose(robotPose);
     }
 
     private void updatePoseEstimatorStates() {
@@ -128,7 +134,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
 
     private void waitUntilGyroUpdate() {
         try {
-            Thread.sleep(PoseEstimatorConstants.GYRO_UPDATE_DELAY_MS);
+            Thread.sleep(PoseEstimatorConstants.GYRO_UPDATE_TIME_MS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -5,7 +5,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N3;
 
 public class PoseEstimatorConstants {
-    static final int GYRO_UPDATE_DELAY_MS = 15;
+    static final int GYRO_UPDATE_TIME_MS = 15;
 
     /**
      * The vector represents how ambiguous each value is.
@@ -15,5 +15,5 @@ public class PoseEstimatorConstants {
      */
     static final Vector<N3>
             STATES_AMBIGUITY = VecBuilder.fill(0.005, 0.005, 0.0005),
-            VISION_CALCULATIONS_AMBIGUITY = VecBuilder.fill(0.05, 0.05, 0.005);
+            VISION_CALCULATIONS_AMBIGUITY = VecBuilder.fill(0.3, 0.3, Math.toRadians(100));
 }

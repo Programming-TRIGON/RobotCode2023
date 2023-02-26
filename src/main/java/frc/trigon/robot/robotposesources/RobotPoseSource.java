@@ -17,14 +17,10 @@ public abstract class RobotPoseSource {
     }
 
     /**
-     * @return if the current timestamp is not the same as the timestamp from the last call to this method
+     * @return whether the pose source has a result and that the last updated timestamp is not the current one
      */
-    public boolean isNewTimestamp() {
-        if (lastUpdatedTimestamp == getLastResultTimestamp())
-            return false;
-
-        lastUpdatedTimestamp = getLastResultTimestamp();
-        return true;
+    public boolean hasNewResult() {
+        return isNewTimestamp() && hasResult();
     }
 
     /**
@@ -35,8 +31,16 @@ public abstract class RobotPoseSource {
         if (cameraPose == null)
             return lastRobotPose;
 
-        lastRobotPose = getCameraPose().plus(cameraToRobotCenter).toPose2d();
+        lastRobotPose = cameraPose.plus(cameraToRobotCenter).toPose2d();
         return lastRobotPose;
+    }
+
+    private boolean isNewTimestamp() {
+        if (lastUpdatedTimestamp == getLastResultTimestamp())
+            return false;
+
+        lastUpdatedTimestamp = getLastResultTimestamp();
+        return true;
     }
 
     /**
@@ -53,4 +57,9 @@ public abstract class RobotPoseSource {
      * @return the camera's pose, according to the pose source
      */
     protected abstract Pose3d getCameraPose();
+
+    /**
+     * @return whether the robot pose source has a result
+     */
+    protected abstract boolean hasResult();
 }

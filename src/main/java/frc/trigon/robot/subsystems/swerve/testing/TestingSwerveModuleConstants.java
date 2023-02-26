@@ -25,7 +25,7 @@ public class TestingSwerveModuleConstants {
             FRONT_RIGHT_DRIVE_MOTOR_ID = FRONT_RIGHT_ID + 1,
             REAR_LEFT_DRIVE_MOTOR_ID = REAR_LEFT_ID + 1,
             REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID + 1;
-    private static final boolean DRIVE_MOTOR_INVERTED = false;
+    private static final boolean DRIVE_MOTOR_INVERTED = true;
     private static final double
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
             DRIVE_CLOSED_LOOP_RAMP_RATE = 0.4;
