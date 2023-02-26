@@ -20,6 +20,15 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      */
     protected abstract Pigeon2 getGyro();
 
+
+    /**
+     * @return the pitch of the swerve
+     */
+    @Log
+    public double getPitch() {
+        return getGyro().getPitch();
+    }
+
     /**
      * @return the swerve's modules
      */

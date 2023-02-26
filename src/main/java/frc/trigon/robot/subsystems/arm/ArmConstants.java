@@ -8,7 +8,6 @@ import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.trigon.robot.utilities.Conversions;
-import frc.trigon.robot.utilities.LargeFreedomBangBangController;
 
 public class ArmConstants {
     static final double
@@ -16,6 +15,7 @@ public class ArmConstants {
     FIRST_JOINT_LENGTH = 85.88525,
     SECOND_JOINT_LENGTH = 55;
 
+    static final double RETRACTED_DEGREES = 60;
     private static final int
             FIRST_JOINT_FIRST_MOTOR_ID = 9,
             FIRST_JOINT_SECOND_MOTOR_ID = 10,
@@ -28,16 +28,17 @@ public class ArmConstants {
     private static final CANCoder
             FIRST_JOINT_ENCODER = new CANCoder(FIRST_JOINT_FIRST_MOTOR_ID);
     private static final WPI_TalonSRX
-            SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID+1);
+            SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID + 1);
 
-    private static final double
-            BANG_BANG_TOLERANCE = 0.5,
-            BANG_BANG_TRIGGER_THRESHOLD = 5;
-    static final LargeFreedomBangBangController SECOND_JOINT_BANG_BANG_CONTROLLER = new LargeFreedomBangBangController(
-            BANG_BANG_TOLERANCE,
-            BANG_BANG_TRIGGER_THRESHOLD
-    );
-    static final double BANG_BANG_POWER = 1;
+    static final double
+            DESCEND_PROFILE_COMPLETION_PERCENTAGE = 0.86,
+            RISE_PROFILE_COMPLETION_PERCENTAGE = 0.43;
+
+    static final double
+            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 20,
+            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2,
+            SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 30,
+            SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 0.2;
 
     private static final boolean
             FIRST_JOINT_MOTOR_INVERTED = false,
@@ -84,12 +85,13 @@ public class ArmConstants {
 
     private static final double
             SECOND_JOINT_P = 1,
-            SECOND_JOINT_I = 0,
+            SECOND_JOINT_I = 0.001,
             SECOND_JOINT_D = 0,
             SECOND_JOINT_KS = 0.15575,
             SECOND_JOINT_KV = 1.8696,
             SECOND_JOINT_KA = 0.070188,
-            SECOND_JOINT_KG = 0.36887;
+            SECOND_JOINT_KG = 0.36887,
+            SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.1;
 
     static final ArmFeedforward
             FIRST_JOINT_FEEDFORWARD = new ArmFeedforward(
@@ -156,16 +158,39 @@ public class ArmConstants {
         FIRST_JOINT_FIRST_MOTOR.config_kP(0, FIRST_JOINT_P);
         FIRST_JOINT_FIRST_MOTOR.config_kI(0, FIRST_JOINT_I);
         FIRST_JOINT_FIRST_MOTOR.config_kD(0, FIRST_JOINT_D);
-        FIRST_JOINT_FIRST_MOTOR.configAllowableClosedloopError(0, 12);
+        FIRST_JOINT_FIRST_MOTOR.configAllowableClosedloopError(0, 6);
 
         SECOND_JOINT_MOTOR.config_kP(0, SECOND_JOINT_P);
         SECOND_JOINT_MOTOR.config_kI(0, SECOND_JOINT_I);
         SECOND_JOINT_MOTOR.config_kD(0, SECOND_JOINT_D);
+        SECOND_JOINT_MOTOR.configClosedLoopPeakOutput(0, SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT);
 
         FIRST_JOINT_FIRST_MOTOR.setNeutralMode(FIRST_JOINT_NEUTRAL_MODE);
         SECOND_JOINT_MOTOR.setNeutralMode(SECOND_JOINT_NEUTRAL_MODE);
 
         FIRST_JOINT_FIRST_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
         SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
+    }
+
+    private static final double FIRST_JOINT_CLOSED = -78, SECOND_JOINT_CLOSED = 156;
+
+    public enum ArmStates {
+        CLOSED(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
+        CLOSED_COLLECTING(FIRST_JOINT_CLOSED, 86.308594),
+        CUBE_HYBRID_1(FIRST_JOINT_CLOSED, 110),
+        CUBE_MIDDLE_1(-51, 113),
+        CUBE_HIGH_1(-5, 35),
+        CONE_HYBRID_1(FIRST_JOINT_CLOSED, 110),
+        CONE_MIDDLE_1(-37, 110),
+        CONE_MIDDLE_2(-75, 108),
+        CONE_HIGH_1(15, 37),
+        CONE_HIGH_2(-8, 43);
+
+        public final double firstMotorPosition, secondMotorPosition;
+
+        ArmStates(double firstMotorPosition, double secondMotorPosition) {
+            this.firstMotorPosition = firstMotorPosition;
+            this.secondMotorPosition = secondMotorPosition;
+        }
     }
 }

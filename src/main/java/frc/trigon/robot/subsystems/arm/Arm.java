@@ -11,20 +11,20 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.trigon.robot.subsystems.powerdistribution.PowerDistributionManager;
 import frc.trigon.robot.utilities.Conversions;
-import frc.trigon.robot.utilities.LargeFreedomBangBangController;
+import frc.trigon.robot.utilities.CurrentWatcher;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 
-import java.util.logging.Logger;
+import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
-public class Arm extends SubsystemBase {
+public class Arm extends SubsystemBase implements Loggable {
     private static final Arm INSTANCE = new Arm();
     private final WPI_TalonFX
             firstMotor = ArmConstants.FIRST_JOINT_FIRST_MOTOR,
@@ -32,32 +32,33 @@ public class Arm extends SubsystemBase {
     private final ArmFeedforward
             firstMotorFeedforward = ArmConstants.FIRST_JOINT_FEEDFORWARD,
             secondMotorFeedforward = ArmConstants.SECOND_JOINT_FEEDFORWARD;
-    private final LargeFreedomBangBangController secondMotorBBController = ArmConstants.SECOND_JOINT_BANG_BANG_CONTROLLER;
-    public TrapezoidProfile firstMotorProfile, secondMotorProfile;
+    private TrapezoidProfile firstMotorProfile, secondMotorProfile;
     private double firstMotorProfileLastSetTime, secondMotorProfileLastSetTime;
     private String firstArmToMove = "";
 
     private Arm() {
-        PowerDistributionManager.getInstance().setPortRequirements(
-                15,
-                0.2,
-                10,
+        setCurrentLimits();
+    }
+
+    private void setCurrentLimits() {
+        new CurrentWatcher(
+                firstMotor::getStatorCurrent,
+                ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
+                ArmConstants.FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
                 () -> {
                     firstMotorProfile = null;
-                    Logger.getGlobal().warning("Arm first motor current draw is too high!");
+                    DriverStation.reportWarning("Arm first motor current draw is too high!\t" + firstMotor.getStatorCurrent(), false);
                 }
         );
-        PowerDistributionManager.getInstance().setPortRequirements(
-                1,
-                0.2,
-                10,
+        new CurrentWatcher(
+                secondMotor::getStatorCurrent,
+                ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
+                ArmConstants.SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
                 () -> {
                     secondMotorProfile = null;
-                    DriverStation.reportWarning("Arm second motor current draw is too high!", false);
+                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + firstMotor.getStatorCurrent(), false);
                 }
         );
-
-        SmartDashboard.putData("second motor bb controller", secondMotorBBController);
     }
 
     public static Arm getInstance() {
@@ -83,12 +84,12 @@ public class Arm extends SubsystemBase {
         );
     }
 
-    public Command getGoToStateCommand(ArmStates state) {
+    public Command getGoToStateCommand(ArmConstants.ArmStates state) {
         return new StartEndCommand(
                 () -> setTargetState(state),
                 () -> {},
                 this
-        );
+        ).ignoringDisable(true);
     }
 
     private void setTargetState(ArmStates targetState, boolean byOrder) {
@@ -97,7 +98,7 @@ public class Arm extends SubsystemBase {
     }
 
     private void setTargetState(ArmStates targetState) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, false);
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true);
     }
 
     /**
@@ -144,6 +145,17 @@ public class Arm extends SubsystemBase {
         System.out.println(firstArmToMove + "____________________________________");
     }
 
+    private void setTargetMotorPositions() {
+        if(this.getCurrentCommand() == null) {
+            firstMotor.disable();
+            secondMotor.disable();
+        } else {
+            setFirstMotorPositionFromProfile();
+            setSecondMotorPositionFromProfile();
+        }
+    }
+
+    /////////////////////
     private void generateFirstMotorProfile(double position) {
         firstMotorProfile = new TrapezoidProfile(
                 ArmConstants.FIRST_JOINT_CONSTRAINTS,
@@ -159,35 +171,24 @@ public class Arm extends SubsystemBase {
                 new TrapezoidProfile.State(position, 0),
                 new TrapezoidProfile.State(getSecondMotorPosition(), getSecondMotorVelocity())
         );
-        secondMotorBBController.setSetpoint(position);
         secondMotorProfileLastSetTime = Timer.getFPGATimestamp();
     }
 
-    private void setTargetMotorPositions() {
-        if(this.getCurrentCommand() == null) {
-            firstMotor.disable();
-            secondMotor.disable();
-        } else {
-            setFirstMotorPositionFromProfile();
-            setSecondMotorPositionFromProfile();
-        }
-    }
-
     private void setFirstMotorPositionFromProfile() {
-        if(firstMotorProfile == null)
+        if(firstMotorProfile == null) {
+            firstMotor.stopMotor();
             return;
+        }
 
-        double profileTime = Timer.getFPGATimestamp() - firstMotorProfileLastSetTime;
+        double profileTime = getFirstMotorProfileTime();
 
         TrapezoidProfile.State targetState = firstMotorProfile.calculate(profileTime);
 
-        var endEffector = getEndEffectorLocation(targetState.position, getSecondMotorPosition());
-        boolean firstCon = targetState.velocity < 0 && (endEffector.getY() < 20 ||
-                (endEffector.getX() < 40 && endEffector.getY() < 30));
-        boolean secondCon = !firstArmToMove.equals("first") && !firstArmToMove.isBlank() && (Math.abs(getSecondMotorDistanceToGoal()) > 10 && getSecondMotorPosition() < 140);
-        if(firstCon || secondCon) {
+        boolean goingToHitTheGround = goingToHitTheGround(targetState);
+        boolean waitingForOtherJoint = isNotFirstToMove("first") && (isSecondJointOnlyStarting() && !isSecondJointRetracted());
+        if(goingToHitTheGround || waitingForOtherJoint) {
+            System.out.println("regenerating for first." + (goingToHitTheGround ? "goingToHitTheGround" : ("waitingForOtherJoint " + getSecondArmPercentage())));
             generateFirstMotorProfile(getFirstMotorGoal());
-            System.out.println("regenerating for first, target velocity:" + targetState.velocity + ". " + (firstCon ? "firstCon" : ("SecondCon " + getFirstMotorDistanceToGoal())));
             return;
         }
 
@@ -198,53 +199,59 @@ public class Arm extends SubsystemBase {
     }
 
     private void setSecondMotorPositionFromProfile() {
-        if(secondMotorProfile == null)
-            return;
-
-        double profileTime = Timer.getFPGATimestamp() - secondMotorProfileLastSetTime;
-        TrapezoidProfile.State targetState = secondMotorProfile.calculate(profileTime);
-
-        var endEffector = getEndEffectorLocation(getFirstMotorPosition(), targetState.position);
-
-        boolean firstCon = targetState.velocity < 0 && (endEffector.getY() < 20 ||
-                (endEffector.getX() < 40 && endEffector.getY() < 30));
-        boolean secondCon = !firstArmToMove.equals("second") && !firstArmToMove.isBlank() && (Math.abs(getFirstMotorDistanceToGoal()) > 10 && getFirstMotorPosition() > -60);
-        if(firstCon || secondCon) {
-            generateSecondMotorProfile(getSecondMotorGoal());
-            System.out.println("regenerating for second, target velocity:" + targetState.velocity + ". " + (firstCon ? "firstCon" : ("SecondCon " + getFirstMotorDistanceToGoal() )));
+        if(secondMotorProfile == null) {
+            secondMotor.stopMotor();
             return;
         }
 
+        double profileTime = getSecondMotorProfileTime();
+        TrapezoidProfile.State targetState = secondMotorProfile.calculate(profileTime);
+
+        boolean goingToHitTheGround = goingToHitTheGround(targetState);
+        boolean waitingForOtherJoint = isNotFirstToMove("second") && (isFirstJointOnlyStarting() && isSecondJointRetracted());
+
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
+        if(goingToHitTheGround || waitingForOtherJoint) {
+            System.out.println("regenerating for second." + (goingToHitTheGround ? "goingToHitTheGround" : ("waitingForOtherJoint " + getFirstArmPercentage())));
+            generateSecondMotorProfile(getSecondMotorGoal());
+            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
+        }
         double feedforward = calculateFeedforward(
                 secondMotorFeedforward,
                 targetState.position + getFirstMotorPosition(),
                 targetState.velocity
         );
 
-        secondMotor.configPeakOutputForward(0.1);
         setTargetPositionWithFeedforwardForTalonFx(secondMotor, targetPosition, feedforward);
         SmartDashboard.putNumber("second motor setpoint", targetState.position);
     }
 
-    private double getFirstMotorDistanceToGoal() {
-        return getFirstMotorGoal() - getFirstMotorPosition();
+    private double getFirstArmPercentage() {
+        if(firstMotorProfile == null)
+            return 1;
+        return getFirstMotorProfileTime() / firstMotorProfile.totalTime();
     }
 
-    private Translation2d getEndEffectorLocation(double alpha, double beta) {
-        var secondJointLocation =
-                new Pose2d(new Translation2d(0, ArmConstants.FIRST_JOINT_HEIGHT), Rotation2d.fromDegrees(alpha)).plus(new Transform2d(new Translation2d(ArmConstants.FIRST_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0)));
-        return secondJointLocation.plus(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(beta))).plus(new Transform2d(new Translation2d(ArmConstants.SECOND_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0))).getTranslation();
-    }
-
-    private double getSecondMotorDistanceToGoal() {
-        return getSecondMotorGoal() - getSecondMotorPosition();
-    }
-
-    private double getSecondMotorGoal() {
+    private double getSecondArmPercentage() {
         if(secondMotorProfile == null)
-            return getSecondMotorPosition();
-        return secondMotorProfile.calculate(secondMotorProfile.totalTime()).position;
+            return 1;
+        return getSecondMotorProfileTime() / secondMotorProfile.totalTime();
+    }
+
+    private boolean isFirstJointOnlyStarting() {
+        return getFirstArmPercentage() < ArmConstants.RISE_PROFILE_COMPLETION_PERCENTAGE;
+    }
+
+    private boolean isSecondJointOnlyStarting() {
+        return getSecondArmPercentage() < ArmConstants.DESCEND_PROFILE_COMPLETION_PERCENTAGE;
+    }
+
+    private double getFirstMotorProfileTime() {
+        return Timer.getFPGATimestamp() - firstMotorProfileLastSetTime;
+    }
+
+    private double getSecondMotorProfileTime() {
+        return Timer.getFPGATimestamp() - secondMotorProfileLastSetTime;
     }
 
     private double getFirstMotorGoal() {
@@ -253,13 +260,42 @@ public class Arm extends SubsystemBase {
         return firstMotorProfile.calculate(firstMotorProfile.totalTime()).position;
     }
 
-    private double getSecondMotorAbsError() {
-        return Math.abs(secondMotorProfile.calculate(Timer.getFPGATimestamp() - secondMotorProfileLastSetTime).position - getSecondMotorPosition());
+    private double getSecondMotorGoal() {
+        if(secondMotorProfile == null)
+            return getSecondMotorPosition();
+        return secondMotorProfile.calculate(secondMotorProfile.totalTime()).position;
     }
 
-    private double calculateBangBangPower() {
-        //return secondMotorBBController.calculate(getSecondMotorPosition()) * ArmConstants.BANG_BANG_POWER;
-        return Math.min(Double.POSITIVE_INFINITY, 0.4 * Math.signum((getSecondMotorGoal() - getSecondMotorPosition())));
+    private double getFirstMotorDistanceToGoal() {
+        return getFirstMotorGoal() - getFirstMotorPosition();
+    }
+
+    private double getSecondMotorDistanceToGoal() {
+        return getSecondMotorGoal() - getSecondMotorPosition();
+    }
+
+    private boolean goingToHitTheGround(TrapezoidProfile.State targetState) {
+        return targetState.velocity < 0 && getCurrentEndEffectorLocation().getY() < 20;
+    }
+
+    @Log(name = "End Effector X", methodName = "getX")
+    @Log(name = "End Effector Y", methodName = "getY")
+    private Translation2d getCurrentEndEffectorLocation() {
+        return calculateEndEffectorLocation(getFirstMotorPosition(), getSecondMotorPosition());
+    }
+
+    private boolean isNotFirstToMove(String arm) {
+        return (!firstArmToMove.equals(arm)) && !firstArmToMove.isBlank();
+    }
+
+    private Translation2d calculateEndEffectorLocation(double alpha, double beta) {
+        var secondJointLocation =
+                new Pose2d(new Translation2d(0, ArmConstants.FIRST_JOINT_HEIGHT), Rotation2d.fromDegrees(alpha)).plus(new Transform2d(new Translation2d(ArmConstants.FIRST_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0)));
+        return secondJointLocation.plus(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(beta))).plus(new Transform2d(new Translation2d(ArmConstants.SECOND_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0))).getTranslation();
+    }
+
+    private double getSecondMotorAbsError() {
+        return Math.abs(secondMotorProfile.calculate(getSecondMotorProfileTime()).position - getSecondMotorPosition());
     }
 
     private void setTargetPositionWithFeedforwardForTalonFx(WPI_TalonFX motor, double position, double feedforward) {
@@ -270,43 +306,48 @@ public class Arm extends SubsystemBase {
         return feedforward.calculate(Units.degreesToRadians(position), Units.degreesToRadians(velocity));
     }
 
+    @Log(name = "First Motor Position")
     private double getFirstMotorPosition() {
         return Conversions.magTicksToDegrees(firstMotor.getSelectedSensorPosition());
     }
 
+    @Log(name = "Second Motor Position")
     private double getSecondMotorPosition() {
         return Conversions.magTicksToDegrees(secondMotor.getSelectedSensorPosition());
     }
 
+    @Log(name = "First Motor Velocity")
     private double getFirstMotorVelocity() {
         return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(firstMotor.getSelectedSensorVelocity()));
     }
 
+    @Log(name = "Second Motor Velocity")
     private double getSecondMotorVelocity() {
         return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(secondMotor.getSelectedSensorVelocity()));
     }
 
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("First Motor Position", this::getFirstMotorPosition, this::generateFirstMotorProfile);
-        builder.addDoubleProperty("First Motor Velocity", this::getFirstMotorVelocity, null);
-        builder.addDoubleProperty("Second Motor Position", this::getSecondMotorPosition, this::generateSecondMotorProfile);
-        builder.addDoubleProperty("Second Motor Velocity", this::getSecondMotorVelocity, null);
-        builder.addDoubleProperty("End Effector X", () -> getEndEffectorLocation(getFirstMotorPosition(), getSecondMotorPosition()).getX(), null);
-        builder.addDoubleProperty("End Effector Y", () -> getEndEffectorLocation(getFirstMotorPosition(), getSecondMotorPosition()).getY(), null);
-
+    private boolean isSecondJointRetracted() {
+        return getSecondMotorPosition() >= ArmConstants.RETRACTED_DEGREES;
     }
 
-    public enum ArmStates {
-        CLOSED(-79.453125, 156.093750),
-        CLOSED_COLLECTING(-79.453125, 86.308594),
-        THIRD_STATE(90, 225);
-        //TODO: config real states
-        public final double firstMotorPosition, secondMotorPosition;
-
-        ArmStates(double firstMotorPosition, double secondMotorPosition) {
-            this.firstMotorPosition = firstMotorPosition;
-            this.secondMotorPosition = secondMotorPosition;
-        }
+    @Log(name = "First Motor Supply Current")
+    private double getFirstMotorSupplyCurrent() {
+        return firstMotor.getSupplyCurrent();
     }
+
+    @Log(name = "Second Motor Supply Current")
+    private double getSecondMotorSupplyCurrent() {
+        return secondMotor.getSupplyCurrent();
+    }
+
+    @Log(name = "First Motor Stator Current")
+    private double getFirstMotorStatorCurrent() {
+        return firstMotor.getStatorCurrent();
+    }
+
+    @Log(name = "Second Motor Stator Current")
+    private double getSecondMotorStatorCurrent() {
+        return secondMotor.getStatorCurrent();
+    }
+
 }

@@ -16,7 +16,6 @@ public class Robot extends TimedRobot {
         robotContainer = new RobotContainer();
 
         Logger.configureLoggingAndConfig(robotContainer, false);
-        setDeployFolderToMaxPermissions();
     }
 
     @Override

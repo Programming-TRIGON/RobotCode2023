@@ -3,9 +3,9 @@ package frc.trigon.robot.subsystems.gripper;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.trigon.robot.subsystems.powerdistribution.PowerDistributionManager;
+import io.github.oblarg.oblog.Loggable;
 
-public class Gripper extends SubsystemBase {
+public class Gripper extends SubsystemBase implements Loggable {
     private static final Gripper INSTANCE = new Gripper();
     private final WPI_TalonFX motor = GripperConstants.MOTOR;
 
@@ -51,10 +51,9 @@ public class Gripper extends SubsystemBase {
     }
 
     private void setPowerDistributionPortRequirements() {
-        PowerDistributionManager.getInstance().setPortRequirements(
-                GripperConstants.HOLD_TRIGGER_CONFIG,
-                () -> setState(GripperConstants.GripperState.HOLD)
-        );
+            GripperConstants.HOLD_TRIGGER_CONFIG.build(
+                    () -> setState(GripperConstants.GripperState.HOLD)
+            );
     }
 
     private void setState(GripperConstants.GripperState state) {
