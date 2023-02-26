@@ -33,7 +33,6 @@ public class CurrentWatcher implements Closeable {
 
         double timeAboveThreshold = Timer.getFPGATimestamp() - lastTimeBelowThreshold;
         if (timeAboveThreshold >= timeThreshold) {
-            System.out.println("CurrentWatcher.checkCurrent" + current);
             if(callback != null)
                 callback.run();
         }
