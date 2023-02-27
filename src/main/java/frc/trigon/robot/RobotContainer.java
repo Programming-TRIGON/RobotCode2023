@@ -28,6 +28,7 @@ import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
+import org.photonvision.PhotonCamera;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -86,11 +87,10 @@ public class RobotContainer implements Loggable {
             applySecondArmStateCommand = getApplySecondArmStateCommand();
 
     public RobotContainer() {
-        for (FieldConstants.GridAlignment gridAlignment : FieldConstants.GridAlignment.values())
-            PoseEstimator.getInstance().getField().getObject(gridAlignment.name()).setPose(gridAlignment.inFrontOfGridPose);
         configureAutonomousChooser();
         setPoseEstimatorPoseSources();
         bindCommands();
+        PhotonCamera.setVersionCheckEnabled(false);
 
         setupArmBrakeModeWithUserButtonCommands();
         SmartDashboard.putData(Arm.getInstance());
