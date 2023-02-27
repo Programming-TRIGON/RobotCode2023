@@ -11,7 +11,7 @@ public class BlinkLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * Construct a new BlinkLEDCommand.
+     * Constructs a new BlinkLEDCommand.
      *
      * @param colors    the colors of the led strip
      * @param cycleTime the time that takes to move from one pixel to the other
@@ -27,7 +27,7 @@ public class BlinkLEDCommand extends LedCommand {
     @Override
     public void execute() {
         Color[] colors = new Color[ledStrip.getLength()];
-        int wantedColor = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % colors.length;
+        int wantedColor = (int) ((Timer.getFPGATimestamp() / cycleTime) * 2) % this.colors.length;
         for (int i = 0; i < ledStrip.getLength(); i++)
             colors[i] = this.colors[wantedColor];
         setLeds(colors);

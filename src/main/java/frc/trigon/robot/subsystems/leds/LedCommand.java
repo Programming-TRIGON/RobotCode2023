@@ -9,7 +9,7 @@ public abstract class LedCommand extends CommandBase {
     private final LedStrip ledStrip;
 
     /**
-     * Construct a new LedCommand.
+     * Constructs a new LedCommand.
      *
      * @param ledStrip the led strip
      */

@@ -13,7 +13,7 @@ public class MoveAndStopAtMiddle extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * Construct a new MovingAndStopInMiddleLEDCommand.
+     * Constructs a new MovingAndStopInMiddleLEDCommand.
      * 
      * @param backgroundColor the background color of the led strip
      * @param primeColor      the prime color of the led strip

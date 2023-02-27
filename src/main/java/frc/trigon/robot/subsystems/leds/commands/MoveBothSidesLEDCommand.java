@@ -13,7 +13,7 @@ public class MoveBothSidesLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * Construct a new MoveBothSidesLEDCommand.
+     * Constructs a new MoveBothSidesLEDCommand.
      *
      * @param backgroundColor    the color of the background
      * @param primeColor         the color of the moving leds

@@ -7,12 +7,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.leds.LedStrip;
+import frc.trigon.robot.subsystems.leds.commands.BlinkLEDCommand;
 import frc.trigon.robot.subsystems.leds.commands.MovingColorsLEDCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
@@ -28,7 +30,11 @@ public class RobotContainer {
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
 
-    private final LedStrip ledStrip = new LedStrip(0, 80, false);
+    private final LedStrip
+            frontLeftLedStrip = new LedStrip(158, 33, true),
+            frontRightLedStrip = new LedStrip(62, 33, true),
+            rearLeftLedStrip = new LedStrip(0, 62, false),
+            rearRightLedStrip = new LedStrip(95, 63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / calculateShiftModeValue(),
@@ -51,7 +57,18 @@ public class RobotContainer {
                     () -> driverController.getLeftX() / calculateShiftModeValue(),
                     this::getRightStickAsRotation2d
             ),
-            movingColorsLEDCommand = new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, ledStrip);
+            movingColorsLEDCommand = new ParallelCommandGroup(
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearRightLedStrip)
+            ),
+            blinkLEDCommand = new ParallelCommandGroup(
+                    new BlinkLEDCommand(new Color[]{Color.kRed, Color.kBlack}, 1, frontLeftLedStrip),
+                    new BlinkLEDCommand(new Color[]{Color.kRed, Color.kBlack}, 1, frontRightLedStrip),
+                    new BlinkLEDCommand(new Color[]{Color.kRed, Color.kBlack}, 1, rearLeftLedStrip),
+                    new BlinkLEDCommand(new Color[]{Color.kRed, Color.kBlack}, 1, rearRightLedStrip)
+            );
 
     public RobotContainer() {
         configureAutonomousChooser();
@@ -76,7 +93,7 @@ public class RobotContainer {
 
     private void bindDefaultCommands() {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-        ledStrip.setDefaultCommand(movingColorsLEDCommand);
+        blinkLEDCommand.schedule();
     }
 
     private void bindControllerCommands() {

@@ -10,7 +10,7 @@ public class RainbowLEDCommand extends LedCommand {
     private static final int value = 128;
 
     /**
-     * Construct a new RainbowLEDCommand.
+     * Constructs a new RainbowLEDCommand.
      *
      * @param ledStrip the led strip
      */

@@ -17,7 +17,7 @@ public class LedStrip extends SubsystemBase {
     private final int virtualLength;
 
     /**
-     * construct a new LedStrip
+     * Constructs a new LedStrip
      *
      * @param startingPosition the first LED of the strip
      * @param length           length of the strip
@@ -33,7 +33,7 @@ public class LedStrip extends SubsystemBase {
     }
 
     /**
-     * Construct a new LedStrip.
+     * Constructs a new LedStrip.
      *
      * @param startingPosition the first LED in the strip
      * @param length           length of the strip

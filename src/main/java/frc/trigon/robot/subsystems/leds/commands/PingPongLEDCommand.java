@@ -16,7 +16,7 @@ public class PingPongLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * Construct a new MovingColorsLEDCommand.
+     * Constructs a new MovingColorsLEDCommand.
      *
      * @param backgroundColor    The color of the background
      * @param primeColor         The color of the moving leds

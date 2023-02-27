@@ -10,7 +10,7 @@ public class StaticColorLEDCommand extends LedCommand {
     private final int[] lengthOfEveryLedGroup;
 
     /**
-     * Construct a new StaticColorLEDCommand.
+     * Constructs a new StaticColorLEDCommand.
      *
      * @param ledStrip              the led strip
      * @param colors                the colors of the led strip

@@ -13,7 +13,7 @@ public class MovingColorsLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
 
     /**
-     * Construct a new MovingColorsLEDCommand.
+     * Constructs a new MovingColorsLEDCommand.
      *
      * @param backgroundColor    The color of the background
      * @param primeColor         The color of the moving leds
@@ -37,11 +37,6 @@ public class MovingColorsLEDCommand extends LedCommand {
         int lastInMovingRange = firstInMovingRange + amountOfMovingLeds;
         defineTheArrayOfTheColors(colors, firstInMovingRange, lastInMovingRange);
         setLeds(colors);
-    }
-
-    @Override
-    public boolean runsWhenDisabled() {
-        return true;
     }
 
     private int getFirstInMovingRange(){
