@@ -7,7 +7,7 @@ public class XboxController extends CommandXboxController {
     private double deadband = 0;
 
     /**
-     * Construct an instance of a controller.
+     * Constructs an instance of a controller.
      *
      * @param port The port index on the Driver Station that the controller is plugged into.
      */
@@ -16,7 +16,7 @@ public class XboxController extends CommandXboxController {
     }
 
     /**
-     * Construct an instance of a controller.
+     * Constructs an instance of a controller.
      *
      * @param port     the port index on the Driver Station that the controller is plugged into
      * @param exponent how much to exponentiate the raw values of the sticks by
