@@ -153,8 +153,14 @@ public class RobotContainer implements Loggable {
         OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
 
-        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(true)).ignoringDisable(true));
-        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(false)).ignoringDisable(true));
+        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
+            isCone.set(true);
+            GRIPPER.setDefaultCommand(new InstantCommand(() -> {}, GRIPPER));
+        }).ignoringDisable(true));
+        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
+            isCone.set(false);
+            GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
+        }).ignoringDisable(true));
 
         OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(1)).ignoringDisable(true));
         OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
@@ -167,7 +173,7 @@ public class RobotContainer implements Loggable {
     private void bindDefaultCommands() {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
         ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
-        GRIPPER.setDefaultCommand(new ProxyCommand(this::getHoldCubeCommand));
+        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
     }
 
     private void configureAutonomousChooser() {
@@ -198,12 +204,6 @@ public class RobotContainer implements Loggable {
     private boolean isRightStickStill() {
         return Math.abs(driverController.getRightY()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND &&
                 Math.abs(driverController.getRightX()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND;
-    }
-
-    private CommandBase getHoldCubeCommand() {
-        if (!isCone.get())
-            return GRIPPER.getHoldCommand();
-        return new InstantCommand();
     }
 
     private void setPoseEstimatorPoseSources() {
