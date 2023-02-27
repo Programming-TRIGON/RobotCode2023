@@ -4,18 +4,26 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.OperatorConstants;
+import frc.trigon.robot.subsystems.leds.LedStrip;
+import frc.trigon.robot.subsystems.leds.MasterLed;
+import frc.trigon.robot.subsystems.leds.commands.MovingColorsLEDCommand;
+import frc.trigon.robot.subsystems.leds.commands.StaticColorLEDCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
 import io.github.oblarg.oblog.annotations.Log;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RobotContainer {
     @Log
@@ -23,8 +31,18 @@ public class RobotContainer {
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
+    private final MasterLed masterLed = MasterLed.getInstance();
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
 
+    private final LedStrip
+            frontLeftLedStrip = new LedStrip(63 * 3, 63, true),
+            frontRightLedStrip = new LedStrip(63, 63, true),
+            rearLeftLedStrip = new LedStrip(0, 63, false),
+            rearRightLedStrip = new LedStrip(63 * 2, 63, false);
+//            frontLeftLedStrip = new LedStrip(158, 33, true),
+//            frontRightLedStrip = new LedStrip(62, 33, true),
+//            rearLeftLedStrip = new LedStrip(0, 62, false),
+//            rearRightLedStrip = new LedStrip(95, 63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / calculateShiftModeValue(),
@@ -46,7 +64,26 @@ public class RobotContainer {
                     () -> driverController.getLeftY() / calculateShiftModeValue(),
                     () -> driverController.getLeftX() / calculateShiftModeValue(),
                     this::getRightStickAsRotation2d
+            ),
+            redClimbingLEDCommand = new ParallelCommandGroup(
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearRightLedStrip)
+            ),
+            flamesLEDCommand = new ParallelCommandGroup(
+                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, rearRightLedStrip)
+            ),
+            purpleAndYellowLEDCommand = new ParallelCommandGroup(
+                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontLeftLedStrip.getLength() / 2, frontLeftLedStrip.getLength() / 2 + 1}),
+                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontRightLedStrip.getLength() / 2, frontRightLedStrip.getLength() / 2 + 1}),
+                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearLeftLedStrip.getLength() / 2, rearLeftLedStrip.getLength() / 2 + 1}),
+                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearRightLedStrip.getLength() / 2, rearRightLedStrip.getLength() / 2 + 1})
             );
+    AtomicInteger counter = new AtomicInteger(0);
 
     public RobotContainer() {
         configureAutonomousChooser();
@@ -65,12 +102,14 @@ public class RobotContainer {
     }
 
     private void bindCommands() {
+        addLedRequirements();
         bindControllerCommands();
         bindDefaultCommands();
     }
 
     private void bindDefaultCommands() {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
+        masterLed.setDefaultCommand(flamesLEDCommand);
     }
 
     private void bindControllerCommands() {
@@ -103,6 +142,12 @@ public class RobotContainer {
 
     private Rotation2d snapToClosest45Degrees(Rotation2d rotation2d) {
         return Rotation2d.fromDegrees(Math.round(rotation2d.getDegrees() / 45) * 45);
+    }
+
+    private void addLedRequirements() {
+        flamesLEDCommand.addRequirements(masterLed);
+        purpleAndYellowLEDCommand.addRequirements(masterLed);
+        redClimbingLEDCommand.addRequirements(masterLed);
     }
 
     private boolean isRightStickStill() {
