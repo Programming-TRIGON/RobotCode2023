@@ -62,7 +62,7 @@ public class RobotContainer {
             frontLeftLedStrip = new LedStrip(158, 33, true),
             frontRightLedStrip = new LedStrip(62, 33, true),
             rearLeftLedStrip = new LedStrip(0, 62, false),
-            rearRightLedStrip = new LedStrip(95, 63, false);
+            rearRightLedStrip = new LedStrip(95, 62, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
@@ -99,16 +99,22 @@ public class RobotContainer {
                     new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearRightLedStrip)
             ),
             flamesLEDCommand = new ParallelCommandGroup(
-                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, frontLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, frontRightLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, rearLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, rearRightLedStrip)
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, rearRightLedStrip)
             ),
-            purpleAndYellowLEDCommand = new ParallelCommandGroup(
-                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontLeftLedStrip.getLength() / 2, frontLeftLedStrip.getLength() / 2 + 1}),
-                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontRightLedStrip.getLength() / 2, frontRightLedStrip.getLength() / 2 + 1}),
-                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearLeftLedStrip.getLength() / 2, rearLeftLedStrip.getLength() / 2 + 1}),
-                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearRightLedStrip.getLength() / 2, rearRightLedStrip.getLength() / 2 + 1})
+            staticYellowColorLedCommand = new ParallelCommandGroup(
+                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
+                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
+                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
+                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kYellow}, new int[]{1})
+            ),
+            staticPurpleColorLedCommand = new ParallelCommandGroup(
+                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
+                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
+                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
+                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kPurple}, new int[]{1})
             );
 
     public RobotContainer() {
@@ -186,8 +192,16 @@ public class RobotContainer {
         OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
 
-        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(true)).ignoringDisable(true));
-        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(false)).ignoringDisable(true));
+        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
+            isCone.set(true);
+            masterLed.getDefaultCommand().cancel();
+            masterLed.setDefaultCommand(staticYellowColorLedCommand);
+        }).ignoringDisable(true));
+        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
+            isCone.set(false);
+            masterLed.getDefaultCommand().cancel();
+            masterLed.setDefaultCommand(staticPurpleColorLedCommand);
+        }).ignoringDisable(true));
 
         OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(1)).ignoringDisable(true));
         OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
@@ -224,7 +238,8 @@ public class RobotContainer {
 
     private void addLedRequirements() {
         flamesLEDCommand.addRequirements(masterLed);
-        purpleAndYellowLEDCommand.addRequirements(masterLed);
+        staticYellowColorLedCommand.addRequirements(masterLed);
+        staticPurpleColorLedCommand.addRequirements(masterLed);
         redClimbingLEDCommand.addRequirements(masterLed);
     }
 
