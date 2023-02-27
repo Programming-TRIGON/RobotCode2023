@@ -313,9 +313,9 @@ public class SwerveCommands {
 
     private static void resetPoseToAlliancePose(Pose2d currentPose) {
         final Pose2d alliancePose = toAlliancePose(currentPose);
-        final Pose2d currentFlippedPose = alliancePose.plus(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(0.5)));
+//        final Pose2d currentFlippedPose = alliancePose.plus(new Transform2d(new Translation2d(), Rotation2d.fromRotations(0.5)));
 
-        POSE_ESTIMATOR.resetPose(currentFlippedPose);
+        POSE_ESTIMATOR.resetPose(alliancePose);
     }
 
     private static Pose2d getCurrentAlliancePose() {

@@ -37,5 +37,6 @@ public class OperatorConstants {
             APPLY_FIRST_ARM_STATE_TRIGGER = KEYBOARD_INPUT.button(12),
             APPLY_SECOND_ARM_STATE_TRIGGER = KEYBOARD_INPUT.button(13),
             EJECT_TRIGGER = KEYBOARD_INPUT.button(14),
-            START_AUTO_TRIGGER = KEYBOARD_INPUT.button(15);
+            START_AUTO_TRIGGER = KEYBOARD_INPUT.button(15),
+            LED_FLAMES_TRIGGER = KEYBOARD_INPUT.button(16);
 }

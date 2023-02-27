@@ -3,8 +3,6 @@ package frc.trigon.robot.subsystems.swerve;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -67,10 +65,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      * @param currentPose the pose to reset to
      */
     public void resetPose(Pose2d currentPose) {
-        if (DriverStation.getAlliance() == DriverStation.Alliance.Red)
-            swerve.setHeading(currentPose.getRotation().plus(Rotation2d.fromRotations(0.5)));
-        else
-            swerve.setHeading(currentPose.getRotation());
+        swerve.setHeading(currentPose.getRotation());
 
         new Notifier(() -> resetPoseEstimator(currentPose)).startSingle(PoseEstimatorConstants.GYRO_UPDATE_TIME_SECONDS);
     }

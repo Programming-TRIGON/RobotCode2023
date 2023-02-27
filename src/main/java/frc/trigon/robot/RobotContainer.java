@@ -27,7 +27,7 @@ import frc.trigon.robot.subsystems.leds.commands.StaticColorLEDCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
-import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
+import frc.trigon.robot.subsystems.swerve.testing.TestingSwerve;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
@@ -37,7 +37,7 @@ import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
 public class RobotContainer {
     @Log
-    public static final Swerve SWERVE = TrihardSwerve.getInstance();
+    public static final Swerve SWERVE = TestingSwerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
     public static final Gripper GRIPPER = Gripper.getInstance();
     private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
@@ -75,7 +75,7 @@ public class RobotContainer {
                     () -> 0
             ),
             resetHeadingCommand = new InstantCommand(
-                    () -> SWERVE.setHeading(new Rotation2d())
+                    () -> POSE_ESTIMATOR.resetPose(setRotation(POSE_ESTIMATOR.getCurrentPose(), new Rotation2d()))
             ),
             toggleFieldAndSelfDrivenCommand = new InstantCommand(
                     this::toggleFieldAndSelfDrivenAngle
@@ -171,6 +171,8 @@ public class RobotContainer {
         OperatorConstants.APPLY_FIRST_ARM_STATE_TRIGGER.whileTrue(applyFirstArmStateCommand);
         OperatorConstants.APPLY_SECOND_ARM_STATE_TRIGGER.whileTrue(applySecondArmStateCommand);
         OperatorConstants.EJECT_TRIGGER.whileTrue(Gripper.getInstance().getEjectCommand());
+        OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
+        OperatorConstants.LED_FLAMES_TRIGGER.onTrue(new InstantCommand(flamesLEDCommand::schedule));
         tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
 
         driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true)));
@@ -190,17 +192,14 @@ public class RobotContainer {
         OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(1)).ignoringDisable(true));
         OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
         OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
-        OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
 
         OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(true);
-            masterLed.getDefaultCommand().cancel();
-            masterLed.setDefaultCommand(staticYellowColorLedCommand);
+            staticYellowColorLedCommand.schedule();
         }).ignoringDisable(true));
         OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(false);
-            masterLed.getDefaultCommand().cancel();
-            masterLed.setDefaultCommand(staticPurpleColorLedCommand);
+            staticPurpleColorLedCommand.schedule();
         }).ignoringDisable(true));
 
         OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(1)).ignoringDisable(true));
@@ -276,6 +275,14 @@ public class RobotContainer {
         });
         applySecondArmState.addRequirements(ARM);
         return applySecondArmState;
+    }
+
+    private Pose2d setRotation(Pose2d pose, Rotation2d rotation) {
+        return new Pose2d(
+                pose.getX(),
+                pose.getY(),
+                rotation
+        );
     }
 
     private ProxyCommand getApplyFirstArmStateCommand() {
