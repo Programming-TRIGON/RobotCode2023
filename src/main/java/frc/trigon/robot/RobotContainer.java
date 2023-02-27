@@ -99,10 +99,10 @@ public class RobotContainer {
                     new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearRightLedStrip)
             ),
             flamesLEDCommand = new ParallelCommandGroup(
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, frontLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, frontRightLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, rearLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, rearRightLedStrip)
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, rearRightLedStrip)
             ),
             purpleAndYellowLEDCommand = new ParallelCommandGroup(
                     new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontLeftLedStrip.getLength() / 2, frontLeftLedStrip.getLength() / 2 + 1}),
