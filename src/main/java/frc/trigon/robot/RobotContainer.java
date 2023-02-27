@@ -7,10 +7,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
@@ -22,11 +20,14 @@ import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
 import frc.trigon.robot.subsystems.arm.ArmCommands;
 import frc.trigon.robot.subsystems.gripper.Gripper;
+import frc.trigon.robot.subsystems.leds.LedStrip;
+import frc.trigon.robot.subsystems.leds.MasterLed;
+import frc.trigon.robot.subsystems.leds.commands.MovingColorsLEDCommand;
+import frc.trigon.robot.subsystems.leds.commands.StaticColorLEDCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
@@ -34,7 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
-public class RobotContainer implements Loggable {
+public class RobotContainer {
+    @Log
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
     public static final Gripper GRIPPER = Gripper.getInstance();
@@ -44,7 +46,7 @@ public class RobotContainer implements Loggable {
 
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
-
+    private final MasterLed masterLed = MasterLed.getInstance();
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
     private final CommandGenericHID input = OperatorConstants.KEYBOARD_INPUT;
     private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || input.button(6).getAsBoolean());
@@ -56,6 +58,11 @@ public class RobotContainer implements Loggable {
             isCone = new AtomicReference<>(false),
             isLeftRamp = new AtomicReference<>(false);
 
+    private final LedStrip
+            frontLeftLedStrip = new LedStrip(158, 33, true),
+            frontRightLedStrip = new LedStrip(62, 33, true),
+            rearLeftLedStrip = new LedStrip(0, 62, false),
+            rearRightLedStrip = new LedStrip(95, 63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
@@ -84,7 +91,25 @@ public class RobotContainer implements Loggable {
                     true
             ),
             applyFirstArmStateCommand = getApplyFirstArmStateCommand(),
-            applySecondArmStateCommand = getApplySecondArmStateCommand();
+            applySecondArmStateCommand = getApplySecondArmStateCommand(),
+            redClimbingLEDCommand = new ParallelCommandGroup(
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearRightLedStrip)
+            ),
+            flamesLEDCommand = new ParallelCommandGroup(
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, Color.kOrange, 0.02, 5, rearRightLedStrip)
+            ),
+            purpleAndYellowLEDCommand = new ParallelCommandGroup(
+                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontLeftLedStrip.getLength() / 2, frontLeftLedStrip.getLength() / 2 + 1}),
+                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontRightLedStrip.getLength() / 2, frontRightLedStrip.getLength() / 2 + 1}),
+                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearLeftLedStrip.getLength() / 2, rearLeftLedStrip.getLength() / 2 + 1}),
+                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearRightLedStrip.getLength() / 2, rearRightLedStrip.getLength() / 2 + 1})
+            );
 
     public RobotContainer() {
         configureAutonomousChooser();
@@ -126,6 +151,7 @@ public class RobotContainer implements Loggable {
     }
 
     private void bindCommands() {
+        addLedRequirements();
         bindControllerCommands();
         bindDefaultCommands();
     }
@@ -151,6 +177,7 @@ public class RobotContainer implements Loggable {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
         ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
         GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
+        masterLed.setDefaultCommand(flamesLEDCommand);
     }
 
     private void configureTargetPlacingPositionSetters() {
@@ -193,6 +220,12 @@ public class RobotContainer implements Loggable {
 
     private Rotation2d snapToClosest45Degrees(Rotation2d rotation2d) {
         return Rotation2d.fromDegrees(Math.round(rotation2d.getDegrees() / 45) * 45);
+    }
+
+    private void addLedRequirements() {
+        flamesLEDCommand.addRequirements(masterLed);
+        purpleAndYellowLEDCommand.addRequirements(masterLed);
+        redClimbingLEDCommand.addRequirements(masterLed);
     }
 
     private boolean isRightStickStill() {
