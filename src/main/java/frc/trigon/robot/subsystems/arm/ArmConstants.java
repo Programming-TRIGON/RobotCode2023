@@ -33,7 +33,7 @@ public class ArmConstants {
 
     static final double
             DESCEND_PROFILE_COMPLETION_PERCENTAGE = 1,
-            RISE_PROFILE_COMPLETION_PERCENTAGE = 0.43;
+            RISE_PROFILE_COMPLETION_PERCENTAGE = 0.7;
 
     static final double
             FIRST_JOINT_TOLERANCE = 2,

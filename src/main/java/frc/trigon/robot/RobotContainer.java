@@ -7,16 +7,17 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
-import frc.trigon.robot.components.CollectionCamera;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
+import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
 import frc.trigon.robot.subsystems.arm.ArmCommands;
@@ -38,15 +39,21 @@ public class RobotContainer implements Loggable {
     public static final Gripper GRIPPER = Gripper.getInstance();
     private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
-    private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
+//    private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
 
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
 
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
-    CommandGenericHID input = new CommandGenericHID(1);
+    private final CommandGenericHID input = OperatorConstants.KEYBOARD_INPUT;
     private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || input.button(6).getAsBoolean());
     private final Trigger tippingTrigger = new Trigger(() -> Math.abs(SWERVE.getPitch()) < -2);
+    private final AtomicReference<Integer>
+            level = new AtomicReference<>(1),
+            grid = new AtomicReference<>(1);
+    private final AtomicReference<Boolean>
+            isCone = new AtomicReference<>(false),
+            isLeftRamp = new AtomicReference<>(false);
 
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
@@ -69,64 +76,24 @@ public class RobotContainer implements Loggable {
                     () -> driverController.getLeftY() / calculateShiftModeValue(),
                     () -> driverController.getLeftX() / calculateShiftModeValue(),
                     this::getRightStickAsRotation2d
-            );
+            ),
+            alignToGridCommand = Commands.getDriveToPoseCommand(
+                    new PathConstraints(1, 1),
+                    () -> getGridAlignment().inFrontOfGridPose,
+                    true
+            ),
+            applyFirstArmStateCommand = getApplyFirstArmStateCommand(),
+            applySecondArmStateCommand = getApplySecondArmStateCommand();
 
     public RobotContainer() {
+        for (FieldConstants.GridAlignment gridAlignment : FieldConstants.GridAlignment.values())
+            PoseEstimator.getInstance().getField().getObject(gridAlignment.name()).setPose(gridAlignment.inFrontOfGridPose);
         configureAutonomousChooser();
         setPoseEstimatorPoseSources();
         bindCommands();
 
         setupArmBrakeModeWithUserButtonCommands();
         SmartDashboard.putData(Arm.getInstance());
-
-        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true)));
-        driverController.leftBumper().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
-        AtomicReference<Integer> level = new AtomicReference<>(1);
-        input.button(1).onTrue(new InstantCommand(() -> level.set(1)).ignoringDisable(true));
-        input.button(2).onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
-        input.button(3).onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
-
-        AtomicReference<Boolean> isCone = new AtomicReference<>(false);
-        input.button(4).onTrue(new InstantCommand(() -> isCone.set(true)).ignoringDisable(true));
-        input.button(5).onTrue(new InstantCommand(() -> isCone.set(false)).ignoringDisable(true));
-
-        input.button(6).whileTrue(new ProxyCommand(() -> {
-            if(isCone.get()) {
-                if(level.get() == 1) {
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
-                } else if(level.get() == 2) {
-                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
-                } else if(level.get() == 3) {
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
-                }
-            }
-            if(level.get() == 1) {
-                return ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID_1);
-            } else if(level.get() == 2) {
-                return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE_1);
-            } else if(level.get() == 3) {
-                return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH_1);
-            }
-            return new InstantCommand();
-        }));
-        input.button(7).whileTrue(new ProxyCommand(() -> {
-            if(isCone.get()) {
-                if(level.get() == 1)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
-                else if(level.get() == 2)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2);
-                else if(level.get() == 3)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2);
-            }
-            if(level.get() == 1) {
-                return ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID_1);
-            } else if(level.get() == 2) {
-                return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE_1);
-            } else if(level.get() == 3) {
-                return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH_1);
-            }
-            return new InstantCommand();
-        }));
 
         driverController.rightBumper().whileTrue(
                 ArmCommands.getPlaceCubeAtMiddleNodeCommand()
@@ -143,12 +110,6 @@ public class RobotContainer implements Loggable {
                         )
         );
 
-        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
-
-        input.button(8).whileTrue(Gripper.getInstance().getCollectCommand());
-        input.button(9).whileTrue(Gripper.getInstance().getEjectCommand());
-        input.button(10).whileTrue(Gripper.getInstance().getHoldCommand());
-
         input.button(11).whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
         SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
@@ -159,7 +120,7 @@ public class RobotContainer implements Loggable {
      */
     CommandBase getAutonomousCommand() {
         if (autonomousPathNameChooser.getSelected() == null)
-            return null;
+            return new InstantCommand();
 
         return Commands.getAutonomousCommand(autonomousPathNameChooser.getSelected());
     }
@@ -169,17 +130,44 @@ public class RobotContainer implements Loggable {
         bindDefaultCommands();
     }
 
-    private void bindDefaultCommands() {
-        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-        //        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
-        tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
-    }
-
     private void bindControllerCommands() {
-        OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetPoseCommand);
+        OperatorConstants.RESET_POSE_TRIGGER.onTrue(new InstantCommand(() -> SWERVE.setHeading(new Rotation2d())));
         OperatorConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
         OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
         OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
+        OperatorConstants.ALIGN_TO_GRID_TRIGGER.whileTrue(alignToGridCommand);
+        OperatorConstants.APPLY_FIRST_ARM_STATE_TRIGGER.whileTrue(applyFirstArmStateCommand);
+        OperatorConstants.APPLY_SECOND_ARM_STATE_TRIGGER.whileTrue(applySecondArmStateCommand);
+        OperatorConstants.EJECT_TRIGGER.whileTrue(Gripper.getInstance().getEjectCommand());
+        tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
+
+        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true)));
+        driverController.leftBumper().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
+
+        configureTargetPlacingPositionSetters();
+    }
+
+    private void configureTargetPlacingPositionSetters() {
+        OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(1)).ignoringDisable(true));
+        OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
+        OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
+        OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
+
+        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(true)).ignoringDisable(true));
+        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(false)).ignoringDisable(true));
+
+        OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(1)).ignoringDisable(true));
+        OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
+        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(3)).ignoringDisable(true));
+
+        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(true)).ignoringDisable(true));
+        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(false)).ignoringDisable(true));
+    }
+
+    private void bindDefaultCommands() {
+        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
+        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
+        GRIPPER.setDefaultCommand(new ProxyCommand(this::getHoldCubeCommand));
     }
 
     private void configureAutonomousChooser() {
@@ -208,12 +196,67 @@ public class RobotContainer implements Loggable {
     }
 
     private boolean isRightStickStill() {
-        return Math.abs(driverController.getRightY()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND&&
+        return Math.abs(driverController.getRightY()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND &&
                 Math.abs(driverController.getRightX()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND;
+    }
+
+    private CommandBase getHoldCubeCommand() {
+        if (!isCone.get())
+            return GRIPPER.getHoldCommand();
+        return new InstantCommand();
     }
 
     private void setPoseEstimatorPoseSources() {
         POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+    }
+
+    private FieldConstants.GridAlignment getGridAlignment() {
+        if (!isCone.get())
+            return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
+
+        return FieldConstants.GridAlignment.getGridAlignment(
+                grid.get(),
+                isLeftRamp.get() ? 1 : 3
+        );
+    }
+
+    private ProxyCommand getApplySecondArmStateCommand() {
+        return new ProxyCommand(() -> {
+            if (isCone.get()) {
+                if (level.get() == 1)
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
+                else if (level.get() == 2)
+                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2);
+                else if (level.get() == 3)
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2);
+            }
+            return getCubeArmToFirstLevelCommand();
+        });
+    }
+
+    private ProxyCommand getApplyFirstArmStateCommand() {
+        return new ProxyCommand(() -> {
+            if (isCone.get()) {
+                if (level.get() == 1)
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
+                else if (level.get() == 2)
+                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
+                else if (level.get() == 3)
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
+            }
+            return getCubeArmToFirstLevelCommand();
+        });
+    }
+
+    private Command getCubeArmToFirstLevelCommand() {
+        if (level.get() == 1)
+            return ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID_1);
+        else if (level.get() == 2)
+            return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE_1);
+        else if (level.get() == 3)
+            return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH_1);
+
+        return new InstantCommand();
     }
 
     private void toggleFieldAndSelfDrivenAngle() {
