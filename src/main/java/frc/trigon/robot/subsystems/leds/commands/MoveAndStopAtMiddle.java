@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
+import frc.trigon.robot.subsystems.leds.MasterLed;
 
 public class MoveAndStopAtMiddle extends LedCommand {
     private final Color backgroundColor;
@@ -27,6 +28,7 @@ public class MoveAndStopAtMiddle extends LedCommand {
         this.cycleTime = cycleTime;
         this.amountOfMovingLeds = amountOfMovingLeds - 1;
         this.ledStrip = ledStrip;
+        addRequirements(ledStrip);
     }
 
     @Override

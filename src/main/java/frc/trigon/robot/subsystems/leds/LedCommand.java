@@ -34,12 +34,12 @@ public abstract class LedCommand extends CommandBase {
     }
 
     protected void setLeds(Color[] colors) {
-        ledStrip.setLedsColors(colors);
+        ledStrip.setLedColors(colors);
     }
 
     private void turnOffLeds() {
         Color[] colors = new Color[ledStrip.getLength()];
         Arrays.fill(colors, Color.kBlack);
-        ledStrip.setLedsColors(colors);
+        ledStrip.setLedColors(colors);
     }
 }

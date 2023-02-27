@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.leds.commands;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
+import frc.trigon.robot.subsystems.leds.MasterLed;
 
 public class RainbowLEDCommand extends LedCommand {
     private final LedStrip ledStrip;
@@ -17,6 +18,7 @@ public class RainbowLEDCommand extends LedCommand {
     public RainbowLEDCommand(LedStrip ledStrip) {
         super(ledStrip);
         this.ledStrip = ledStrip;
+        addRequirements(ledStrip);
     }
 
     @Override

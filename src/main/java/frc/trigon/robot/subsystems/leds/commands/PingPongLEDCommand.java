@@ -31,6 +31,7 @@ public class PingPongLEDCommand extends LedCommand {
         this.cycleTime = cycleTime;
         this.amountOfMovingLeds = amountOfMovingLeds;
         this.ledStrip = ledStrip;
+        addRequirements(ledStrip);
     }
 
     @Override

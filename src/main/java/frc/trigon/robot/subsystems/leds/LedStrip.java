@@ -6,11 +6,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
 
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 public class LedStrip extends SubsystemBase {
-    public static final ArrayList<LedStrip> LED_STRIPS = new ArrayList<>();
+    private final MasterLed masterLed = MasterLed.getInstance();
     private final int startingPosition, endingPosition;
     private final boolean inverted;
     private final AddressableLED led = LedsConstants.LED;
@@ -29,7 +28,7 @@ public class LedStrip extends SubsystemBase {
         this.endingPosition = getEndingPosition(length);
         this.inverted = inverted;
         this.virtualLength = virtualLength;
-        LED_STRIPS.add(this);
+        MasterLed.LED_STRIPS.add(this);
     }
 
     /**
@@ -53,7 +52,7 @@ public class LedStrip extends SubsystemBase {
     /**
      * Sets the color of the LEDs in the strip.
      */
-    void setLedsColors(Color[] colors) {
+    void setLedColors(Color[] colors) {
         if (colors.length != getLength() || getLength() < endingPosition - startingPosition + 1) {
             Logger.getGlobal().warning("frc.trigon.robot.subsystems.leds.LedStrip.setLedsColors(): Tried to apply an array with incorrect size");
             if (getCurrentCommand() != null)
@@ -71,7 +70,7 @@ public class LedStrip extends SubsystemBase {
      * cancels all commands that are overlapping with this strip.
      */
     void cancelOverlapping() {
-        for (LedStrip ledStrip : LED_STRIPS) {
+        for (LedStrip ledStrip : MasterLed.LED_STRIPS) {
             if (ledStrip == this)
                 continue;
 

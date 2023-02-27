@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
+import frc.trigon.robot.subsystems.leds.MasterLed;
 
 public class BlinkLEDCommand extends LedCommand {
     private final Color[] colors;
@@ -22,6 +23,7 @@ public class BlinkLEDCommand extends LedCommand {
         this.colors = colors;
         this.cycleTime = cycleTime * 2;
         this.ledStrip = ledStrip;
+        addRequirements(ledStrip);
     }
 
     @Override
