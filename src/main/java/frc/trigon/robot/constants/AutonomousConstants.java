@@ -2,7 +2,6 @@ package frc.trigon.robot.constants;
 
 import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.trigon.robot.Robot;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.subsystems.arm.ArmCommands;
 import frc.trigon.robot.subsystems.arm.ArmConstants;
@@ -15,7 +14,7 @@ import java.util.List;
 
 public class AutonomousConstants {
     public static final HashMap<String, Command> EVENT_MAP = new HashMap<>();
-    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(2.5, 4);
+    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(2, 2);
     public static final List<String> AUTONOMOUS_PATHS_NAMES = new ArrayList<>();
     private static final File PATH_PLANNER_DIRECTORY = new File(FilesHandler.DEPLOY_PATH + "pathplanner");
 
