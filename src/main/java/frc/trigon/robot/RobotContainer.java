@@ -177,6 +177,7 @@ public class RobotContainer {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
         ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
         GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
+        masterLed.setDefaultCommand(flamesLEDCommand);
     }
 
     private void configureTargetPlacingPositionSetters() {
