@@ -13,7 +13,7 @@ public class OperatorConstants {
     );
     public static final double
             POV_DIVIDER = 2,
-            STICKS_DIVIDER = 4;
+            STICKS_DIVIDER = 1.6;
     private static final double MINIMUM_SHIFT_VALUE = 0.1;
     public static final double MINIMUM_SHIFT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
     public static final CommandGenericHID KEYBOARD_INPUT = new CommandGenericHID(1);
