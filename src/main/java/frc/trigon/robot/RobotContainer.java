@@ -57,9 +57,9 @@ public class RobotContainer implements Loggable {
 
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / calculateShiftModeValue(),
-                    () -> driverController.getRightX() / calculateShiftModeValue()
+                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER/ calculateShiftModeValue(),
+                    () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
             ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
                     () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
@@ -73,8 +73,8 @@ public class RobotContainer implements Loggable {
                     this::toggleFieldAndSelfDrivenAngle
             ),
             fieldRelativeDrivenAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / calculateShiftModeValue(),
+                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
                     this::getRightStickAsRotation2d
             ),
             alignToGridCommand = Commands.getDriveToPoseCommand(
@@ -147,22 +147,20 @@ public class RobotContainer implements Loggable {
         configureTargetPlacingPositionSetters();
     }
 
+    private void bindDefaultCommands() {
+        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
+        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
+        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
+    }
+
     private void configureTargetPlacingPositionSetters() {
         OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(1)).ignoringDisable(true));
         OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
         OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
 
-        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
-            isCone.set(true);
-            GRIPPER.getDefaultCommand().cancel();
-            GRIPPER.setDefaultCommand(GRIPPER.getStopCommand());
-        }).ignoringDisable(true));
-        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
-            isCone.set(false);
-            GRIPPER.getDefaultCommand().cancel();
-            GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
-        }).ignoringDisable(true));
+        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(true)).ignoringDisable(true));
+        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> isCone.set(false)).ignoringDisable(true));
 
         OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(1)).ignoringDisable(true));
         OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
@@ -170,12 +168,6 @@ public class RobotContainer implements Loggable {
 
         OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(true)).ignoringDisable(true));
         OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(false)).ignoringDisable(true));
-    }
-
-    private void bindDefaultCommands() {
-        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
-        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
     }
 
     private void configureAutonomousChooser() {
@@ -240,11 +232,11 @@ public class RobotContainer implements Loggable {
         return new ProxyCommand(() -> {
             if (isCone.get()) {
                 if (level.get() == 1)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1).alongWith(GRIPPER.getStopCommand());
                 else if (level.get() == 2)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
+                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1).alongWith(GRIPPER.getStopCommand());
                 else if (level.get() == 3)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1).alongWith(GRIPPER.getStopCommand());
             }
             return getCubeArmToFirstLevelCommand();
         });

@@ -11,7 +11,9 @@ public class OperatorConstants {
     public static final XboxController DRIVE_CONTROLLER = new XboxController(
             DRIVE_CONTROLLER_PORT, DRIVE_CONTROLLER_EXPONENT, DRIVE_CONTROLLER_DEADBAND
     );
-    public static final double POV_DIVIDER = 2;
+    public static final double
+            POV_DIVIDER = 2,
+            STICKS_DIVIDER = 4;
     private static final double MINIMUM_SHIFT_VALUE = 0.1;
     public static final double MINIMUM_SHIFT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
     public static final CommandGenericHID KEYBOARD_INPUT = new CommandGenericHID(1);
