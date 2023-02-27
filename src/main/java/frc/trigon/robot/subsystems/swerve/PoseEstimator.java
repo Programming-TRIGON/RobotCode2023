@@ -3,7 +3,7 @@ package frc.trigon.robot.subsystems.swerve;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
@@ -46,8 +46,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     public static PoseEstimator getInstance() {
         return INSTANCE;
     }
-
-
+    
     @Override
     public void periodic() {
         updatePoseEstimator();
@@ -66,13 +65,9 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      * @param currentPose the pose to reset to
      */
     public void resetPose(Pose2d currentPose) {
-        setGyroHeadingAndWaitUntilUpdate(currentPose.getRotation());
+        swerve.setHeading(currentPose.getRotation());
 
-        swerveDrivePoseEstimator.resetPosition(
-                swerve.getHeading(),
-                swerve.getModulePositions(),
-                currentPose
-        );
+        new Notifier(() -> resetPoseEstimator(currentPose)).startSingle(PoseEstimatorConstants.GYRO_UPDATE_TIME_SECONDS);
     }
 
     /**
@@ -89,6 +84,14 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      */
     public void addRobotPoseSources(RobotPoseSource... robotPoseSources) {
         this.robotPoseSources.addAll(List.of(robotPoseSources));
+    }
+
+    private void resetPoseEstimator(Pose2d currentPose) {
+        swerveDrivePoseEstimator.resetPosition(
+                swerve.getHeading(),
+                swerve.getModulePositions(),
+                currentPose
+        );
     }
 
     private void updatePoseEstimator() {
@@ -124,19 +127,6 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         for (Integer currentID : tagsIdToPose.keySet()) {
             final Pose2d tagPose = tagsIdToPose.get(currentID).toPose2d();
             field.getObject("Tag " + currentID).setPose(tagPose);
-        }
-    }
-
-    private void setGyroHeadingAndWaitUntilUpdate(Rotation2d heading) {
-        swerve.setHeading(heading);
-        waitUntilGyroUpdate();
-    }
-
-    private void waitUntilGyroUpdate() {
-        try {
-            Thread.sleep(PoseEstimatorConstants.GYRO_UPDATE_TIME_MS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
