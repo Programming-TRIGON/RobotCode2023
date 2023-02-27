@@ -215,39 +215,43 @@ public class RobotContainer implements Loggable {
     }
 
     private ProxyCommand getApplySecondArmStateCommand() {
-        return new ProxyCommand(() -> {
+        final ProxyCommand applySecondArmState = new ProxyCommand(() -> {
             if (isCone.get()) {
                 if (level.get() == 1)
                     return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1).alongWith(GRIPPER.getStopCommand());
-                else if (level.get() == 2)
+                if (level.get() == 2)
                     return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2).alongWith(GRIPPER.getStopCommand());
-                else if (level.get() == 3)
+                if (level.get() == 3)
                     return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2).alongWith(GRIPPER.getStopCommand());
             }
             return getCubeArmToFirstLevelCommand();
         });
+        applySecondArmState.addRequirements(ARM);
+        return applySecondArmState;
     }
 
     private ProxyCommand getApplyFirstArmStateCommand() {
-        return new ProxyCommand(() -> {
+        final ProxyCommand applyFirstStateProxyCommand = new ProxyCommand(() -> {
             if (isCone.get()) {
                 if (level.get() == 1)
                     return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
-                else if (level.get() == 2)
+                if (level.get() == 2)
                     return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
-                else if (level.get() == 3)
+                if (level.get() == 3)
                     return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
             }
             return getCubeArmToFirstLevelCommand();
         });
+        applyFirstStateProxyCommand.addRequirements(ARM);
+        return applyFirstStateProxyCommand;
     }
 
     private Command getCubeArmToFirstLevelCommand() {
         if (level.get() == 1)
             return ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID_1);
-        else if (level.get() == 2)
+        if (level.get() == 2)
             return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE_1);
-        else if (level.get() == 3)
+        if (level.get() == 3)
             return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH_1);
 
         return new InstantCommand();

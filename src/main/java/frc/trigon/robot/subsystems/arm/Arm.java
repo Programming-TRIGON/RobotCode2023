@@ -134,7 +134,6 @@ public class Arm extends SubsystemBase implements Loggable {
             firstArmToMove = getFirstMotorDistanceToGoal() > 0 ? "first" : "second";
         else
             firstArmToMove = "";
-        System.out.println(firstArmToMove + "____________________________________");
     }
 
     private void setTargetMotorPositions() {
@@ -147,7 +146,6 @@ public class Arm extends SubsystemBase implements Loggable {
         }
     }
 
-    /////////////////////
     private void generateFirstMotorProfile(double position) {
         firstMotorProfile = new TrapezoidProfile(
                 ArmConstants.FIRST_JOINT_CONSTRAINTS,
@@ -179,7 +177,6 @@ public class Arm extends SubsystemBase implements Loggable {
         boolean goingToHitTheGround = goingToHitTheGround(targetState);
         boolean waitingForOtherJoint = isNotFirstToMove("first") && (isSecondJointOnlyStarting() && !isSecondJointRetracted());
         if(goingToHitTheGround || waitingForOtherJoint) {
-            System.out.println("regenerating for first." + (goingToHitTheGround ? "goingToHitTheGround" : ("waitingForOtherJoint " + getSecondArmPercentage())));
             generateFirstMotorProfile(getFirstMotorGoal());
             return;
         }
@@ -204,7 +201,6 @@ public class Arm extends SubsystemBase implements Loggable {
 
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
         if(goingToHitTheGround || waitingForOtherJoint) {
-            System.out.println("regenerating for second." + (goingToHitTheGround ? "goingToHitTheGround" : ("waitingForOtherJoint " + getFirstArmPercentage())));
             generateSecondMotorProfile(getSecondMotorGoal());
             targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
         }
