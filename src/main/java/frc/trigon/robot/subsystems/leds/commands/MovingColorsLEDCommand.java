@@ -39,6 +39,11 @@ public class MovingColorsLEDCommand extends LedCommand {
         setLeds(colors);
     }
 
+    @Override
+    public boolean runsWhenDisabled() {
+        return true;
+    }
+
     private int getFirstInMovingRange(){
         return (int) (Timer.getFPGATimestamp() / cycleTime);
     }

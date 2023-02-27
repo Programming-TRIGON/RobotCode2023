@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.trigon.robot.commands.Commands;
@@ -11,6 +12,8 @@ import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.OperatorConstants;
+import frc.trigon.robot.subsystems.leds.LedStrip;
+import frc.trigon.robot.subsystems.leds.commands.MovingColorsLEDCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
@@ -25,6 +28,7 @@ public class RobotContainer {
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
 
+    private final LedStrip ledStrip = new LedStrip(0, 80, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / calculateShiftModeValue(),
@@ -46,7 +50,8 @@ public class RobotContainer {
                     () -> driverController.getLeftY() / calculateShiftModeValue(),
                     () -> driverController.getLeftX() / calculateShiftModeValue(),
                     this::getRightStickAsRotation2d
-            );
+            ),
+            movingColorsLEDCommand = new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, ledStrip);
 
     public RobotContainer() {
         configureAutonomousChooser();
@@ -71,6 +76,7 @@ public class RobotContainer {
 
     private void bindDefaultCommands() {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
+        ledStrip.setDefaultCommand(movingColorsLEDCommand);
     }
 
     private void bindControllerCommands() {
