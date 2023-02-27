@@ -218,11 +218,11 @@ public class RobotContainer implements Loggable {
         return new ProxyCommand(() -> {
             if (isCone.get()) {
                 if (level.get() == 1)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1).alongWith(GRIPPER.getStopCommand());
                 else if (level.get() == 2)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2);
+                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2).alongWith(GRIPPER.getStopCommand());
                 else if (level.get() == 3)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2);
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2).alongWith(GRIPPER.getStopCommand());
             }
             return getCubeArmToFirstLevelCommand();
         });
@@ -232,11 +232,11 @@ public class RobotContainer implements Loggable {
         return new ProxyCommand(() -> {
             if (isCone.get()) {
                 if (level.get() == 1)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1).alongWith(GRIPPER.getStopCommand());
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
                 else if (level.get() == 2)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1).alongWith(GRIPPER.getStopCommand());
+                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
                 else if (level.get() == 3)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1).alongWith(GRIPPER.getStopCommand());
+                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
             }
             return getCubeArmToFirstLevelCommand();
         });
