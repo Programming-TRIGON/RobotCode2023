@@ -1,6 +1,7 @@
 package frc.trigon.robot.subsystems.gripper;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.github.oblarg.oblog.Loggable;
@@ -58,6 +59,16 @@ public class Gripper extends SubsystemBase implements Loggable {
     public StartEndCommand getHoldCommand() {
         return new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.HOLD),
+                () -> setState(GripperConstants.GripperState.STOP),
+                this
+        );
+    }
+
+    /**
+     * @return a command that stops the gripper
+     */
+    public InstantCommand getStopCommand() {
+        return new InstantCommand(
                 () -> setState(GripperConstants.GripperState.STOP),
                 this
         );

@@ -155,10 +155,12 @@ public class RobotContainer implements Loggable {
 
         OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(true);
-            GRIPPER.setDefaultCommand(new InstantCommand(() -> {}, GRIPPER));
+            GRIPPER.getDefaultCommand().cancel();
+            GRIPPER.setDefaultCommand(GRIPPER.getStopCommand());
         }).ignoringDisable(true));
         OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(false);
+            GRIPPER.getDefaultCommand().cancel();
             GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
         }).ignoringDisable(true));
 
