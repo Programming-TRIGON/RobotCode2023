@@ -66,8 +66,8 @@ public class RobotContainer implements Loggable {
                     () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> 0
             ),
-            resetPoseCommand = new InstantCommand(
-                    () -> POSE_ESTIMATOR.resetPose(new Pose2d())
+            resetHeadingCommand = new InstantCommand(
+                    () -> SWERVE.setHeading(new Rotation2d())
             ),
             toggleFieldAndSelfDrivenCommand = new InstantCommand(
                     this::toggleFieldAndSelfDrivenAngle
@@ -131,7 +131,7 @@ public class RobotContainer implements Loggable {
     }
 
     private void bindControllerCommands() {
-        OperatorConstants.RESET_POSE_TRIGGER.onTrue(new InstantCommand(() -> SWERVE.setHeading(new Rotation2d())));
+        OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetHeadingCommand);
         OperatorConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
         OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
         OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
