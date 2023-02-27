@@ -5,7 +5,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N3;
 
 public class PoseEstimatorConstants {
-    static final int GYRO_UPDATE_TIME_MS = 15;
+    static final double GYRO_UPDATE_TIME_SECONDS = 0.020;
 
     /**
      * The vector represents how ambiguous each value is.
