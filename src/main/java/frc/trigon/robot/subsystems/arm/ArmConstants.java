@@ -42,7 +42,7 @@ public class ArmConstants {
             SECOND_JOINT_VELOCITY_TOLERANCE = 10;
 
     private static final double
-            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 28,
+            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 40,
             FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2,
             SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 30,
             SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2;
@@ -77,7 +77,7 @@ public class ArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 240,
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 140,
             SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 90;
 
     private static final double
@@ -200,8 +200,8 @@ public class ArmConstants {
         CUBE_MIDDLE_1(-51, 113),
         CUBE_HIGH_1(-5, 35),
         CONE_HYBRID_1(FIRST_JOINT_CLOSED, 110),
-        CONE_MIDDLE_1(-35, 94),
-        CONE_MIDDLE_2(-75, 94),
+        CONE_MIDDLE_1(-35, 101),
+        CONE_MIDDLE_2(-75, 101),
         CONE_HIGH_1(15, 37),
         CONE_HIGH_2(-8, 43);
 
