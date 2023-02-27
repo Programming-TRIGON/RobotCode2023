@@ -2,6 +2,10 @@ package frc.trigon.robot.constants;
 
 import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.trigon.robot.Robot;
+import frc.trigon.robot.RobotContainer;
+import frc.trigon.robot.subsystems.arm.ArmCommands;
+import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.utilities.FilesHandler;
 
 import java.io.File;
@@ -11,7 +15,7 @@ import java.util.List;
 
 public class AutonomousConstants {
     public static final HashMap<String, Command> EVENT_MAP = new HashMap<>();
-    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(1, 1);
+    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(2, 2);
     public static final List<String> AUTONOMOUS_PATHS_NAMES = new ArrayList<>();
     private static final File PATH_PLANNER_DIRECTORY = new File(FilesHandler.DEPLOY_PATH + "pathplanner");
 
@@ -21,6 +25,15 @@ public class AutonomousConstants {
     }
 
     private static void configureEventMap() {
+        EVENT_MAP.put(
+                "place-cone-2", ArmCommands.getPlaceConeAtMediumNodeCommand()
+        );
+        EVENT_MAP.put(
+                "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING, true))
+        );
+        EVENT_MAP.put(
+                "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED, true))
+        );
     }
 
     private static void configureAutonomousPathsNames() {

@@ -18,6 +18,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         robotContainer = new RobotContainer();
 
+        PathPlannerServer.startServer(5811);
         Logger.configureLoggingAndConfig(robotContainer, false);
     }
 

@@ -1,28 +1,26 @@
 package frc.trigon.robot;
 
+import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.trigon.robot.components.CollectionCamera;
-import frc.trigon.robot.components.XboxController;
-import frc.trigon.robot.subsystems.arm.Arm;
-import frc.trigon.robot.subsystems.gripper.Gripper;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.trigon.robot.commands.Commands;
+import frc.trigon.robot.components.CollectionCamera;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.OperatorConstants;
+import frc.trigon.robot.subsystems.arm.Arm;
+import frc.trigon.robot.subsystems.arm.ArmCommands;
+import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
@@ -36,8 +34,8 @@ import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
 public class RobotContainer implements Loggable {
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
-    private final Arm ARM = Arm.getInstance();
-    private final Gripper GRIPPER = Gripper.getInstance();
+    public static final Arm ARM = Arm.getInstance();
+    public static final Gripper GRIPPER = Gripper.getInstance();
     private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
@@ -45,7 +43,7 @@ public class RobotContainer implements Loggable {
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
 
-    private final XboxController driverController = DriverConstants.DRIVE_CONTROLLER;
+    private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
     CommandGenericHID input = new CommandGenericHID(1);
     private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || input.button(6).getAsBoolean());
     private final Trigger tippingTrigger = new Trigger(() -> Math.abs(SWERVE.getPitch()) < -2);
@@ -130,6 +128,21 @@ public class RobotContainer implements Loggable {
             return new InstantCommand();
         }));
 
+        driverController.rightBumper().whileTrue(
+                ArmCommands.getPlaceCubeAtMiddleNodeCommand()
+        );
+        var pose = new Pose2d(14.48, 1.6, new Rotation2d());
+        driverController.leftBumper().whileTrue(
+                Commands.getDriveToPoseCommand(
+                                new PathConstraints(1, 1),
+                                () -> pose,
+                                true
+                        )
+                        .andThen(
+                                ArmCommands.getPlaceConeAtMediumNodeCommand()
+                        )
+        );
+
         ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
 
         input.button(8).whileTrue(Gripper.getInstance().getCollectCommand());
@@ -158,7 +171,7 @@ public class RobotContainer implements Loggable {
 
     private void bindDefaultCommands() {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
+        //        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
         tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
     }
 
@@ -200,7 +213,7 @@ public class RobotContainer implements Loggable {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+        POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
     }
 
     private void toggleFieldAndSelfDrivenAngle() {

@@ -37,9 +37,9 @@ public class ArmConstants {
 
     static final double
             FIRST_JOINT_TOLERANCE = 2,
-            SECOND_JOINT_TOLERANCE = 2,
             FIRST_JOINT_VELOCITY_TOLERANCE = 2,
-            SECOND_JOINT_VELOCITY_TOLERANCE = 2;
+            SECOND_JOINT_TOLERANCE = 4,
+            SECOND_JOINT_VELOCITY_TOLERANCE = 10;
 
     private static final double
             FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 28,
@@ -50,13 +50,13 @@ public class ArmConstants {
     static final CurrentWatcher.CurrentWatcherConfig
             FIRST_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
             FIRST_JOINT_FIRST_MOTOR::getStatorCurrent,
-            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
-            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD
+            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
+            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
     ),
             SECOND_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
                     SECOND_JOINT_MOTOR::getStatorCurrent,
-                    SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD,
-                    SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD
+                    SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
+                    SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
             );
 
     private static final boolean
@@ -77,11 +77,11 @@ public class ArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 360,
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 240,
             SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 90;
 
     private static final double
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 540,
+            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 240,
             SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 60;
 
     static final TrapezoidProfile.Constraints
@@ -200,8 +200,8 @@ public class ArmConstants {
         CUBE_MIDDLE_1(-51, 113),
         CUBE_HIGH_1(-5, 35),
         CONE_HYBRID_1(FIRST_JOINT_CLOSED, 110),
-        CONE_MIDDLE_1(-35, 92),
-        CONE_MIDDLE_2(-75, 92),
+        CONE_MIDDLE_1(-35, 94),
+        CONE_MIDDLE_2(-75, 94),
         CONE_HIGH_1(15, 37),
         CONE_HIGH_2(-8, 43);
 

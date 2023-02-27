@@ -9,7 +9,7 @@ public class GripperConstants {
     private static final boolean INVERTED = false;
 
     private static final double
-            HOLD_TRIGGER_DURATION = 0.1,
+            HOLD_TRIGGER_DURATION = 0.25,
             HOLD_TRIGGER_CURRENT = 14;
 
     static final WPI_TalonFX MOTOR = new WPI_TalonFX(MOTOR_ID);
