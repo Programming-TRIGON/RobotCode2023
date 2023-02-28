@@ -23,6 +23,7 @@ public class OperatorConstants {
             TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER = DRIVE_CONTROLLER.x(),
             LOCK_SWERVE_TRIGGER = DRIVE_CONTROLLER.a(),
             DRIVE_FROM_DPAD_TRIGGER = new Trigger(() -> DRIVE_CONTROLLER.getPov() != -1),
+            PLACE_GAME_PIECE_AT_HYBRID_TRIGGER = DRIVE_CONTROLLER.b(),
             LEVEL_1_TRIGGER = KEYBOARD_INPUT.button(1),
             LEVEL_2_TRIGGER = KEYBOARD_INPUT.button(2),
             LEVEL_3_TRIGGER = KEYBOARD_INPUT.button(3),

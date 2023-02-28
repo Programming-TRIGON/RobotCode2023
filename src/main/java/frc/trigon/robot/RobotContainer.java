@@ -4,6 +4,7 @@ import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,6 +29,7 @@ import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.testing.TestingSwerve;
+import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
@@ -37,7 +39,7 @@ import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
 public class RobotContainer {
     @Log
-    public static final Swerve SWERVE = TestingSwerve.getInstance();
+    public static final Swerve SWERVE = TrihardSwerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
     public static final Gripper GRIPPER = Gripper.getInstance();
     private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
@@ -92,6 +94,9 @@ public class RobotContainer {
             ),
             applyFirstArmStateCommand = getApplyFirstArmStateCommand(),
             applySecondArmStateCommand = getApplySecondArmStateCommand(),
+            placeGamePieceAtHybridCommand = ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID_1).alongWith(
+                    new WaitCommand(0.8).until(ARM::atGoal).andThen(GRIPPER.getSlowEjectCommand())
+            ),
             redClimbingLEDCommand = new ParallelCommandGroup(
                     new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontLeftLedStrip),
                     new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontRightLedStrip),
@@ -129,17 +134,6 @@ public class RobotContainer {
         driverController.rightBumper().whileTrue(
                 ArmCommands.getPlaceCubeAtMiddleNodeCommand()
         );
-        var pose = new Pose2d(14.48, 1.6, new Rotation2d());
-        driverController.leftBumper().whileTrue(
-                Commands.getDriveToPoseCommand(
-                                new PathConstraints(1, 1),
-                                () -> pose,
-                                true
-                        )
-                        .andThen(
-                                ArmCommands.getPlaceConeAtMediumNodeCommand()
-                        )
-        );
 
         input.button(11).whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
@@ -173,6 +167,7 @@ public class RobotContainer {
         OperatorConstants.EJECT_TRIGGER.whileTrue(Gripper.getInstance().getEjectCommand());
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
         OperatorConstants.LED_FLAMES_TRIGGER.onTrue(new InstantCommand(flamesLEDCommand::schedule));
+        OperatorConstants.PLACE_GAME_PIECE_AT_HYBRID_TRIGGER.whileTrue(placeGamePieceAtHybridCommand);
         tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
 
         driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true)));
@@ -189,9 +184,9 @@ public class RobotContainer {
     }
 
     private void configureTargetPlacingPositionSetters() {
-        OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(1)).ignoringDisable(true));
+        OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(isRed() ? 1 : 3)).ignoringDisable(true));
         OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
-        OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
+        OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(isRed() ? 3 : 1)).ignoringDisable(true));
 
         OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(true);
@@ -202,12 +197,12 @@ public class RobotContainer {
             staticPurpleColorLedCommand.schedule();
         }).ignoringDisable(true));
 
-        OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(1)).ignoringDisable(true));
+        OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(isRed() ? 1 : 3)).ignoringDisable(true));
         OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
-        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(3)).ignoringDisable(true));
+        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(isRed() ? 3 :  1)).ignoringDisable(true));
 
-        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(true)).ignoringDisable(true));
-        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(false)).ignoringDisable(true));
+        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(isRed())).ignoringDisable(true));
+        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(!isRed())).ignoringDisable(true));
     }
 
     private void configureAutonomousChooser() {
@@ -231,6 +226,10 @@ public class RobotContainer {
         return snapToClosest45Degrees(new Rotation2d(driverController.getRightY(), driverController.getRightX()));
     }
 
+    private boolean isRed() {
+        return DriverStation.getAlliance() == DriverStation.Alliance.Red;
+    }
+
     private Rotation2d snapToClosest45Degrees(Rotation2d rotation2d) {
         return Rotation2d.fromDegrees(Math.round(rotation2d.getDegrees() / 45) * 45);
     }
@@ -248,17 +247,18 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-        POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+//        POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
     }
 
     private FieldConstants.GridAlignment getGridAlignment() {
         if (!isCone.get())
             return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
 
-        return FieldConstants.GridAlignment.getGridAlignment(
+        FieldConstants.GridAlignment g = FieldConstants.GridAlignment.getGridAlignment(
                 grid.get(),
                 isLeftRamp.get() ? 1 : 3
         );
+        return g;
     }
 
     private ProxyCommand getApplySecondArmStateCommand() {
