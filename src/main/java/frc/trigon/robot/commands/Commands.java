@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
-import frc.trigon.robot.utilities.AllianceUtilities;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -43,21 +42,19 @@ public class Commands {
     }
 
     private static CommandBase getDriveToPoseCommand(PathConstraints driveConstraints, Pose2d targetPose) {
-        final Pose2d
-                currentPose = POSE_ESTIMATOR.getCurrentPose(),
-                targetAlliancePose = AllianceUtilities.toAlliancePose(targetPose);
+        final Pose2d currentPose = POSE_ESTIMATOR.getCurrentPose();
         final PathPoint currentPoint = new PathPoint(
                 currentPose.getTranslation(),
                 currentPose.getRotation(),
                 currentPose.getRotation()
         );
         final PathPoint targetPoint = new PathPoint(
-                targetAlliancePose.getTranslation(),
-                targetAlliancePose.getRotation(),
-                targetAlliancePose.getRotation()
+                targetPose.getTranslation(),
+                targetPose.getRotation(),
+                targetPose.getRotation()
         );
         final PathPlannerTrajectory path = PathPlanner.generatePath(driveConstraints, currentPoint, targetPoint);
 
-        return SwerveCommands.getFollowPathCommand(path).andThen(SwerveCommands.getDriveToPoseWithPIDCommand(targetAlliancePose));
+        return SwerveCommands.getFollowPathCommand(path).andThen(SwerveCommands.getDriveToPoseWithPIDCommand(targetPose));
     }
 }

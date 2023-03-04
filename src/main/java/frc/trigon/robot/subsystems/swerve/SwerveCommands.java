@@ -7,8 +7,10 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
+import frc.trigon.robot.utilities.AllianceUtilities;
 
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +53,7 @@ public class SwerveCommands {
         final PathPlannerTrajectory lastPath = pathGroup.get(pathGroup.size() - 1);
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            POSE_ESTIMATOR.getField().getObject("target").setPose(lastPath.getEndState().poseMeters);
+            addTargetPoseToField(lastPath);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -78,7 +80,7 @@ public class SwerveCommands {
     public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path) {
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
+            addTargetPoseToField(path);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -233,6 +235,16 @@ public class SwerveCommands {
                 () -> false,
                 SWERVE
         );
+    }
+
+    private static void addTargetPoseToField(PathPlannerTrajectory path) {
+        if (AllianceUtilities.isBlueAlliance()) {
+            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
+            return;
+        }
+
+        final PathPlannerTrajectory transformedTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.Alliance.Red);
+        POSE_ESTIMATOR.getField().getObject("target").setPose(transformedTrajectory.getEndState().poseMeters);
     }
 
     private static void initializePosePIDControllers(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController, Pose2d targetPose) {
