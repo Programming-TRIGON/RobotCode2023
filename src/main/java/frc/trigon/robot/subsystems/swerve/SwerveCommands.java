@@ -7,7 +7,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
 
@@ -52,7 +51,7 @@ public class SwerveCommands {
         final PathPlannerTrajectory lastPath = pathGroup.get(pathGroup.size() - 1);
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            addTargetPoseToField(lastPath);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(lastPath.getEndState().poseMeters);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -79,7 +78,7 @@ public class SwerveCommands {
     public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path) {
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            addTargetPoseToField(path);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -294,14 +293,6 @@ public class SwerveCommands {
 
     private static PIDController pidConstantsToController(PIDConstants pidConstants) {
         return new PIDController(pidConstants.kP, pidConstants.kI, pidConstants.kD, pidConstants.period);
-    }
-
-    private static void addTargetPoseToField(PathPlannerTrajectory path) {
-        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
-            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
-
-        final PathPlannerTrajectory transformedTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.Alliance.Red);
-        POSE_ESTIMATOR.getField().getObject("target").setPose(transformedTrajectory.getEndState().poseMeters);
     }
 
     private static void initializeDrive(boolean closedLoop) {

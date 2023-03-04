@@ -5,7 +5,7 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.constants.AutonomousConstants;
@@ -39,24 +39,25 @@ public class Commands {
      * @return the command
      */
     public static ProxyCommand getDriveToPoseCommand(PathConstraints driveConstraints, Supplier<Pose2d> targetPoseSupplier) {
-        final Supplier<Command> driveToPointCommandSupplier = () -> {
-            final Pose2d
-                    currentPose = POSE_ESTIMATOR.getCurrentPose(),
-                    targetPose = AllianceUtilities.toAlliancePose(targetPoseSupplier.get());
-            final PathPoint currentPoint = new PathPoint(
-                    currentPose.getTranslation(),
-                    currentPose.getRotation(),
-                    currentPose.getRotation()
-            );
-            final PathPoint targetPoint = new PathPoint(
-                    targetPose.getTranslation(),
-                    targetPose.getRotation(),
-                    targetPose.getRotation()
-            );
-            final PathPlannerTrajectory path = PathPlanner.generatePath(driveConstraints, currentPoint, targetPoint);
+        return new ProxyCommand(() -> getDriveToPoseCommand(driveConstraints, targetPoseSupplier.get()));
+    }
 
-            return SwerveCommands.getFollowPathCommand(path).andThen(SwerveCommands.getDriveToPoseWithPIDCommand(targetPose));
-        };
-        return new ProxyCommand(driveToPointCommandSupplier);
+    private static CommandBase getDriveToPoseCommand(PathConstraints driveConstraints, Pose2d targetPose) {
+        final Pose2d
+                currentPose = POSE_ESTIMATOR.getCurrentPose(),
+                targetAlliancePose = AllianceUtilities.toAlliancePose(targetPose);
+        final PathPoint currentPoint = new PathPoint(
+                currentPose.getTranslation(),
+                currentPose.getRotation(),
+                currentPose.getRotation()
+        );
+        final PathPoint targetPoint = new PathPoint(
+                targetAlliancePose.getTranslation(),
+                targetAlliancePose.getRotation(),
+                targetAlliancePose.getRotation()
+        );
+        final PathPlannerTrajectory path = PathPlanner.generatePath(driveConstraints, currentPoint, targetPoint);
+
+        return SwerveCommands.getFollowPathCommand(path).andThen(SwerveCommands.getDriveToPoseWithPIDCommand(targetAlliancePose));
     }
 }

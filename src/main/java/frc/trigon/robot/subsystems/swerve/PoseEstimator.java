@@ -41,7 +41,6 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
-        addAprilTagsToFieldWidget();
     }
 
     public static PoseEstimator getInstance() {
@@ -99,7 +98,8 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     private void updatePoseEstimator() {
         updatePoseEstimatorStates();
         attemptToUpdateWithRobotPoseSources();
-        field.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
+        putAprilTagsOnFieldWidget();
+        field.setRobotPose(getCurrentPose());
     }
 
     private void attemptToUpdateWithRobotPoseSources() {
@@ -123,12 +123,12 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
         swerveDrivePoseEstimator.update(swerve.getHeading(), swerve.getModulePositions());
     }
 
-    private void addAprilTagsToFieldWidget() {
+    private void putAprilTagsOnFieldWidget() {
         final HashMap<Integer, Pose3d> tagsIdToPose = PoseSourceConstants.TAGS_ID_TO_POSE;
 
         for (Integer currentID : tagsIdToPose.keySet()) {
             final Pose2d tagPose = tagsIdToPose.get(currentID).toPose2d();
-            field.getObject("Tag " + currentID).setPose(tagPose);
+            field.getObject("Tag " + currentID).setPose(AllianceUtilities.toAlliancePose(tagPose));
         }
     }
 }
