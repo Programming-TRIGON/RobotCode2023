@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.utilities.Conversions;
@@ -54,7 +55,7 @@ public class Arm extends SubsystemBase implements Loggable {
         );
     }
 
-   public boolean atGoal() {
+    public boolean atGoal() {
         return
                 Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE &&
                         Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE &&
@@ -77,7 +78,7 @@ public class Arm extends SubsystemBase implements Loggable {
      * @param state the target state
      * @return the command
      */
-    public Command getGoToStateCommand(ArmStates state, boolean byOrder) {
+    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder) {
         return new StartEndCommand(
                 () -> setTargetState(state, byOrder),
                 () -> {},
@@ -85,7 +86,7 @@ public class Arm extends SubsystemBase implements Loggable {
         );
     }
 
-    public Command getGoToStateCommand(ArmConstants.ArmStates state) {
+    public CommandBase getGoToStateCommand(ArmConstants.ArmStates state) {
         return getGoToStateCommand(state, true);
     }
 
@@ -130,14 +131,14 @@ public class Arm extends SubsystemBase implements Loggable {
     private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder) {
         generateFirstMotorProfile(firstMotorPosition);
         generateSecondMotorProfile(secondMotorPosition);
-        if(byOrder)
+        if (byOrder)
             firstArmToMove = getFirstMotorDistanceToGoal() > 0 ? "first" : "second";
         else
             firstArmToMove = "";
     }
 
     private void setTargetMotorPositions() {
-        if(this.getCurrentCommand() == null) {
+        if (this.getCurrentCommand() == null) {
             firstMotor.disable();
             secondMotor.disable();
         } else {
@@ -165,7 +166,7 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     private void setFirstMotorPositionFromProfile() {
-        if(firstMotorProfile == null) {
+        if (firstMotorProfile == null) {
             firstMotor.stopMotor();
             return;
         }
@@ -176,7 +177,7 @@ public class Arm extends SubsystemBase implements Loggable {
 
         boolean goingToHitTheGround = goingToHitTheGround(targetState);
         boolean waitingForOtherJoint = isNotFirstToMove("first") && (isSecondJointOnlyStarting() && !isSecondJointRetracted());
-        if(goingToHitTheGround || waitingForOtherJoint) {
+        if (goingToHitTheGround || waitingForOtherJoint) {
             generateFirstMotorProfile(getFirstMotorGoal());
             return;
         }
@@ -188,7 +189,7 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     private void setSecondMotorPositionFromProfile() {
-        if(secondMotorProfile == null) {
+        if (secondMotorProfile == null) {
             secondMotor.stopMotor();
             return;
         }
@@ -200,7 +201,7 @@ public class Arm extends SubsystemBase implements Loggable {
         boolean waitingForOtherJoint = isNotFirstToMove("second") && (isFirstJointOnlyStarting() && isSecondJointRetracted());
 
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
-        if(goingToHitTheGround || waitingForOtherJoint) {
+        if (goingToHitTheGround || waitingForOtherJoint) {
             generateSecondMotorProfile(getSecondMotorGoal());
             targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
         }
@@ -215,13 +216,13 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     private double getFirstArmPercentage() {
-        if(firstMotorProfile == null)
+        if (firstMotorProfile == null)
             return 1;
         return getFirstMotorProfileTime() / firstMotorProfile.totalTime();
     }
 
     private double getSecondArmPercentage() {
-        if(secondMotorProfile == null)
+        if (secondMotorProfile == null)
             return 1;
         return getSecondMotorProfileTime() / secondMotorProfile.totalTime();
     }
@@ -243,13 +244,13 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     private double getFirstMotorGoal() {
-        if(firstMotorProfile == null)
+        if (firstMotorProfile == null)
             return getFirstMotorPosition();
         return firstMotorProfile.calculate(firstMotorProfile.totalTime()).position;
     }
 
     private double getSecondMotorGoal() {
-        if(secondMotorProfile == null)
+        if (secondMotorProfile == null)
             return getSecondMotorPosition();
         return secondMotorProfile.calculate(secondMotorProfile.totalTime()).position;
     }

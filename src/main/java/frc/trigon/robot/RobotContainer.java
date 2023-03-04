@@ -4,7 +4,6 @@ import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
-import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
@@ -28,8 +26,8 @@ import frc.trigon.robot.subsystems.leds.commands.StaticColorLEDCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
-import frc.trigon.robot.subsystems.swerve.testing.TestingSwerve;
 import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
+import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
@@ -89,12 +87,11 @@ public class RobotContainer {
             ),
             alignToGridCommand = Commands.getDriveToPoseCommand(
                     new PathConstraints(1, 1),
-                    () -> getGridAlignment().inFrontOfGridPose,
-                    true
+                    () -> getGridAlignment().inFrontOfGridPose
             ),
-            applyFirstArmStateCommand = getApplyFirstArmStateCommand(),
-            applySecondArmStateCommand = getApplySecondArmStateCommand(),
-            placeGamePieceAtHybridCommand = ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID_1).alongWith(
+            applyFirstArmStateCommand = getGoToCurrentFirstArmPositionCommand(),
+            applySecondArmStateCommand = getGoToCurrentSecondArmPositionCommand(),
+            placeGamePieceAtHybridCommand = ARM.getGoToStateCommand(ArmStates.HYBRID_1).alongWith(
                     new WaitCommand(0.8).until(ARM::atGoal).andThen(GRIPPER.getSlowEjectCommand())
             ),
             redClimbingLEDCommand = new ParallelCommandGroup(
@@ -184,9 +181,9 @@ public class RobotContainer {
     }
 
     private void configureTargetPlacingPositionSetters() {
-        OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(isRed() ? 1 : 3)).ignoringDisable(true));
+        OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(AllianceUtilities.isBlueAlliance() ? 1 : 3)).ignoringDisable(true));
         OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
-        OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(isRed() ? 3 : 1)).ignoringDisable(true));
+        OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(AllianceUtilities.isBlueAlliance() ? 3 : 1)).ignoringDisable(true));
 
         OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(true);
@@ -197,12 +194,12 @@ public class RobotContainer {
             staticPurpleColorLedCommand.schedule();
         }).ignoringDisable(true));
 
-        OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(isRed() ? 1 : 3)).ignoringDisable(true));
+        OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 1 : 3)).ignoringDisable(true));
         OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
-        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(isRed() ? 3 :  1)).ignoringDisable(true));
+        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 3 :  1)).ignoringDisable(true));
 
-        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(isRed())).ignoringDisable(true));
-        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(!isRed())).ignoringDisable(true));
+        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
+        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(!AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
     }
 
     private void configureAutonomousChooser() {
@@ -224,10 +221,6 @@ public class RobotContainer {
             return SWERVE.getHeading();
 
         return snapToClosest45Degrees(new Rotation2d(driverController.getRightY(), driverController.getRightX()));
-    }
-
-    private boolean isRed() {
-        return DriverStation.getAlliance() == DriverStation.Alliance.Red;
     }
 
     private Rotation2d snapToClosest45Degrees(Rotation2d rotation2d) {
@@ -254,27 +247,10 @@ public class RobotContainer {
         if (!isCone.get())
             return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
 
-        FieldConstants.GridAlignment g = FieldConstants.GridAlignment.getGridAlignment(
+        return FieldConstants.GridAlignment.getGridAlignment(
                 grid.get(),
                 isLeftRamp.get() ? 1 : 3
         );
-        return g;
-    }
-
-    private ProxyCommand getApplySecondArmStateCommand() {
-        final ProxyCommand applySecondArmState = new ProxyCommand(() -> {
-            if (isCone.get()) {
-                if (level.get() == 1)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1).alongWith(GRIPPER.getStopCommand());
-                if (level.get() == 2)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2).alongWith(GRIPPER.getStopCommand());
-                if (level.get() == 3)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2).alongWith(GRIPPER.getStopCommand());
-            }
-            return getCubeArmToFirstLevelCommand();
-        });
-        applySecondArmState.addRequirements(ARM);
-        return applySecondArmState;
     }
 
     private Pose2d setRotation(Pose2d pose, Rotation2d rotation) {
@@ -285,25 +261,55 @@ public class RobotContainer {
         );
     }
 
-    private ProxyCommand getApplyFirstArmStateCommand() {
-        final ProxyCommand applyFirstStateProxyCommand = new ProxyCommand(() -> {
-            if (isCone.get()) {
-                if (level.get() == 1)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID_1);
-                if (level.get() == 2)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
-                if (level.get() == 3)
-                    return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
-            }
-            return getCubeArmToFirstLevelCommand();
+    private ProxyCommand getGoToCurrentFirstArmPositionCommand() {
+        final ProxyCommand applyFirstStateCommand = new ProxyCommand(() -> {
+            if (!isCone.get())
+                return getGoToFirstConePositionCommand();
+
+            return getGoToCurrentCubePositionCommand();
         });
-        applyFirstStateProxyCommand.addRequirements(ARM);
-        return applyFirstStateProxyCommand;
+        applyFirstStateCommand.addRequirements(ARM);
+
+        return applyFirstStateCommand;
     }
 
-    private Command getCubeArmToFirstLevelCommand() {
+    private ProxyCommand getGoToCurrentSecondArmPositionCommand() {
+        final ProxyCommand applySecondArmStateCommand = new ProxyCommand(() -> {
+            if (isCone.get())
+                return getGoToSecondConePositionCommand();
+
+            return getGoToCurrentCubePositionCommand();
+        });
+        applySecondArmStateCommand.addRequirements(ARM);
+
+        return applySecondArmStateCommand;
+    }
+
+    private CommandBase getGoToSecondConePositionCommand() {
         if (level.get() == 1)
-            return ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID_1);
+            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+        if (level.get() == 2)
+            return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2);
+        if (level.get() == 3)
+            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2);
+
+        return new InstantCommand();
+    }
+
+    private CommandBase getGoToFirstConePositionCommand() {
+        if (level.get() == 1)
+            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+        if (level.get() == 2)
+            return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
+        if (level.get() == 3)
+            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
+
+        return new InstantCommand();
+    }
+
+    private CommandBase getGoToCurrentCubePositionCommand() {
+        if (level.get() == 1)
+            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
         if (level.get() == 2)
             return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE_1);
         if (level.get() == 3)

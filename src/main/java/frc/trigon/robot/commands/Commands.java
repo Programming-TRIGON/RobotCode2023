@@ -5,15 +5,13 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.constants.AutonomousConstants;
-import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
+import frc.trigon.robot.utilities.AllianceUtilities;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,7 +28,7 @@ public class Commands {
     public static SequentialCommandGroup getAutonomousCommand(String pathName) {
         final List<PathPlannerTrajectory> autonomousPathGroup = PathPlanner.loadPathGroup(pathName, AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
 
-        return SwerveCommands.getFollowPathGroupCommand(autonomousPathGroup, AutonomousConstants.EVENT_MAP, true);
+        return SwerveCommands.getFollowPathGroupCommand(autonomousPathGroup, AutonomousConstants.EVENT_MAP);
     }
 
     /**
@@ -38,14 +36,13 @@ public class Commands {
      *
      * @param driveConstraints   the drive constraints
      * @param targetPoseSupplier the target pose supplier
-     * @param useAllianceColor   whether to use the alliance color
      * @return the command
      */
-    public static ProxyCommand getDriveToPoseCommand(PathConstraints driveConstraints, Supplier<Pose2d> targetPoseSupplier, boolean useAllianceColor) {
+    public static ProxyCommand getDriveToPoseCommand(PathConstraints driveConstraints, Supplier<Pose2d> targetPoseSupplier) {
         final Supplier<Command> driveToPointCommandSupplier = () -> {
             final Pose2d
                     currentPose = POSE_ESTIMATOR.getCurrentPose(),
-                    targetPose = useAllianceColor ? mirrorPoseRelativeToColor(targetPoseSupplier.get()) : targetPoseSupplier.get();
+                    targetPose = AllianceUtilities.toAlliancePose(targetPoseSupplier.get());
             final PathPoint currentPoint = new PathPoint(
                     currentPose.getTranslation(),
                     currentPose.getRotation(),
@@ -61,20 +58,5 @@ public class Commands {
             return SwerveCommands.getFollowPathCommand(path).andThen(SwerveCommands.getDriveToPoseWithPIDCommand(targetPose));
         };
         return new ProxyCommand(driveToPointCommandSupplier);
-    }
-
-    private static Pose2d mirrorPoseRelativeToColor(Pose2d pose) {
-        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue)
-            return pose;
-
-        return new Pose2d(
-                FieldConstants.FIELD_LENGTH_METERS - pose.getX(),
-                pose.getY(),
-                mirrorRotation(pose.getRotation(), FieldConstants.FIELD_MIRRORING_LINE)
-        );
-    }
-
-    private static Rotation2d mirrorRotation(Rotation2d rotation, Rotation2d mirroringLine) {
-        return rotation.plus(mirroringLine).unaryMinus().minus(mirroringLine);
     }
 }

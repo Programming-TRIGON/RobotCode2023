@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
+import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
@@ -18,6 +19,7 @@ import java.util.List;
 
 /**
  * A class that estimates the robot's pose using a {@link SwerveDrivePoseEstimator}, and robot pose sources.
+ * This pose estimator will provide you the robot's pose relative to the current driver station.
  *
  * @author Shriqui - Captain, Omer - Programing Captain
  */
@@ -39,14 +41,13 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
-
         addAprilTagsToFieldWidget();
     }
 
     public static PoseEstimator getInstance() {
         return INSTANCE;
     }
-    
+
     @Override
     public void periodic() {
         updatePoseEstimator();
@@ -65,16 +66,17 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      * @param currentPose the pose to reset to
      */
     public void resetPose(Pose2d currentPose) {
-        swerve.setHeading(currentPose.getRotation());
+        final Pose2d currentBluePose = AllianceUtilities.toAlliancePose(currentPose);
+        swerve.setHeading(currentBluePose.getRotation());
 
-        new Notifier(() -> resetPoseEstimator(currentPose)).startSingle(PoseEstimatorConstants.GYRO_UPDATE_TIME_SECONDS);
+        new Notifier(() -> resetPoseEstimator(currentBluePose)).startSingle(PoseEstimatorConstants.GYRO_UPDATE_TIME_SECONDS);
     }
 
     /**
-     * @return the estimated pose of the robot
+     * @return the estimated pose of the robot, relative to the current driver station
      */
     public Pose2d getCurrentPose() {
-        return swerveDrivePoseEstimator.getEstimatedPosition();
+        return AllianceUtilities.toAlliancePose(swerveDrivePoseEstimator.getEstimatedPosition());
     }
 
     /**
@@ -97,7 +99,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     private void updatePoseEstimator() {
         updatePoseEstimatorStates();
         attemptToUpdateWithRobotPoseSources();
-        field.setRobotPose(getCurrentPose());
+        field.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
     }
 
     private void attemptToUpdateWithRobotPoseSources() {
@@ -129,5 +131,4 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
             field.getObject("Tag " + currentID).setPose(tagPose);
         }
     }
-
 }

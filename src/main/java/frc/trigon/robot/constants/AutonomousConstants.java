@@ -25,7 +25,7 @@ public class AutonomousConstants {
 
     private static void configureEventMap() {
         EVENT_MAP.put(
-                "place-cone-2", ArmCommands.getPlaceConeAtMediumNodeCommand()
+                "place-cone-2", ArmCommands.getPlaceConeAtMiddleNodeCommand()
         );
         EVENT_MAP.put(
                 "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING, true))
