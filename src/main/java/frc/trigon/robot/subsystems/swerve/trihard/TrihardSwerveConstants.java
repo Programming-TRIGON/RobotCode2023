@@ -33,7 +33,7 @@ public class TrihardSwerveConstants {
     };
     static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
-            TRANSLATION_PID_CONSTANTS = new PIDConstants(6, 0, 0),
+            TRANSLATION_PID_CONSTANTS = new PIDConstants(10, 0, 0),
             ROTATION_PID_CONSTANTS = new PIDConstants(5, 0, 0);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);

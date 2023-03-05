@@ -1,18 +1,24 @@
 package frc.trigon.robot;
 
+import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
-import frc.trigon.robot.constants.CameraConstants;
+import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.constants.OperatorConstants;
+import frc.trigon.robot.subsystems.arm.Arm;
+import frc.trigon.robot.subsystems.arm.ArmCommands;
+import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
 import frc.trigon.robot.subsystems.leds.MasterLed;
 import frc.trigon.robot.subsystems.leds.commands.MovingColorsLEDCommand;
@@ -21,49 +27,72 @@ import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
+import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.annotations.Log;
+import org.photonvision.PhotonCamera;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
 public class RobotContainer {
     @Log
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
+    public static final Arm ARM = Arm.getInstance();
+    public static final Gripper GRIPPER = Gripper.getInstance();
+    private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+
+//    private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
+
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
-    private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
     private final MasterLed masterLed = MasterLed.getInstance();
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
+    private final CommandGenericHID input = OperatorConstants.KEYBOARD_INPUT;
+    private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || input.button(6).getAsBoolean());
+    private final Trigger tippingTrigger = new Trigger(() -> Math.abs(SWERVE.getPitch()) < -2);
+    private final AtomicReference<Integer>
+            level = new AtomicReference<>(1),
+            grid = new AtomicReference<>(1);
+    private final AtomicReference<Boolean>
+            isCone = new AtomicReference<>(false),
+            isLeftRamp = new AtomicReference<>(false);
 
     private final LedStrip
-            frontLeftLedStrip = new LedStrip(63 * 3, 63, true),
-            frontRightLedStrip = new LedStrip(63, 63, true),
-            rearLeftLedStrip = new LedStrip(0, 63, false),
-            rearRightLedStrip = new LedStrip(63 * 2, 63, false);
-//            frontLeftLedStrip = new LedStrip(158, 33, true),
-//            frontRightLedStrip = new LedStrip(62, 33, true),
-//            rearLeftLedStrip = new LedStrip(0, 62, false),
-//            rearRightLedStrip = new LedStrip(95, 63, false);
+            frontLeftLedStrip = new LedStrip(158, 33, true),
+            frontRightLedStrip = new LedStrip(62, 33, true),
+            rearLeftLedStrip = new LedStrip(0, 62, false),
+            rearRightLedStrip = new LedStrip(95, 62, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / calculateShiftModeValue(),
-                    () -> driverController.getRightX() / calculateShiftModeValue()
+                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER/ calculateShiftModeValue(),
+                    () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
             ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
                     () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> 0
             ),
-            resetPoseCommand = new InstantCommand(
-                    () -> poseEstimator.resetPose(new Pose2d())
+            resetHeadingCommand = new InstantCommand(
+                    () -> POSE_ESTIMATOR.resetPose(setRotation(POSE_ESTIMATOR.getCurrentPose(), new Rotation2d()))
             ),
             toggleFieldAndSelfDrivenCommand = new InstantCommand(
                     this::toggleFieldAndSelfDrivenAngle
             ),
             fieldRelativeDrivenAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / calculateShiftModeValue(),
+                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
                     this::getRightStickAsRotation2d
+            ),
+            alignToGridCommand = Commands.getDriveToPoseCommand(
+                    new PathConstraints(1, 1),
+                    () -> getGridAlignment().inFrontOfGridPose
+            ),
+            applyFirstArmStateCommand = getGoToCurrentFirstArmPositionCommand(),
+            applySecondArmStateCommand = getGoToCurrentSecondArmPositionCommand(),
+            placeGamePieceAtHybridCommand = ARM.getGoToStateCommand(ArmStates.HYBRID_1).alongWith(
+                    new WaitCommand(0.8).until(ARM::atGoal).andThen(GRIPPER.getSlowEjectCommand())
             ),
             redClimbingLEDCommand = new ParallelCommandGroup(
                     new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontLeftLedStrip),
@@ -72,23 +101,40 @@ public class RobotContainer {
                     new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearRightLedStrip)
             ),
             flamesLEDCommand = new ParallelCommandGroup(
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, frontLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, frontRightLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, rearLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, Color.kYellow, 0.02, 5, rearRightLedStrip)
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, frontLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, frontRightLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, rearLeftLedStrip),
+                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, rearRightLedStrip)
             ),
-            purpleAndYellowLEDCommand = new ParallelCommandGroup(
-                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontLeftLedStrip.getLength() / 2, frontLeftLedStrip.getLength() / 2 + 1}),
-                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{frontRightLedStrip.getLength() / 2, frontRightLedStrip.getLength() / 2 + 1}),
-                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearLeftLedStrip.getLength() / 2, rearLeftLedStrip.getLength() / 2 + 1}),
-                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kYellow, Color.kPurple}, new int[]{rearRightLedStrip.getLength() / 2, rearRightLedStrip.getLength() / 2 + 1})
+            staticYellowColorLedCommand = new ParallelCommandGroup(
+                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
+                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
+                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
+                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kYellow}, new int[]{1})
+            ),
+            staticPurpleColorLedCommand = new ParallelCommandGroup(
+                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
+                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
+                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
+                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kPurple}, new int[]{1})
             );
-    AtomicInteger counter = new AtomicInteger(0);
 
     public RobotContainer() {
         configureAutonomousChooser();
         setPoseEstimatorPoseSources();
         bindCommands();
+        PhotonCamera.setVersionCheckEnabled(false);
+
+        setupArmBrakeModeWithUserButtonCommands();
+        SmartDashboard.putData(Arm.getInstance());
+
+        driverController.rightBumper().whileTrue(
+                ArmCommands.getPlaceCubeAtMiddleNodeCommand()
+        );
+
+        input.button(11).whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
+        SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
+        SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
     }
 
     /**
@@ -96,7 +142,7 @@ public class RobotContainer {
      */
     CommandBase getAutonomousCommand() {
         if (autonomousPathNameChooser.getSelected() == null)
-            return null;
+            return new InstantCommand();
 
         return Commands.getAutonomousCommand(autonomousPathNameChooser.getSelected());
     }
@@ -107,16 +153,53 @@ public class RobotContainer {
         bindDefaultCommands();
     }
 
-    private void bindDefaultCommands() {
-        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-        masterLed.setDefaultCommand(flamesLEDCommand);
-    }
-
     private void bindControllerCommands() {
-        OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetPoseCommand);
+        OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetHeadingCommand);
         OperatorConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
         OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
         OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
+        OperatorConstants.ALIGN_TO_GRID_TRIGGER.whileTrue(alignToGridCommand);
+        OperatorConstants.APPLY_FIRST_ARM_STATE_TRIGGER.whileTrue(applyFirstArmStateCommand);
+        OperatorConstants.APPLY_SECOND_ARM_STATE_TRIGGER.whileTrue(applySecondArmStateCommand);
+        OperatorConstants.EJECT_TRIGGER.whileTrue(Gripper.getInstance().getEjectCommand());
+        OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
+        OperatorConstants.LED_FLAMES_TRIGGER.onTrue(new InstantCommand(flamesLEDCommand::schedule));
+        OperatorConstants.PLACE_GAME_PIECE_AT_HYBRID_TRIGGER.whileTrue(placeGamePieceAtHybridCommand);
+        tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
+
+        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true)));
+        driverController.leftBumper().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
+
+        configureTargetPlacingPositionSetters();
+    }
+
+    private void bindDefaultCommands() {
+        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
+        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
+        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
+        masterLed.setDefaultCommand(flamesLEDCommand);
+    }
+
+    private void configureTargetPlacingPositionSetters() {
+        OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(AllianceUtilities.isBlueAlliance() ? 1 : 3)).ignoringDisable(true));
+        OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
+        OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(AllianceUtilities.isBlueAlliance() ? 3 : 1)).ignoringDisable(true));
+
+        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
+            isCone.set(true);
+            staticYellowColorLedCommand.schedule();
+        }).ignoringDisable(true));
+        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
+            isCone.set(false);
+            staticPurpleColorLedCommand.schedule();
+        }).ignoringDisable(true));
+
+        OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 1 : 3)).ignoringDisable(true));
+        OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
+        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 3 :  1)).ignoringDisable(true));
+
+        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
+        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(!AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
     }
 
     private void configureAutonomousChooser() {
@@ -146,17 +229,93 @@ public class RobotContainer {
 
     private void addLedRequirements() {
         flamesLEDCommand.addRequirements(masterLed);
-        purpleAndYellowLEDCommand.addRequirements(masterLed);
+        staticYellowColorLedCommand.addRequirements(masterLed);
+        staticPurpleColorLedCommand.addRequirements(masterLed);
         redClimbingLEDCommand.addRequirements(masterLed);
     }
 
     private boolean isRightStickStill() {
-        return Math.abs(driverController.getRightY()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND&&
+        return Math.abs(driverController.getRightY()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND &&
                 Math.abs(driverController.getRightX()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND;
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+//        POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+    }
+
+    private FieldConstants.GridAlignment getGridAlignment() {
+        if (!isCone.get())
+            return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
+
+        return FieldConstants.GridAlignment.getGridAlignment(
+                grid.get(),
+                isLeftRamp.get() ? 1 : 3
+        );
+    }
+
+    private Pose2d setRotation(Pose2d pose, Rotation2d rotation) {
+        return new Pose2d(
+                pose.getX(),
+                pose.getY(),
+                rotation
+        );
+    }
+
+    private ProxyCommand getGoToCurrentFirstArmPositionCommand() {
+        final ProxyCommand applyFirstStateCommand = new ProxyCommand(() -> {
+            if (!isCone.get())
+                return getGoToFirstConePositionCommand();
+
+            return getGoToCurrentCubePositionCommand();
+        });
+        applyFirstStateCommand.addRequirements(ARM);
+
+        return applyFirstStateCommand;
+    }
+
+    private ProxyCommand getGoToCurrentSecondArmPositionCommand() {
+        final ProxyCommand applySecondArmStateCommand = new ProxyCommand(() -> {
+            if (isCone.get())
+                return getGoToSecondConePositionCommand();
+
+            return getGoToCurrentCubePositionCommand();
+        });
+        applySecondArmStateCommand.addRequirements(ARM);
+
+        return applySecondArmStateCommand;
+    }
+
+    private CommandBase getGoToSecondConePositionCommand() {
+        if (level.get() == 1)
+            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+        if (level.get() == 2)
+            return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2);
+        if (level.get() == 3)
+            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2);
+
+        return new InstantCommand();
+    }
+
+    private CommandBase getGoToFirstConePositionCommand() {
+        if (level.get() == 1)
+            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+        if (level.get() == 2)
+            return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
+        if (level.get() == 3)
+            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
+
+        return new InstantCommand();
+    }
+
+    private CommandBase getGoToCurrentCubePositionCommand() {
+        if (level.get() == 1)
+            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+        if (level.get() == 2)
+            return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE_1);
+        if (level.get() == 3)
+            return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH_1);
+
+        return new InstantCommand();
     }
 
     private void toggleFieldAndSelfDrivenAngle() {
@@ -167,5 +326,10 @@ public class RobotContainer {
             SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
             fieldRelativeDriveFromSticksCommand.schedule();
         }
+    }
+
+    private void setupArmBrakeModeWithUserButtonCommands() {
+        userButton.onTrue(new InstantCommand(() -> ARM.setNeutralMode(false)).ignoringDisable(true));
+        userButton.onFalse(new InstantCommand(ARM::setNeutralMode).ignoringDisable(true));
     }
 }

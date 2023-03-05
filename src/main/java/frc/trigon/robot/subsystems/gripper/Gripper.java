@@ -1,17 +1,20 @@
 package frc.trigon.robot.subsystems.gripper;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.trigon.robot.subsystems.powerdistribution.PowerDistributionManager;
+import io.github.oblarg.oblog.Loggable;
 
-public class Gripper extends SubsystemBase {
+public class Gripper extends SubsystemBase implements Loggable {
     private static final Gripper INSTANCE = new Gripper();
     private final WPI_TalonFX motor = GripperConstants.MOTOR;
 
     public static Gripper getInstance() {
         return INSTANCE;
     }
+
+    private GripperConstants.GripperState state = GripperConstants.GripperState.STOP;
 
     private Gripper() {
         setPowerDistributionPortRequirements();
@@ -40,6 +43,17 @@ public class Gripper extends SubsystemBase {
     }
 
     /**
+     * @return a command that makes the gripper eject slowly, and stops the gripper at the end of it
+     */
+    public StartEndCommand getSlowEjectCommand() {
+        return new StartEndCommand(
+                () -> setState(GripperConstants.GripperState.SLOW_EJECT),
+                () -> setState(GripperConstants.GripperState.STOP),
+                this
+        );
+    }
+
+    /**
      * @return a command that makes the gripper hold, and stops the gripper at the end of it
      */
     public StartEndCommand getHoldCommand() {
@@ -50,14 +64,27 @@ public class Gripper extends SubsystemBase {
         );
     }
 
-    private void setPowerDistributionPortRequirements() {
-        PowerDistributionManager.getInstance().setPortRequirements(
-                GripperConstants.HOLD_TRIGGER_CONFIG,
-                () -> setState(GripperConstants.GripperState.HOLD)
+    /**
+     * @return a command that stops the gripper
+     */
+    public InstantCommand getStopCommand() {
+        return new InstantCommand(
+                () -> setState(GripperConstants.GripperState.STOP),
+                this
         );
     }
 
+    private void setPowerDistributionPortRequirements() {
+            GripperConstants.HOLD_TRIGGER_CONFIG.setup(
+                    () -> {
+                        if(state.power < 0)
+                            setState(GripperConstants.GripperState.HOLD);
+                    }
+            );
+    }
+
     private void setState(GripperConstants.GripperState state) {
+        this.state = state;
         motor.set(state.power);
     }
 }

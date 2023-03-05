@@ -343,19 +343,26 @@ public class PhotonPoseEstimator {
                 continue;
             }
 
-            Pose3d altTransformPosition =
-                    targetPosition
-                            .get()
-                            .transformBy(target.getAlternateCameraToTarget().inverse())
-                            .transformBy(robotToCamera.inverse());
             Pose3d bestTransformPosition =
                     targetPosition
                             .get()
                             .transformBy(target.getBestCameraToTarget().inverse())
                             .transformBy(robotToCamera.inverse());
+            double bestDifference = Math.abs(bestTransformPosition.getRotation().toRotation2d().minus(heading).getDegrees());
+            if (!hasAlternate(target)) {
+                smallestPoseDelta = bestDifference;
+                lowestDeltaPose =
+                        new EstimatedRobotPose(
+                                bestTransformPosition, result.getTimestampSeconds(), result.getTargets());
+                continue;
+            }
+            Pose3d altTransformPosition =
+                    targetPosition
+                            .get()
+                            .transformBy(target.getAlternateCameraToTarget().inverse())
+                            .transformBy(robotToCamera.inverse());
 
             double altDifference = Math.abs(altTransformPosition.getRotation().toRotation2d().minus(heading).getDegrees());
-            double bestDifference = Math.abs(bestTransformPosition.getRotation().toRotation2d().minus(heading).getDegrees());
 
             if (altDifference < smallestPoseDelta) {
                 smallestPoseDelta = altDifference;
@@ -371,6 +378,11 @@ public class PhotonPoseEstimator {
             }
         }
         return Optional.ofNullable(lowestDeltaPose);
+    }
+
+    private boolean hasAlternate(PhotonTrackedTarget target) {
+        return target.getAlternateCameraToTarget().getX() > 0.05 &&
+                target.getAlternateCameraToTarget().getY() > 0.05;
     }
 
     private Optional<EstimatedRobotPose> multiTagPNPStrategy(PhotonPipelineResult result) {

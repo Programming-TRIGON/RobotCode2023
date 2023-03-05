@@ -18,9 +18,8 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         robotContainer = new RobotContainer();
 
-        Logger.configureLoggingAndConfig(robotContainer, false);
         PathPlannerServer.startServer(5811);
-        setDeployFolderToMaxPermissions();
+        Logger.configureLoggingAndConfig(robotContainer, false);
     }
 
     @Override
@@ -41,9 +40,6 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         autonomousCommand = robotContainer.getAutonomousCommand();
-        if (autonomousCommand == null)
-            return;
-
         autonomousCommand.schedule();
     }
 

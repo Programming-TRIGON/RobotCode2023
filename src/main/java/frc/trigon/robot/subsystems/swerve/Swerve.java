@@ -11,6 +11,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
@@ -19,6 +20,15 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      * @return the swerve's gyro
      */
     protected abstract Pigeon2 getGyro();
+
+
+    /**
+     * @return the pitch of the swerve
+     */
+    @Log
+    public double getPitch() {
+        return getGyro().getPitch();
+    }
 
     /**
      * @return the swerve's modules
@@ -148,11 +158,13 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
      * @param rotation    the target theta velocity in radians per second
      */
     protected void fieldRelativeDrive(Translation2d translation, Rotation2d rotation) {
+        final Rotation2d heading = AllianceUtilities.isBlueAlliance() ? getHeading() : getHeading().plus(Rotation2d.fromRotations(0.5));
+
         ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 translation.getX(),
                 translation.getY(),
                 rotation.getRadians(),
-                getHeading()
+                heading
         );
         selfRelativeDrive(chassisSpeeds);
     }
