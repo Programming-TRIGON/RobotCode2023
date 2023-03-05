@@ -243,8 +243,8 @@ public class SwerveCommands {
             return;
         }
 
-        final PathPlannerTrajectory transformedTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.Alliance.Red);
-        POSE_ESTIMATOR.getField().getObject("target").setPose(transformedTrajectory.getEndState().poseMeters);
+        final PathPlannerTrajectory transformedPath = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.Alliance.Red);
+        POSE_ESTIMATOR.getField().getObject("target").setPose(transformedPath.getEndState().poseMeters);
     }
 
     private static void initializePosePIDControllers(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController, Pose2d targetPose) {
