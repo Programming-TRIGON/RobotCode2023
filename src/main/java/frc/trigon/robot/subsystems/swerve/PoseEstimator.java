@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
+import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -23,7 +24,7 @@ import java.util.List;
  *
  * @author Shriqui - Captain, Omer - Programing Captain
  */
-public class PoseEstimator extends SubsystemBase implements Loggable {
+public class PoseEstimator extends LoggableSubsystemBase {
     private final static PoseEstimator INSTANCE = new PoseEstimator();
 
     private final Swerve swerve = RobotContainer.SWERVE;

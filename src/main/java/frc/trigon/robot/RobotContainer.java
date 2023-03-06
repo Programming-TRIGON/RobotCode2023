@@ -17,10 +17,8 @@ import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
-import frc.trigon.robot.subsystems.arm.ArmCommands;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
-import frc.trigon.robot.subsystems.leds.MasterLed;
 import frc.trigon.robot.subsystems.leds.commands.MovingColorsLEDCommand;
 import frc.trigon.robot.subsystems.leds.commands.StaticColorLEDCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
@@ -28,6 +26,8 @@ import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
 import frc.trigon.robot.utilities.AllianceUtilities;
+import frc.trigon.robot.utilities.KeyboardController;
+import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
@@ -35,21 +35,23 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
-public class RobotContainer {
-    @Log
+public class RobotContainer implements Loggable {
+    // Subsystems TODO: make them not singletons
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
+
     public static final Gripper GRIPPER = Gripper.getInstance();
     private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
-
-//    private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
+    // private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
 
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
-    private final MasterLed masterLed = MasterLed.getInstance();
+    KeyboardController tst = new KeyboardController(2);
+
+    // Triggers
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
-    private final CommandGenericHID input = OperatorConstants.KEYBOARD_INPUT;
-    private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || input.button(6).getAsBoolean());
+    private final KeyboardController keyboardController = OperatorConstants.KEYBOARD_CONTROLLER;
+    private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || keyboardController.g().getAsBoolean());
     private final Trigger tippingTrigger = new Trigger(() -> Math.abs(SWERVE.getPitch()) < -2);
     private final AtomicReference<Integer>
             level = new AtomicReference<>(1),
@@ -58,17 +60,13 @@ public class RobotContainer {
             isCone = new AtomicReference<>(false),
             isLeftRamp = new AtomicReference<>(false);
 
-    private final LedStrip
-            frontLeftLedStrip = new LedStrip(158, 33, true),
-            frontRightLedStrip = new LedStrip(62, 33, true),
-            rearLeftLedStrip = new LedStrip(0, 62, false),
-            rearRightLedStrip = new LedStrip(95, 62, false);
+    private final LedStrip leds = new LedStrip(0, 63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER/ calculateShiftModeValue(),
-                    () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
-            ),
+            () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+            () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+            () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
+    ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
                     () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
@@ -94,30 +92,10 @@ public class RobotContainer {
             placeGamePieceAtHybridCommand = ARM.getGoToStateCommand(ArmStates.HYBRID_1).alongWith(
                     new WaitCommand(0.8).until(ARM::atGoal).andThen(GRIPPER.getSlowEjectCommand())
             ),
-            redClimbingLEDCommand = new ParallelCommandGroup(
-                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, frontRightLedStrip),
-                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, rearRightLedStrip)
-            ),
-            flamesLEDCommand = new ParallelCommandGroup(
-                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, frontLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, frontRightLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, rearLeftLedStrip),
-                    new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, rearRightLedStrip)
-            ),
-            staticYellowColorLedCommand = new ParallelCommandGroup(
-                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
-                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
-                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kYellow}, new int[]{1}),
-                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kYellow}, new int[]{1})
-            ),
-            staticPurpleColorLedCommand = new ParallelCommandGroup(
-                    new StaticColorLEDCommand(frontLeftLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
-                    new StaticColorLEDCommand(frontRightLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
-                    new StaticColorLEDCommand(rearLeftLedStrip, new Color[]{Color.kPurple}, new int[]{1}),
-                    new StaticColorLEDCommand(rearRightLedStrip, new Color[]{Color.kPurple}, new int[]{1})
-            );
+            redClimbingLEDCommand = new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, leds),
+            flamesLEDCommand = new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, leds),
+            staticYellowColorLedCommand = new StaticColorLEDCommand(leds, new Color[] {Color.kYellow}, new int[] {1}),
+            staticPurpleColorLedCommand = new StaticColorLEDCommand(leds, new Color[] {Color.kPurple}, new int[] {1});
 
     public RobotContainer() {
         configureAutonomousChooser();
@@ -125,14 +103,9 @@ public class RobotContainer {
         bindCommands();
         PhotonCamera.setVersionCheckEnabled(false);
 
-        setupArmBrakeModeWithUserButtonCommands();
-        SmartDashboard.putData(Arm.getInstance());
+//        new ProxyCommand(()->new PrintCommand(input.getHID().getRawAxis(0) +"")).repeatedly().schedule();
 
-        driverController.rightBumper().whileTrue(
-                ArmCommands.getPlaceCubeAtMiddleNodeCommand()
-        );
-
-        input.button(11).whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
+        keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
         SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
     }
@@ -148,9 +121,9 @@ public class RobotContainer {
     }
 
     private void bindCommands() {
-        addLedRequirements();
         bindControllerCommands();
         bindDefaultCommands();
+        setupArmBrakeModeWithUserButtonCommands();
     }
 
     private void bindControllerCommands() {
@@ -177,7 +150,7 @@ public class RobotContainer {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
         ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
         GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
-        masterLed.setDefaultCommand(flamesLEDCommand);
+        leds.setDefaultCommand(flamesLEDCommand);
     }
 
     private void configureTargetPlacingPositionSetters() {
@@ -225,13 +198,6 @@ public class RobotContainer {
 
     private Rotation2d snapToClosest45Degrees(Rotation2d rotation2d) {
         return Rotation2d.fromDegrees(Math.round(rotation2d.getDegrees() / 45) * 45);
-    }
-
-    private void addLedRequirements() {
-        flamesLEDCommand.addRequirements(masterLed);
-        staticYellowColorLedCommand.addRequirements(masterLed);
-        staticPurpleColorLedCommand.addRequirements(masterLed);
-        redClimbingLEDCommand.addRequirements(masterLed);
     }
 
     private boolean isRightStickStill() {

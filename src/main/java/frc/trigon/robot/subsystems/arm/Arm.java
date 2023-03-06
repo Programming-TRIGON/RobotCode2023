@@ -18,13 +18,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.Conversions;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
-public class Arm extends SubsystemBase implements Loggable {
+public class Arm extends LoggableSubsystemBase {
     private static final Arm INSTANCE = new Arm();
     private final WPI_TalonFX
             firstMotor = ArmConstants.FIRST_JOINT_FIRST_MOTOR,
