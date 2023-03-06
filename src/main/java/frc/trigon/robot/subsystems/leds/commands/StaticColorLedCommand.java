@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
 
-public class StaticColorLEDCommand extends LedCommand {
+public class StaticColorLedCommand extends LedCommand {
     private final LedStrip ledStrip;
     private final Color[] colors;
     private final int[] lengthOfEveryLedGroup;
@@ -16,12 +16,16 @@ public class StaticColorLEDCommand extends LedCommand {
      * @param colors                the colors of the led strip
      * @param lengthOfEveryLedGroup the length of every strip
      */
-    public StaticColorLEDCommand(LedStrip ledStrip, Color[] colors, int[] lengthOfEveryLedGroup) {
+    public StaticColorLedCommand(LedStrip ledStrip, Color[] colors, int[] lengthOfEveryLedGroup) {
         super(ledStrip);
         this.ledStrip = ledStrip;
         this.colors = colors;
         this.lengthOfEveryLedGroup = lengthOfEveryLedGroup;
         addRequirements(ledStrip);
+    }
+
+    public StaticColorLedCommand(LedStrip ledStrip, Color color) {
+        this(ledStrip, new Color[]{color}, new int[]{1});
     }
 
     @Override

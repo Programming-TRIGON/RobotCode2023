@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
@@ -19,8 +18,8 @@ import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
-import frc.trigon.robot.subsystems.leds.commands.MovingColorsLEDCommand;
-import frc.trigon.robot.subsystems.leds.commands.StaticColorLEDCommand;
+import frc.trigon.robot.subsystems.leds.commands.MovingColorsLedCommand;
+import frc.trigon.robot.subsystems.leds.commands.StaticColorLedCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
@@ -46,7 +45,6 @@ public class RobotContainer implements Loggable {
 
     @Log(name = "autoChooser")
     private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
-    KeyboardController tst = new KeyboardController(2);
 
     // Triggers
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
@@ -60,7 +58,7 @@ public class RobotContainer implements Loggable {
             isCone = new AtomicReference<>(false),
             isLeftRamp = new AtomicReference<>(false);
 
-    private final LedStrip leds = new LedStrip(0, 63, false);
+    private final LedStrip leds = new LedStrip(63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
             () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
@@ -92,10 +90,10 @@ public class RobotContainer implements Loggable {
             placeGamePieceAtHybridCommand = ARM.getGoToStateCommand(ArmStates.HYBRID_1).alongWith(
                     new WaitCommand(0.8).until(ARM::atGoal).andThen(GRIPPER.getSlowEjectCommand())
             ),
-            redClimbingLEDCommand = new MovingColorsLEDCommand(Color.kBlack, Color.kRed, 0.02, 5, leds),
-            flamesLEDCommand = new MovingColorsLEDCommand(Color.kRed, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, leds),
-            staticYellowColorLedCommand = new StaticColorLEDCommand(leds, new Color[] {Color.kYellow}, new int[] {1}),
-            staticPurpleColorLedCommand = new StaticColorLEDCommand(leds, new Color[] {Color.kPurple}, new int[] {1});
+            redClimbingLEDCommand = new MovingColorsLedCommand(leds, Color.kRed, 0.02, 5, Color.kBlack),
+            flamesLEDCommand = new MovingColorsLedCommand(leds, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, Color.kRed),
+            staticYellowColorLedCommand = new StaticColorLedCommand(leds, new Color[] {Color.kYellow}, new int[] {1}),
+            staticPurpleColorLedCommand = new StaticColorLedCommand(leds, new Color[] {Color.kPurple}, new int[] {1});
 
     public RobotContainer() {
         configureAutonomousChooser();

@@ -19,11 +19,6 @@ public abstract class LedCommand extends CommandBase {
     }
 
     @Override
-    public void initialize() {
-        ledStrip.cancelOverlapping();
-    }
-
-    @Override
     public void end(boolean interrupted) {
         turnOffLeds();
     }
