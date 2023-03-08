@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve.trihard;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import frc.trigon.robot.subsystems.swerve.Swerve;
@@ -103,4 +104,13 @@ public class TrihardSwerve extends Swerve {
         return TrihardSwerveConstants.ROTATION_VELOCITY_TOLERANCE;
     }
 
+    @Override
+    protected SlewRateLimiter getXSlewRateLimiter() {
+        return TrihardSwerveConstants.X_SLEW_RATE_LIMITER;
+    }
+
+    @Override
+    protected SlewRateLimiter getYSlewRateLimiter() {
+        return TrihardSwerveConstants.Y_SLEW_RATE_LIMITER;
+    }
 }

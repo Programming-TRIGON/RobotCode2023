@@ -56,11 +56,10 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     public boolean atGoal() {
-        return
-                Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE &&
-                        Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE &&
-                        Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE &&
-                        Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
+        return Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE &&
+                Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE &&
+                Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE &&
+                Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
     }
 
     public static Arm getInstance() {
