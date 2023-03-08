@@ -162,7 +162,7 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 () -> {
                     initializeDrive(false);
-                    SWERVE.getRotationController().reset(SWERVE.getHeading().getDegrees());
+                    SWERVE.getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
                 },
                 () -> fieldRelativeDriveFromSuppliers(x, y, angle),
                 (interrupted) -> stopDrive(),
@@ -320,7 +320,7 @@ public class SwerveCommands {
                         y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
                 ),
                 Rotation2d.fromDegrees(
-                        SWERVE.getRotationController().calculate(SWERVE.getHeading().getDegrees())
+                        SWERVE.getRotationController().calculate(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees())
                 )
         );
     }

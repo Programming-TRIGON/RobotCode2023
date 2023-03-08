@@ -40,7 +40,7 @@ public class RobotContainer {
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
     public static final Gripper GRIPPER = Gripper.getInstance();
-    private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+    private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
 
 //    private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
 
@@ -75,7 +75,7 @@ public class RobotContainer {
                     () -> 0
             ),
             resetHeadingCommand = new InstantCommand(
-                    () -> POSE_ESTIMATOR.resetPose(setRotation(POSE_ESTIMATOR.getCurrentPose(), new Rotation2d()))
+                    () -> poseEstimator.resetPose(setRotation(poseEstimator.getCurrentPose(), new Rotation2d()))
             ),
             toggleFieldAndSelfDrivenCommand = new InstantCommand(
                     this::toggleFieldAndSelfDrivenAngle
@@ -218,7 +218,7 @@ public class RobotContainer {
     @Log(name = "stickDegrees", methodName = "getDegrees")
     private Rotation2d getRightStickAsRotation2d() {
         if (isRightStickStill())
-            return SWERVE.getHeading();
+            return poseEstimator.getCurrentPose().getRotation();
 
         return snapToClosest45Degrees(new Rotation2d(driverController.getRightY(), driverController.getRightX()));
     }
