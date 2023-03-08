@@ -90,11 +90,11 @@ public class LedStrip extends SubsystemBase {
         return new Color(color.red * brightness, color.green * brightness, color.blue * brightness);
     }
 
-    private static Color rgbToGrb(Color color) {
+    public static Color rgbToGrb(Color color) {
         return new Color(color.green, color.red, color.blue);
     }
 
-    private static Color balance(Color color) {
+    public static Color balance(Color color) {
         double v = Math.max(Math.max(color.red, color.green), color.blue);
         Color newColor = new Color(color.red, color.green / 2, color.blue / 4);
         double newV = Math.max(Math.max(newColor.red, newColor.green), newColor.blue);

@@ -31,7 +31,7 @@ public class GripperConstants {
         STOP(0),
         COLLECT(-0.9),
         EJECT(0.43),
-        SLOW_EJECT(0.06),
+        SLOW_EJECT(0.12),
         HOLD(-0.1);
 
         final double power;
