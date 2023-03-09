@@ -364,16 +364,16 @@ public class PhotonPoseEstimator {
 
             double altDifference = Math.abs(altTransformPosition.getRotation().toRotation2d().minus(heading).getDegrees());
 
-            var goodPose = bestDifference < altDifference ?
-                           bestTransformPosition : altTransformPosition;
+            boolean isBestBetter = AllianceUtilities.isBlueAlliance() ? bestDifference < altDifference : bestDifference > altDifference;
+            var goodPose = isBestBetter ? bestTransformPosition : altTransformPosition;
             lowestDeltaPose = new EstimatedRobotPose(goodPose, result.getTimestampSeconds(), result.getTargets());
         }
         return Optional.ofNullable(lowestDeltaPose);
     }
 
     private boolean hasAlternate(PhotonTrackedTarget target) {
-        return target.getAlternateCameraToTarget().getX() > 0.05 &&
-                target.getAlternateCameraToTarget().getY() > 0.05;
+        return target.getAlternateCameraToTarget().getX() > 0.01 &&
+                target.getAlternateCameraToTarget().getY() > 0.01;
     }
 
     private Optional<EstimatedRobotPose> multiTagPNPStrategy(PhotonPipelineResult result) {

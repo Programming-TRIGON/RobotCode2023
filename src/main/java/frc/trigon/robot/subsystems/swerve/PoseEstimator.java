@@ -6,13 +6,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ public class PoseEstimator extends LoggableSubsystemBase {
                 swerve.getKinematics(),
                 swerve.getHeading(),
                 swerve.getModulePositions(),
-                new Pose2d(),
+                new Pose2d(0, 0, swerve.getHeading()),
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
@@ -128,7 +126,7 @@ public class PoseEstimator extends LoggableSubsystemBase {
     private void updateFromPoseSource(RobotPoseSource robotPoseSource) {
         final Pose2d robotPose = robotPoseSource.getRobotPose();
 
-        field.getObject(robotPoseSource.getName()).setPose(robotPose);
+        field.getObject(robotPoseSource.getName()).setPose(AllianceUtilities.toAlliancePose(robotPose));
         swerveDrivePoseEstimator.addVisionMeasurement(
                 robotPose,
                 robotPoseSource.getLastResultTimestamp()

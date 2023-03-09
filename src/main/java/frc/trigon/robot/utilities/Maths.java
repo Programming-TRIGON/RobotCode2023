@@ -1,5 +1,8 @@
 package frc.trigon.robot.utilities;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+
 public class Maths {
     /**
      * Calculates the polynomial of the form ax^2 + bx + c.
@@ -12,5 +15,14 @@ public class Maths {
      */
     public static double calculatePolynomial(double a, double b, double c, double x) {
         return (a * Math.pow(x, 2)) + (b * x) + c;
+    }
+
+    public static double calculateSlope(Translation2d firstPoint, Translation2d secondPoint) {
+        return (firstPoint.getY() - secondPoint.getY()) / (firstPoint.getX() - secondPoint.getX());
+    }
+
+    public static Rotation2d getAngleBetweenTranslations(Translation2d firstPoint, Translation2d secondPoint) {
+        final double slope = calculateSlope(firstPoint, secondPoint);
+        return new Rotation2d(Math.atan(slope));
     }
 }

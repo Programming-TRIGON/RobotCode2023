@@ -5,6 +5,7 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -13,12 +14,15 @@ import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.constants.AutonomousConstants;
+import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
 import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.commands.MovingColorsLedCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
+import frc.trigon.robot.utilities.AllianceUtilities;
+import frc.trigon.robot.utilities.Maths;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,9 +59,18 @@ public class Commands {
 
     private static CommandBase getDriveToPoseCommand(PathConstraints driveConstraints, Pose2d targetPose) {
         final Pose2d currentPose = POSE_ESTIMATOR.getCurrentPose();
+        targetPose = new Pose2d(
+                targetPose.getX(),
+                AllianceUtilities.isBlueAlliance() ? targetPose.getY() : FieldConstants.FIELD_WIDTH_METERS - targetPose.getY(),
+                targetPose.getRotation()
+        );
+        final Rotation2d heading = Maths.getAngleBetweenTranslations(
+                currentPose.getTranslation(),
+                targetPose.getTranslation()
+        ).unaryMinus();
         final PathPoint currentPoint = new PathPoint(
                 currentPose.getTranslation(),
-                currentPose.getRotation(),
+                heading,
                 currentPose.getRotation()
         );
         final PathPoint targetPoint = new PathPoint(

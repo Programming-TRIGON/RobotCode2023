@@ -80,7 +80,7 @@ public class SwerveCommands {
     public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path) {
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
             initializeDrive(true);
-            addTargetPoseToField(path);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
