@@ -17,12 +17,32 @@ public class Maths {
         return (a * Math.pow(x, 2)) + (b * x) + c;
     }
 
+    /**
+     * Calculates the slope of a line between two points.
+     *
+     * @param firstPoint  the first point
+     * @param secondPoint the second point
+     * @return the slope
+     */
     public static double calculateSlope(Translation2d firstPoint, Translation2d secondPoint) {
         return (firstPoint.getY() - secondPoint.getY()) / (firstPoint.getX() - secondPoint.getX());
     }
 
+    /**
+     * Calculates the angle between two points.
+     *
+     * @param firstPoint  the first point
+     * @param secondPoint the second point
+     * @return the angle
+     */
     public static Rotation2d getAngleBetweenTranslations(Translation2d firstPoint, Translation2d secondPoint) {
         final double slope = calculateSlope(firstPoint, secondPoint);
-        return new Rotation2d(Math.atan(slope));
+        if (!Double.isNaN(slope))
+            return new Rotation2d(Math.atan(slope));
+
+        if (firstPoint.getY() > secondPoint.getY())
+            return Rotation2d.fromDegrees(90);
+        else
+            return Rotation2d.fromDegrees(270);
     }
 }
