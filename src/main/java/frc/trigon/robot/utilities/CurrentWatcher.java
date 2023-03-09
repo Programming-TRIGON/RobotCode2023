@@ -23,6 +23,7 @@ public class CurrentWatcher implements Closeable {
         this.notifier = new Notifier(this::checkCurrent);
         this.notifier.startPeriodic(0.02);
     }
+
     private void checkCurrent() {
         double current = currentSupplier.getAsDouble();
 

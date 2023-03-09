@@ -19,11 +19,6 @@ public abstract class LedCommand extends CommandBase {
     }
 
     @Override
-    public void initialize() {
-        ledStrip.cancelOverlapping();
-    }
-
-    @Override
     public void end(boolean interrupted) {
         turnOffLeds();
     }
@@ -41,5 +36,9 @@ public abstract class LedCommand extends CommandBase {
         Color[] colors = new Color[ledStrip.getLength()];
         Arrays.fill(colors, Color.kBlack);
         ledStrip.setLedColors(colors);
+    }
+
+    protected LedStrip getLedStrip(){
+        return ledStrip;
     }
 }

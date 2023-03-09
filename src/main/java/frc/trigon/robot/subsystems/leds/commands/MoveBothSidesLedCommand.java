@@ -4,9 +4,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
-import frc.trigon.robot.subsystems.leds.MasterLed;
 
-public class MoveBothSidesLEDCommand extends LedCommand {
+public class MoveBothSidesLedCommand extends LedCommand {
     private final Color backgroundColor;
     private final Color primeColor;
     private final double cycleTime;
@@ -16,13 +15,13 @@ public class MoveBothSidesLEDCommand extends LedCommand {
     /**
      * Constructs a new MoveBothSidesLEDCommand.
      *
-     * @param backgroundColor    the color of the background
+     * @param ledStrip           led strip
      * @param primeColor         the color of the moving leds
      * @param cycleTime          the time it takes for the leds to move from one pixel to the other
      * @param amountOfMovingLeds the amount of leds that move
-     * @param ledStrip           led strip
+     * @param backgroundColor    the color of the background
      */
-    public MoveBothSidesLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
+    public MoveBothSidesLedCommand(LedStrip ledStrip, Color primeColor, double cycleTime, int amountOfMovingLeds, Color backgroundColor) {
         super(ledStrip);
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;

@@ -3,12 +3,14 @@ package frc.trigon.robot.subsystems.swerve;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
+import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -23,7 +25,7 @@ import java.util.List;
  *
  * @author Shriqui - Captain, Omer - Programing Captain
  */
-public class PoseEstimator extends SubsystemBase implements Loggable {
+public class PoseEstimator extends LoggableSubsystemBase {
     private final static PoseEstimator INSTANCE = new PoseEstimator();
 
     private final Swerve swerve = RobotContainer.SWERVE;
@@ -31,6 +33,7 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     @Log
     private final Field2d field = new Field2d();
     private final List<RobotPoseSource> robotPoseSources = new ArrayList<>();
+    private DriverStation.Alliance lastAlliance = DriverStation.getAlliance();
 
     private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -41,6 +44,8 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
+
+        putAprilTagsOnFieldWidget();
     }
 
     public static PoseEstimator getInstance() {
@@ -50,6 +55,8 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
     @Override
     public void periodic() {
         updatePoseEstimator();
+        if (didAllianceChange())
+            updateFieldWidget();
     }
 
     /**
@@ -85,6 +92,15 @@ public class PoseEstimator extends SubsystemBase implements Loggable {
      */
     public void addRobotPoseSources(RobotPoseSource... robotPoseSources) {
         this.robotPoseSources.addAll(List.of(robotPoseSources));
+    }
+
+    private void updateFieldWidget() {
+        putAprilTagsOnFieldWidget();
+        lastAlliance = DriverStation.getAlliance();
+    }
+
+    private boolean didAllianceChange() {
+        return lastAlliance != DriverStation.getAlliance();
     }
 
     private void resetPoseEstimator(Pose2d currentPose) {

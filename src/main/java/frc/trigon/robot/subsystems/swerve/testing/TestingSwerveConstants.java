@@ -4,6 +4,7 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -19,6 +20,10 @@ public class TestingSwerveConstants {
     static final double
             SIDE_LENGTH_METERS = 0.5,
             DISTANCE_FROM_CENTER_OF_BASE = SIDE_LENGTH_METERS / 2;
+    private static final double RATE_LIMIT = 1;
+    static final SlewRateLimiter
+            X_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT),
+            Y_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT);
     private static final Translation2d[] LOCATIONS = {
             TestingSwerveModuleConstants.TestingSwerveModules.fromId(0).location,
             TestingSwerveModuleConstants.TestingSwerveModules.fromId(1).location,

@@ -9,8 +9,8 @@ public class GripperConstants {
     private static final boolean INVERTED = false;
 
     private static final double
-            HOLD_TRIGGER_DURATION = 0.25,
-            HOLD_TRIGGER_CURRENT = 14;
+            HOLD_TRIGGER_DURATION = 0.05,
+            HOLD_TRIGGER_CURRENT = 40;
 
     static final WPI_TalonFX MOTOR = new WPI_TalonFX(MOTOR_ID);
 
@@ -30,6 +30,7 @@ public class GripperConstants {
     enum GripperState {
         STOP(0),
         COLLECT(-0.9),
+        SLOW_COLLECT(-0.3),
         EJECT(0.43),
         SLOW_EJECT(0.12),
         HOLD(-0.1);

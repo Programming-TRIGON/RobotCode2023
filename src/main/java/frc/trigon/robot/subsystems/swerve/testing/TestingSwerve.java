@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve.testing;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import frc.trigon.robot.subsystems.swerve.Swerve;
@@ -101,6 +102,16 @@ public class TestingSwerve extends Swerve {
     @Override
     protected double getRotationVelocityTolerance() {
         return TestingSwerveConstants.ROTATION_VELOCITY_TOLERANCE;
+    }
+
+    @Override
+    protected SlewRateLimiter getXSlewRateLimiter() {
+        return TestingSwerveConstants.X_SLEW_RATE_LIMITER;
+    }
+
+    @Override
+    protected SlewRateLimiter getYSlewRateLimiter() {
+        return TestingSwerveConstants.Y_SLEW_RATE_LIMITER;
     }
 }
 
