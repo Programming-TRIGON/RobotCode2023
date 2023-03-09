@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
+import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.FieldConstants;
 import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
@@ -91,9 +92,9 @@ public class RobotContainer implements Loggable {
                     new WaitCommand(0.8).until(ARM::atGoal).andThen(GRIPPER.getSlowEjectCommand())
             ),
             redClimbingLEDCommand = new MovingColorsLedCommand(leds, Color.kRed, 0.02, 5, Color.kBlack),
-            flamesLEDCommand = new MovingColorsLedCommand(leds, new Color(1.0f, 0.3f, 0.0f), 0.02, 5, Color.kRed),
-            staticYellowColorLedCommand = new StaticColorLedCommand(leds, new Color[] {Color.kYellow}, new int[] {1}),
-            staticPurpleColorLedCommand = new StaticColorLedCommand(leds, new Color[] {Color.kPurple}, new int[] {1});
+            flamesLEDCommand = new MovingColorsLedCommand(leds, new Color(0f, 0f, 1f), 0.02, 7, Color.kRed),
+            staticYellowColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kYellow),
+            staticPurpleColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kPurple);
 
     public RobotContainer() {
         configureAutonomousChooser();
@@ -102,7 +103,7 @@ public class RobotContainer implements Loggable {
         PhotonCamera.setVersionCheckEnabled(false);
 
 //        new ProxyCommand(()->new PrintCommand(input.getHID().getRawAxis(0) +"")).repeatedly().schedule();
-
+        keyboardController.numpad0().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
         keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
         SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
@@ -134,11 +135,13 @@ public class RobotContainer implements Loggable {
         OperatorConstants.APPLY_SECOND_ARM_STATE_TRIGGER.whileTrue(applySecondArmStateCommand);
         OperatorConstants.EJECT_TRIGGER.whileTrue(Gripper.getInstance().getEjectCommand());
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
-        OperatorConstants.LED_FLAMES_TRIGGER.onTrue(new InstantCommand(flamesLEDCommand::schedule));
+        OperatorConstants.LED_FLAMES_TRIGGER.onTrue(flamesLEDCommand);
         OperatorConstants.PLACE_GAME_PIECE_AT_HYBRID_TRIGGER.whileTrue(placeGamePieceAtHybridCommand);
         tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
 
-        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true)));
+        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2)));
+        driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2)));
+//        driverController.rightBumper().whileTrue(GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5)));
         driverController.leftBumper().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
 
         configureTargetPlacingPositionSetters();
@@ -155,6 +158,9 @@ public class RobotContainer implements Loggable {
         OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(AllianceUtilities.isBlueAlliance() ? 1 : 3)).ignoringDisable(true));
         OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
         OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(AllianceUtilities.isBlueAlliance() ? 3 : 1)).ignoringDisable(true));
+
+        staticPurpleColorLedCommand.setName("pur");
+        staticYellowColorLedCommand.setName("yel");
 
         OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(true);
@@ -204,13 +210,19 @@ public class RobotContainer implements Loggable {
     }
 
     private void setPoseEstimatorPoseSources() {
-//        POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+        POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
     }
 
     private FieldConstants.GridAlignment getGridAlignment() {
         if (!isCone.get())
             return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
 
+        var res = FieldConstants.GridAlignment.getGridAlignment(
+                grid.get(),
+                isLeftRamp.get() ? 1 : 3
+        );
+        PoseEstimator.getInstance().getField().getObject("targetP").setPose(res.inFrontOfGridPose);
+        SmartDashboard.putString("targetP", res.name());
         return FieldConstants.GridAlignment.getGridAlignment(
                 grid.get(),
                 isLeftRamp.get() ? 1 : 3
@@ -226,27 +238,21 @@ public class RobotContainer implements Loggable {
     }
 
     private ProxyCommand getGoToCurrentFirstArmPositionCommand() {
-        final ProxyCommand applyFirstStateCommand = new ProxyCommand(() -> {
-            if (!isCone.get())
+        return new ProxyCommand(() -> {
+            if (isCone.get())
                 return getGoToFirstConePositionCommand();
 
             return getGoToCurrentCubePositionCommand();
         });
-        applyFirstStateCommand.addRequirements(ARM);
-
-        return applyFirstStateCommand;
     }
 
     private ProxyCommand getGoToCurrentSecondArmPositionCommand() {
-        final ProxyCommand applySecondArmStateCommand = new ProxyCommand(() -> {
+        return new ProxyCommand(() -> {
             if (isCone.get())
                 return getGoToSecondConePositionCommand();
 
             return getGoToCurrentCubePositionCommand();
         });
-        applySecondArmStateCommand.addRequirements(ARM);
-
-        return applySecondArmStateCommand;
     }
 
     private CommandBase getGoToSecondConePositionCommand() {
