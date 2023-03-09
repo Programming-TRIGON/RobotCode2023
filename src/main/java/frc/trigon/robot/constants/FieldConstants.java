@@ -9,8 +9,8 @@ public class FieldConstants {
             FIELD_LENGTH_METERS = 16.54175,
             FIELD_WIDTH_METERS = 8.02;
     public static final Rotation2d FIELD_MIRRORING_LINE = Rotation2d.fromDegrees(90);
-    private static final double IN_FRONT_OF_GRID_X = 2.16275;
-    private static final double RAMP_DISTANCE_FROM_SHELF = 0.5558;
+    private static final double IN_FRONT_OF_GRID_X = 2.121;
+    private static final double RAMP_DISTANCE_FROM_SHELF = 0.623428;
     private static final double
             LEFT_GRID_SHELF_Y = PoseSourceConstants.TAGS_ID_TO_POSE.get(3).getY(),
             MIDDLE_GRID_SHELF_Y = PoseSourceConstants.TAGS_ID_TO_POSE.get(2).getY(),

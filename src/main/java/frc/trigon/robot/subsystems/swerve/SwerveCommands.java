@@ -79,7 +79,7 @@ public class SwerveCommands {
      */
     public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path) {
         final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
-            initializeDrive(false);
+            initializeDrive(true);
             addTargetPoseToField(path);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(

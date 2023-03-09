@@ -1,7 +1,10 @@
 package frc.trigon.robot.utilities;
 
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.trigon.robot.Robot;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
@@ -421,7 +424,11 @@ public class KeyboardController extends CommandGenericHID implements Loggable {
 
     private boolean[] getBitsFromAxis(int axis) {
         boolean[] bits = new boolean[8];
-        int value = Math.round(Math.round((getRawAxis(axis) + 1) / 2 * 256));
+        double rawValue = (getRawAxis(axis) + 1) / 2 * 256;
+        int value = (int) (
+                Robot.IS_REAL ?
+                Math.ceil(rawValue): Math.round(rawValue)
+        );
         for(int i = 0; i < bits.length; i++) {
             bits[i] = value % 2 == 1;
             value /= 2;

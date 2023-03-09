@@ -1,5 +1,7 @@
 package frc.trigon.robot.utilities;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+
 public class Conversions {
     public static final double
             MAG_TICKS = 4096,
@@ -231,5 +233,15 @@ public class Conversions {
      */
     public static double voltageToCompensatedPower(double voltage, double saturation) {
         return voltage / saturation;
+    }
+
+    /**
+     * Scales a TrapezoidProfile.Constraints object by a given scale factor.
+     * @param constraints the constraints to scale
+     * @param scale the scale factor
+     * @return the scaled constraints
+     */
+    public static TrapezoidProfile.Constraints scaleConstraints(TrapezoidProfile.Constraints constraints, double scale) {
+        return new TrapezoidProfile.Constraints(constraints.maxVelocity * scale, constraints.maxAcceleration * scale);
     }
 }

@@ -37,4 +37,8 @@ public abstract class LedCommand extends CommandBase {
         Arrays.fill(colors, Color.kBlack);
         ledStrip.setLedColors(colors);
     }
+
+    protected LedStrip getLedStrip(){
+        return ledStrip;
+    }
 }

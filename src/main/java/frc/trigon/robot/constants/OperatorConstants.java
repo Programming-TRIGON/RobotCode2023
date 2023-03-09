@@ -14,7 +14,7 @@ public class OperatorConstants {
     );
     public static final double
             POV_DIVIDER = 2,
-            STICKS_DIVIDER = 1.8;
+            STICKS_DIVIDER = 1;
     private static final double MINIMUM_SHIFT_VALUE = 0.18;
     public static final double MINIMUM_SHIFT_VALUE_COEFFICIENT = 1 - (1 / MINIMUM_SHIFT_VALUE);
     public static final KeyboardController KEYBOARD_CONTROLLER = new KeyboardController(1);
@@ -30,11 +30,11 @@ public class OperatorConstants {
             LEVEL_3_TRIGGER = KEYBOARD_CONTROLLER.numpad3(),
             CONE_TRIGGER = KEYBOARD_CONTROLLER.numpad9(),
             CUBE_TRIGGER = KEYBOARD_CONTROLLER.numpad7(),
-            GRID_1_TRIGGER = KEYBOARD_CONTROLLER.numpad6(),
+            GRID_1_TRIGGER = KEYBOARD_CONTROLLER.numpad4(),
             GRID_2_TRIGGER = KEYBOARD_CONTROLLER.numpad5(),
-            GRID_3_TRIGGER = KEYBOARD_CONTROLLER.numpad4(),
-            LEFT_RAMP_TRIGGER = KEYBOARD_CONTROLLER.equals(),
-            RIGHT_RAMP_TRIGGER = KEYBOARD_CONTROLLER.minus(),
+            GRID_3_TRIGGER = KEYBOARD_CONTROLLER.numpad6(),
+            LEFT_RAMP_TRIGGER = KEYBOARD_CONTROLLER.minus(),
+            RIGHT_RAMP_TRIGGER = KEYBOARD_CONTROLLER.equals(),
             ALIGN_TO_GRID_TRIGGER = KEYBOARD_CONTROLLER.up(),
             APPLY_FIRST_ARM_STATE_TRIGGER = KEYBOARD_CONTROLLER.left(),
             APPLY_SECOND_ARM_STATE_TRIGGER = KEYBOARD_CONTROLLER.right(),

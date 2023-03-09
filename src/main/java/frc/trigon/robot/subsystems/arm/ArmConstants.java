@@ -62,7 +62,7 @@ public class ArmConstants {
     private static final boolean
             FIRST_JOINT_MOTOR_INVERTED = false,
             FIRST_JOINT_SECOND_MOTOR_INVERTED = false,
-            SECOND_JOINT_MOTOR_INVERTED = true;
+            SECOND_JOINT_MOTOR_INVERTED = false;
 
     static final NeutralMode
             FIRST_JOINT_NEUTRAL_MODE = NeutralMode.Brake,
@@ -70,19 +70,19 @@ public class ArmConstants {
 
     private static final boolean
             FIRST_JOINT_SENSOR_PHASE = false,
-            SECOND_JOINT_SENSOR_PHASE = false;
+            SECOND_JOINT_SENSOR_PHASE = true;
 
     private static final double
             FIRST_JOINT_NEUTRAL_DEADBAND = 0.02,
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 140,
-            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 90;
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 360,
+            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 280;
 
     private static final double
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 240,
-            SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 60;
+            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 360,
+            SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 120;
 
     static final TrapezoidProfile.Constraints
             FIRST_JOINT_CONSTRAINTS = new TrapezoidProfile.Constraints(
@@ -103,14 +103,14 @@ public class ArmConstants {
             FIRST_JOINT_KG = 0.71665;
 
     private static final double
-            SECOND_JOINT_P = 1,
+            SECOND_JOINT_P = 1.5,
             SECOND_JOINT_I = 0.001,
             SECOND_JOINT_D = 0,
-            SECOND_JOINT_KS = 0.15575,
-            SECOND_JOINT_KV = 1.8696,
-            SECOND_JOINT_KA = 0.070188,
-            SECOND_JOINT_KG = 0.36887,
-            SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.1;
+            SECOND_JOINT_KS = 0.39331,
+            SECOND_JOINT_KV = 1.936,
+            SECOND_JOINT_KA = 0.11478,
+            SECOND_JOINT_KG = 0.34408,
+            SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.5;
 
     static final ArmFeedforward
             FIRST_JOINT_FEEDFORWARD = new ArmFeedforward(
@@ -127,8 +127,8 @@ public class ArmConstants {
             );
 
     private static final double
-            FIRST_JOINT_ENCODER_OFFSET = 23.390625,
-            SECOND_JOINT_ENCODER_OFFSET = 1916;
+            FIRST_JOINT_ENCODER_OFFSET = 128.759766,
+            SECOND_JOINT_ENCODER_OFFSET = -1250;
 
     static {
         FIRST_JOINT_FIRST_MOTOR.configFactoryDefault();
@@ -145,7 +145,7 @@ public class ArmConstants {
         FIRST_JOINT_SECOND_MOTOR.follow(FIRST_JOINT_FIRST_MOTOR);
 
         FIRST_JOINT_FIRST_MOTOR.setSensorPhase(FIRST_JOINT_SENSOR_PHASE);
-        SECOND_JOINT_MOTOR.setSensorPhase(SECOND_JOINT_SENSOR_PHASE);
+        SECOND_JOINT_ENCODER.setInverted(SECOND_JOINT_SENSOR_PHASE);
 
         SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
         SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 1, 0);
@@ -195,13 +195,15 @@ public class ArmConstants {
 
     public enum ArmStates {
         CLOSED(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
-        CLOSED_COLLECTING(FIRST_JOINT_CLOSED, 86.308594),
+        CLOSED_COLLECTING(FIRST_JOINT_CLOSED, 86.3),
+        CLOSED_COLLECTING_STANDING_CONE(FIRST_JOINT_CLOSED, 99),
+        CONE_FEEDER(FIRST_JOINT_CLOSED, 143),
         CUBE_MIDDLE_1(-51, 113),
         CUBE_HIGH_1(-5, 35),
         HYBRID_1(FIRST_JOINT_CLOSED, 110),
-        CONE_MIDDLE_1(-35, 101),
+        CONE_MIDDLE_1(-30, 101),
         CONE_MIDDLE_2(-75, 101),
-        CONE_HIGH_1(15, 37),
+        CONE_HIGH_1(20, -10),
         CONE_HIGH_2(-8, 43);
 
         public final double firstMotorPosition, secondMotorPosition;

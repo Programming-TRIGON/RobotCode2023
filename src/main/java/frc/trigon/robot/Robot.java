@@ -13,6 +13,7 @@ import java.io.IOException;
 public class Robot extends TimedRobot {
     private RobotContainer robotContainer;
     private CommandBase autonomousCommand;
+    public static final boolean IS_REAL = Robot.isReal();
 
     @Override
     public void robotInit() {

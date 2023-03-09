@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 
 public class Gripper extends LoggableSubsystemBase {
     private static final Gripper INSTANCE = new Gripper();
@@ -31,6 +32,19 @@ public class Gripper extends LoggableSubsystemBase {
                 this
         );
     }
+
+    /**
+     * @return a command that makes the gripper collect slowly, and stops the gripper at the end of it
+     */
+    public StartEndCommand getSlowCollectCommand() {
+        return new StartEndCommand(
+                () -> setState(GripperConstants.GripperState.SLOW_COLLECT),
+                () -> setState(GripperConstants.GripperState.STOP),
+                this
+        );
+    }
+
+
 
     /**
      * @return a command that makes the gripper eject, and stops the gripper at the end of it
@@ -82,6 +96,11 @@ public class Gripper extends LoggableSubsystemBase {
                             setState(GripperConstants.GripperState.HOLD);
                     }
             );
+    }
+
+    @Log
+    private double getStatorCurrent() {
+        return motor.getStatorCurrent();
     }
 
     private void setState(GripperConstants.GripperState state) {

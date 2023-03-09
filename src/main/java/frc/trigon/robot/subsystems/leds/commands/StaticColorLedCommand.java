@@ -21,7 +21,6 @@ public class StaticColorLedCommand extends LedCommand {
         this.ledStrip = ledStrip;
         this.colors = colors;
         this.lengthOfEveryLedGroup = lengthOfEveryLedGroup;
-        addRequirements(ledStrip);
     }
 
     public StaticColorLedCommand(LedStrip ledStrip, Color color) {

@@ -5,10 +5,11 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
+import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 
 import java.util.logging.Logger;
 
-public class LedStrip extends SubsystemBase {
+public class LedStrip extends LoggableSubsystemBase {
     private final boolean inverted;
     private final int length;
     private final AddressableLED led = LedsConstants.LED;
