@@ -36,9 +36,9 @@ public class SwerveCommands {
      * @return a command that brakes the swerve modules and then coasts them, runs when disabled
      */
     public static WrapperCommand getBrakeAndCoastCommand() {
-        return SwerveCommands.getSetSwerveBrakeCommand(true)
+        return getSetSwerveBrakeCommand(true)
                 .andThen(new WaitCommand(SWERVE.getBrakeTimeSeconds()))
-                .andThen(SwerveCommands.getSetSwerveBrakeCommand(false))
+                .andThen(getSetSwerveBrakeCommand(false))
                 .ignoringDisable(true);
     }
 
@@ -120,7 +120,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(true),
-                () -> SwerveCommands.fieldRelativeDriveFromSuppliers(x, y, theta),
+                () -> fieldRelativeDrive(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -140,7 +140,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(true),
-                () -> selfRelativeDriveFromSuppliers(x, y, theta),
+                () -> selfRelativeDriveFromSuppliers(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -162,9 +162,9 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 () -> {
                     initializeDrive(false);
-                    SWERVE.getRotationController().reset(SWERVE.getHeading().getDegrees());
+                    SWERVE.getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
                 },
-                () -> fieldRelativeDriveFromSuppliers(x, y, angle),
+                () -> fieldRelativeDrive(x.getAsDouble(), y.getAsDouble(), angle.get()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -210,7 +210,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(false),
-                () -> selfRelativeDriveFromSuppliers(x, y, theta),
+                () -> selfRelativeDriveFromSuppliers(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -230,7 +230,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(false),
-                () -> SwerveCommands.fieldRelativeDriveFromSuppliers(x, y, theta),
+                () -> fieldRelativeDrive(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -243,8 +243,8 @@ public class SwerveCommands {
             return;
         }
 
-        final PathPlannerTrajectory transformedTrajectory = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.Alliance.Red);
-        POSE_ESTIMATOR.getField().getObject("target").setPose(transformedTrajectory.getEndState().poseMeters);
+        final PathPlannerTrajectory transformedPath = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.Alliance.Red);
+        POSE_ESTIMATOR.getField().getObject("target").setPose(transformedPath.getEndState().poseMeters);
     }
 
     private static void initializePosePIDControllers(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController, Pose2d targetPose) {
@@ -312,40 +312,41 @@ public class SwerveCommands {
         SWERVE.setClosedLoop(closedLoop);
     }
 
-    private static void fieldRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
-        SWERVE.getRotationController().setGoal(angle.get().getDegrees());
+    private static void fieldRelativeDrive(double x, double y, Rotation2d angle) {
+        SWERVE.getRotationController().setGoal(angle.getDegrees());
         SWERVE.fieldRelativeDrive(
-                new Translation2d(
-                        x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
-                        y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
-                ),
+                getDriveTranslation(x, y),
                 Rotation2d.fromDegrees(
-                        SWERVE.getRotationController().calculate(SWERVE.getHeading().getDegrees())
+                        SWERVE.getRotationController().calculate(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees())
                 )
         );
     }
 
-    private static void fieldRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
+    private static void fieldRelativeDrive(double x, double y, double theta) {
         SWERVE.fieldRelativeDrive(
-                new Translation2d(
-                        x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
-                        y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
-                ),
-                new Rotation2d(
-                        theta.getAsDouble() * SWERVE.getMaxRotationalSpeedRadiansPerSecond()
-                )
+                getDriveTranslation(x, y),
+                getDriveRotation(theta)
         );
     }
 
-    private static void selfRelativeDriveFromSuppliers(DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
+    private static void selfRelativeDriveFromSuppliers(double x, double y, double theta) {
         SWERVE.selfRelativeDrive(
-                new Translation2d(
-                        x.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond(),
-                        y.getAsDouble() * SWERVE.getMaxSpeedMetersPerSecond()
-                ),
-                new Rotation2d(
-                        theta.getAsDouble() * SWERVE.getMaxRotationalSpeedRadiansPerSecond()
-                )
+                getDriveTranslation(x, y),
+                getDriveRotation(theta)
+        );
+    }
+
+    private static Rotation2d getDriveRotation(double rotPower) {
+        return new Rotation2d(rotPower * SWERVE.getMaxRotationalSpeedRadiansPerSecond());
+    }
+
+    private static Translation2d getDriveTranslation(double x, double y) {
+        final double xMeterPerSecond = x * SWERVE.getMaxSpeedMetersPerSecond();
+        final double yMeterPerSecond = y * SWERVE.getMaxSpeedMetersPerSecond();
+
+        return new Translation2d(
+                SWERVE.getXSlewRateLimiter().calculate(xMeterPerSecond),
+                SWERVE.getYSlewRateLimiter().calculate(yMeterPerSecond)
         );
     }
 

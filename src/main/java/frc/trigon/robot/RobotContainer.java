@@ -8,7 +8,10 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.XboxController;
@@ -20,7 +23,6 @@ import frc.trigon.robot.subsystems.arm.Arm;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
 import frc.trigon.robot.subsystems.leds.commands.MovingColorsLedCommand;
-import frc.trigon.robot.subsystems.leds.commands.StaticColorLedCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
@@ -41,7 +43,8 @@ public class RobotContainer implements Loggable {
     public static final Arm ARM = Arm.getInstance();
 
     public static final Gripper GRIPPER = Gripper.getInstance();
-    private final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+    private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
+
     // private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
 
     @Log(name = "autoChooser")
@@ -62,17 +65,17 @@ public class RobotContainer implements Loggable {
     public static final LedStrip leds = new LedStrip(63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-            () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-            () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-            () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
-    ),
+                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
+            ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
                     () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> 0
             ),
             resetHeadingCommand = new InstantCommand(
-                    () -> POSE_ESTIMATOR.resetPose(setRotation(POSE_ESTIMATOR.getCurrentPose(), new Rotation2d()))
+                    () -> poseEstimator.resetPose(setRotation(poseEstimator.getCurrentPose(), new Rotation2d()))
             ),
             toggleFieldAndSelfDrivenCommand = new InstantCommand(
                     this::toggleFieldAndSelfDrivenAngle
@@ -196,7 +199,7 @@ public class RobotContainer implements Loggable {
     @Log(name = "stickDegrees", methodName = "getDegrees")
     private Rotation2d getRightStickAsRotation2d() {
         if (isRightStickStill())
-            return SWERVE.getHeading();
+            return poseEstimator.getCurrentPose().getRotation();
 
         return snapToClosest45Degrees(new Rotation2d(driverController.getRightY(), driverController.getRightX()));
     }
@@ -211,19 +214,18 @@ public class RobotContainer implements Loggable {
     }
 
     private void setPoseEstimatorPoseSources() {
-        POSE_ESTIMATOR.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
     }
 
     private FieldConstants.GridAlignment getGridAlignment() {
         if (!isCone.get())
             return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
 
-        var res = FieldConstants.GridAlignment.getGridAlignment(
+        final FieldConstants.GridAlignment gridAlignment = FieldConstants.GridAlignment.getGridAlignment(
                 grid.get(),
                 isLeftRamp.get() ? 1 : 3
         );
-        PoseEstimator.getInstance().getField().getObject("targetP").setPose(res.inFrontOfGridPose);
-        SmartDashboard.putString("targetP", res.name());
+        SmartDashboard.putString("targetGridAlignment", gridAlignment.name());
         return FieldConstants.GridAlignment.getGridAlignment(
                 grid.get(),
                 isLeftRamp.get() ? 1 : 3

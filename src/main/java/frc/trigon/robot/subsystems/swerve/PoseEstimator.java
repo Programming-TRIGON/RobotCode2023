@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,6 +33,7 @@ public class PoseEstimator extends LoggableSubsystemBase {
     @Log
     private final Field2d field = new Field2d();
     private final List<RobotPoseSource> robotPoseSources = new ArrayList<>();
+    private DriverStation.Alliance lastAlliance = DriverStation.getAlliance();
 
     private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -42,6 +44,8 @@ public class PoseEstimator extends LoggableSubsystemBase {
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
+
+        putAprilTagsOnFieldWidget();
     }
 
     public static PoseEstimator getInstance() {
@@ -51,6 +55,8 @@ public class PoseEstimator extends LoggableSubsystemBase {
     @Override
     public void periodic() {
         updatePoseEstimator();
+        if (didAllianceChange())
+            updateFieldWidget();
     }
 
     /**
@@ -86,6 +92,15 @@ public class PoseEstimator extends LoggableSubsystemBase {
      */
     public void addRobotPoseSources(RobotPoseSource... robotPoseSources) {
         this.robotPoseSources.addAll(List.of(robotPoseSources));
+    }
+
+    private void updateFieldWidget() {
+        putAprilTagsOnFieldWidget();
+        lastAlliance = DriverStation.getAlliance();
+    }
+
+    private boolean didAllianceChange() {
+        return lastAlliance != DriverStation.getAlliance();
     }
 
     private void resetPoseEstimator(Pose2d currentPose) {

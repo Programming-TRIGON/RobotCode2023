@@ -4,6 +4,7 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -108,6 +109,16 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected abstract double getRotationVelocityTolerance();
 
     /**
+     * @return a slew rate limiter for the x-axis
+     */
+    protected abstract SlewRateLimiter getXSlewRateLimiter();
+
+    /**
+     * @return a slew rate limiter for the y-axis
+     */
+    protected abstract SlewRateLimiter getYSlewRateLimiter();
+
+    /**
      * @return the heading of the robot
      */
     @Log(name = "heading", methodName = "getDegrees")
@@ -162,7 +173,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
         final Rotation2d heading = AllianceUtilities.isBlueAlliance() ? getHeading() : getHeading().plus(Rotation2d.fromRotations(0.5));
 
         ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                translation.getX(),
+                getXSlewRateLimiter().calculate(translation.getX()),
                 translation.getY(),
                 rotation.getRadians(),
                 heading
