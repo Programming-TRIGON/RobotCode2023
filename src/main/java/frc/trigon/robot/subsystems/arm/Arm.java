@@ -58,11 +58,16 @@ public class Arm extends LoggableSubsystemBase {
     }
 
     public boolean atGoal() {
-        return
-                Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE &&
-                        Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE &&
-                        Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE &&
-                        Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
+        boolean
+                firstMotorAtGoal = Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE,
+                secondMotorAtGoal = Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE,
+                firstMotorVelocityAtGoal = Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE,
+                secondMotorVelocityAtGoal = Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
+        SmartDashboard.putBoolean("firstMotorAtGoal", firstMotorAtGoal);
+        SmartDashboard.putBoolean("secondMotorAtGoal", secondMotorAtGoal);
+        SmartDashboard.putBoolean("firstMotorVelocityAtGoal", firstMotorVelocityAtGoal);
+        SmartDashboard.putBoolean("secondMotorVelocityAtGoal", secondMotorVelocityAtGoal);
+        return firstMotorAtGoal && secondMotorAtGoal && firstMotorVelocityAtGoal && secondMotorVelocityAtGoal;
     }
 
     public static Arm getInstance() {

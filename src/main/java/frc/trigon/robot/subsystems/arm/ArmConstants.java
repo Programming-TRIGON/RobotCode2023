@@ -7,6 +7,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
@@ -36,10 +38,10 @@ public class ArmConstants {
             RISE_PROFILE_COMPLETION_PERCENTAGE = 0.7;
 
     static final double
-            FIRST_JOINT_TOLERANCE = 2,
-            FIRST_JOINT_VELOCITY_TOLERANCE = 2,
+            FIRST_JOINT_TOLERANCE = 6,
+            FIRST_JOINT_VELOCITY_TOLERANCE = 900,
             SECOND_JOINT_TOLERANCE = 4,
-            SECOND_JOINT_VELOCITY_TOLERANCE = 10;
+            SECOND_JOINT_VELOCITY_TOLERANCE = 900;
 
     private static final double
             FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 40,
@@ -77,12 +79,12 @@ public class ArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 360,
-            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 280;
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 720,
+            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 420;
 
     private static final double
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 360,
-            SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 120;
+            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 460,
+            SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 180;
 
     static final TrapezoidProfile.Constraints
             FIRST_JOINT_CONSTRAINTS = new TrapezoidProfile.Constraints(
@@ -96,7 +98,7 @@ public class ArmConstants {
     private static final double
             FIRST_JOINT_P = 1.3,
             FIRST_JOINT_I = 0,
-            FIRST_JOINT_D = 0.0039723,
+            FIRST_JOINT_D = 0,
             FIRST_JOINT_KS = 1.0169,
             FIRST_JOINT_KV = 0.53077,
             FIRST_JOINT_KA = 0.2618,
@@ -129,6 +131,8 @@ public class ArmConstants {
     private static final double
             FIRST_JOINT_ENCODER_OFFSET = 128.759766,
             SECOND_JOINT_ENCODER_OFFSET = -1250;
+
+    private static final double FIRST_JOINT_CLOSED = -78, SECOND_JOINT_CLOSED = 156;
 
     static {
         FIRST_JOINT_FIRST_MOTOR.configFactoryDefault();
@@ -189,9 +193,19 @@ public class ArmConstants {
 
         FIRST_JOINT_FIRST_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
         SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
+
+        new Trigger(()->SECOND_JOINT_MOTOR.isFwdLimitSwitchClosed() > 0).whileTrue(
+                new StartEndCommand(
+                        ()->        SECOND_JOINT_ENCODER.setSelectedSensorPosition(
+                                Conversions.degreesToMagTicks(SECOND_JOINT_CLOSED),
+                                0,
+                                0
+                        ),
+                        ()->{}
+                ).ignoringDisable(true)
+        );
     }
 
-    private static final double FIRST_JOINT_CLOSED = -78, SECOND_JOINT_CLOSED = 156;
 
     public enum ArmStates {
         CLOSED(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
@@ -201,8 +215,8 @@ public class ArmConstants {
         CUBE_MIDDLE_1(-51, 113),
         CUBE_HIGH_1(-5, 35),
         HYBRID_1(FIRST_JOINT_CLOSED, 110),
-        CONE_MIDDLE_1(-30, 101),
-        CONE_MIDDLE_2(-75, 101),
+        CONE_MIDDLE_1(-30, 105),
+        CONE_MIDDLE_2(-49, 105),
         CONE_HIGH_1(20, -10),
         CONE_HIGH_2(-8, 43);
 

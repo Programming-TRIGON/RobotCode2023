@@ -59,7 +59,7 @@ public class RobotContainer implements Loggable {
             isCone = new AtomicReference<>(false),
             isLeftRamp = new AtomicReference<>(false);
 
-    private final LedStrip leds = new LedStrip(63, false);
+    public static final LedStrip leds = new LedStrip(63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
             () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
@@ -101,7 +101,8 @@ public class RobotContainer implements Loggable {
         setPoseEstimatorPoseSources();
         bindCommands();
         PhotonCamera.setVersionCheckEnabled(false);
-
+        keyboardController.f8().whileTrue(Commands.getPlaceConeAtMiddleCommand());
+        keyboardController.f9().whileTrue(Commands.getPlaceCubeAtHighCommand());
 //        new ProxyCommand(()->new PrintCommand(input.getHID().getRawAxis(0) +"")).repeatedly().schedule();
         keyboardController.numpad0().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
         keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
