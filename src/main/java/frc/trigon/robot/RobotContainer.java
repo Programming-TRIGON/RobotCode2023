@@ -220,12 +220,11 @@ public class RobotContainer implements Loggable {
         if (!isCone.get())
             return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
 
-        var res = FieldConstants.GridAlignment.getGridAlignment(
+        final FieldConstants.GridAlignment gridAlignment = FieldConstants.GridAlignment.getGridAlignment(
                 grid.get(),
                 isLeftRamp.get() ? 1 : 3
         );
-        PoseEstimator.getInstance().getField().getObject("targetP").setPose(res.inFrontOfGridPose);
-        SmartDashboard.putString("targetP", res.name());
+        SmartDashboard.putString("targetGridAlignment", gridAlignment.name());
         return FieldConstants.GridAlignment.getGridAlignment(
                 grid.get(),
                 isLeftRamp.get() ? 1 : 3
