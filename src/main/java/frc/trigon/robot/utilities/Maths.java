@@ -37,12 +37,14 @@ public class Maths {
      */
     public static Rotation2d getAngleBetweenTranslations(Translation2d firstPoint, Translation2d secondPoint) {
         final double slope = calculateSlope(firstPoint, secondPoint);
-        if (!Double.isNaN(slope))
+        if (!Double.isInfinite(slope) && !Double.isNaN(slope))
             return new Rotation2d(Math.atan(slope));
 
-        if (firstPoint.getY() > secondPoint.getY())
+        if (firstPoint.getDistance(secondPoint) == 0)
+            return Rotation2d.fromDegrees(0);
+        if (firstPoint.getY() < secondPoint.getY())
             return Rotation2d.fromDegrees(90);
-        else
-            return Rotation2d.fromDegrees(270);
+
+        return Rotation2d.fromDegrees(-90);
     }
 }
