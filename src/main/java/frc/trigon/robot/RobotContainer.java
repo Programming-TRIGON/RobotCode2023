@@ -97,7 +97,10 @@ public class RobotContainer implements Loggable {
             redClimbingLEDCommand = new MovingColorsLedCommand(leds, Color.kRed, 0.02, 5, Color.kBlack),
             flamesLEDCommand = new MovingColorsLedCommand(leds, new Color(0f, 0f, 1f), 0.02, 7, Color.kRed),
             staticYellowColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kYellow),
-            staticPurpleColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kPurple);
+            staticPurpleColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kPurple),
+            resetPoseToLimelightPoseCommand = new InstantCommand(
+                    () -> poseEstimator.resetPose(CameraConstants.FORWARD_LIMELIGHT.getRobotPose())
+            );
 
     public RobotContainer() {
         configureAutonomousChooser();
@@ -141,6 +144,7 @@ public class RobotContainer implements Loggable {
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
         OperatorConstants.LED_FLAMES_TRIGGER.onTrue(flamesLEDCommand);
         OperatorConstants.PLACE_GAME_PIECE_AT_HYBRID_TRIGGER.whileTrue(placeGamePieceAtHybridCommand);
+        OperatorConstants.RESET_POSE_TO_LIMELIGHT_TRIGGER.onTrue(resetPoseToLimelightPoseCommand);
         tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
 
         driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2)));

@@ -20,7 +20,7 @@ public class TrihardSwerveConstants {
     static final double
             SIDE_LENGTH_METERS = 0.7,
             DISTANCE_FROM_CENTER_OF_BASE = SIDE_LENGTH_METERS / 2;
-    private static final double RATE_LIMIT = 1;
+    private static final double RATE_LIMIT = 5.5;
     static final SlewRateLimiter
             X_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT),
             Y_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT);
