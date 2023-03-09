@@ -3,9 +3,8 @@ package frc.trigon.robot.subsystems.leds.commands;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
-import frc.trigon.robot.subsystems.leds.MasterLed;
 
-public class RainbowLEDCommand extends LedCommand {
+public class StaticRainbowLedCommand extends LedCommand {
     private final LedStrip ledStrip;
     private static final int saturation = 255;
     private static final int value = 128;
@@ -15,7 +14,7 @@ public class RainbowLEDCommand extends LedCommand {
      *
      * @param ledStrip the led strip
      */
-    public RainbowLEDCommand(LedStrip ledStrip) {
+    public StaticRainbowLedCommand(LedStrip ledStrip) {
         super(ledStrip);
         this.ledStrip = ledStrip;
         addRequirements(ledStrip);

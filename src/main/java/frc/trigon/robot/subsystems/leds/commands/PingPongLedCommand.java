@@ -8,7 +8,7 @@ import frc.trigon.robot.subsystems.leds.LedStrip;
 import java.util.Arrays;
 
 
-public class PingPongLEDCommand extends LedCommand {
+public class PingPongLedCommand extends LedCommand {
     private final Color backgroundColor;
     private final Color primeColor;
     private final double cycleTime;
@@ -24,7 +24,7 @@ public class PingPongLEDCommand extends LedCommand {
      * @param amountOfMovingLeds The amount of leds that are moving
      * @param ledStrip           The led strip
      */
-    public PingPongLEDCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
+    public PingPongLedCommand(Color backgroundColor, Color primeColor, double cycleTime, int amountOfMovingLeds, LedStrip ledStrip) {
         super(ledStrip);
         this.backgroundColor = backgroundColor;
         this.primeColor = primeColor;

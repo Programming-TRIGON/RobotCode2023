@@ -10,8 +10,8 @@ public class FieldConstants {
             FIELD_WIDTH_METERS = 8.02;
     private static final double BUMPERS_LENGTH_METERS = 0.86;
     public static final Pose2d IN_FRONT_OF_FEEDER_POSE = new Pose2d(14.2256, 8.01668 - (BUMPERS_LENGTH_METERS / 2), Rotation2d.fromDegrees(90));
-    private static final double IN_FRONT_OF_GRID_X = 2.16275;
-    private static final double RAMP_DISTANCE_FROM_SHELF = 0.5558;
+    private static final double IN_FRONT_OF_GRID_X = 2.121;
+    private static final double RAMP_DISTANCE_FROM_SHELF = 0.623428;
     private static final double
             LEFT_GRID_SHELF_Y = PoseSourceConstants.TAGS_ID_TO_POSE.get(6).getY(),
             MIDDLE_GRID_SHELF_Y = PoseSourceConstants.TAGS_ID_TO_POSE.get(7).getY(),

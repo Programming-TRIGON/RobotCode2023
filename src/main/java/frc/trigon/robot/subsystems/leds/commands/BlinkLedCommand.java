@@ -4,9 +4,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.trigon.robot.subsystems.leds.LedCommand;
 import frc.trigon.robot.subsystems.leds.LedStrip;
-import frc.trigon.robot.subsystems.leds.MasterLed;
 
-public class BlinkLEDCommand extends LedCommand {
+public class BlinkLedCommand extends LedCommand {
     private final Color[] colors;
     private final double cycleTime;
     private final LedStrip ledStrip;
@@ -14,11 +13,11 @@ public class BlinkLEDCommand extends LedCommand {
     /**
      * Constructs a new BlinkLEDCommand.
      *
-     * @param colors    the colors of the led strip
-     * @param cycleTime the time that takes to move from one pixel to the other
      * @param ledStrip  the led strip
+     * @param cycleTime the time that takes to move from one pixel to the other
+     * @param colors    the colors of the led strip
      */
-    public BlinkLEDCommand(Color[] colors, double cycleTime, LedStrip ledStrip) {
+    public BlinkLedCommand(LedStrip ledStrip, double cycleTime, Color[] colors) {
         super(ledStrip);
         this.colors = colors;
         this.cycleTime = cycleTime * 2;

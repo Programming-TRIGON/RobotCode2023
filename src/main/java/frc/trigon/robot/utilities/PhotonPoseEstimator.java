@@ -29,7 +29,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.trigon.robot.RobotContainer;
+import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.VisionEstimation;
@@ -303,7 +303,7 @@ public class PhotonPoseEstimator {
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
                 break;
             case CLOSEST_TO_HEADING:
-                estimatedPose = closestToHeadingStrategy(cameraResult, RobotContainer.SWERVE.getHeading());
+                estimatedPose = closestToHeadingStrategy(cameraResult, PoseEstimator.getInstance().getCurrentPose().getRotation());
                 break;
             case AVERAGE_BEST_TARGETS:
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
@@ -364,18 +364,9 @@ public class PhotonPoseEstimator {
 
             double altDifference = Math.abs(altTransformPosition.getRotation().toRotation2d().minus(heading).getDegrees());
 
-            if (altDifference < smallestPoseDelta) {
-                smallestPoseDelta = altDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                altTransformPosition, result.getTimestampSeconds(), result.getTargets());
-            }
-            if (bestDifference < smallestPoseDelta) {
-                smallestPoseDelta = bestDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                bestTransformPosition, result.getTimestampSeconds(), result.getTargets());
-            }
+            var goodPose = bestDifference < altDifference ?
+                           bestTransformPosition : altTransformPosition;
+            lowestDeltaPose = new EstimatedRobotPose(goodPose, result.getTimestampSeconds(), result.getTargets());
         }
         return Optional.ofNullable(lowestDeltaPose);
     }

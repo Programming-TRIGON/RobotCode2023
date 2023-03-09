@@ -28,10 +28,10 @@ public class AutonomousConstants {
                 "place-cone-2", ArmCommands.getPlaceConeAtMiddleNodeCommand()
         );
         EVENT_MAP.put(
-                "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING, true))
+                "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING))
         );
         EVENT_MAP.put(
-                "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED, true))
+                "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED))
         );
     }
 
