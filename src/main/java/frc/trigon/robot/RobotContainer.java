@@ -1,10 +1,15 @@
 package frc.trigon.robot;
 
 import com.pathplanner.lib.PathConstraints;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -33,6 +38,7 @@ import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
@@ -54,7 +60,7 @@ public class RobotContainer implements Loggable {
     private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
     private final KeyboardController keyboardController = OperatorConstants.KEYBOARD_CONTROLLER;
     private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || keyboardController.g().getAsBoolean());
-    private final Trigger tippingTrigger = new Trigger(() -> Math.abs(SWERVE.getPitch()) < -2);
+
     private final AtomicReference<Integer>
             level = new AtomicReference<>(1),
             grid = new AtomicReference<>(1);
@@ -65,10 +71,11 @@ public class RobotContainer implements Loggable {
     public static final LedStrip leds = new LedStrip(63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
-            ),
+
+            () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+            () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+            () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
+    ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
                     () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
@@ -103,6 +110,7 @@ public class RobotContainer implements Loggable {
             );
 
     public RobotContainer() {
+        LiveWindow.disableAllTelemetry();
         configureAutonomousChooser();
         setPoseEstimatorPoseSources();
         bindCommands();
@@ -114,6 +122,8 @@ public class RobotContainer implements Loggable {
         keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
         SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
+
+        configDriverCam();
     }
 
     /**
@@ -145,7 +155,7 @@ public class RobotContainer implements Loggable {
         OperatorConstants.LED_FLAMES_TRIGGER.onTrue(flamesLEDCommand);
         OperatorConstants.PLACE_GAME_PIECE_AT_HYBRID_TRIGGER.whileTrue(placeGamePieceAtHybridCommand);
         OperatorConstants.RESET_POSE_TO_LIMELIGHT_TRIGGER.onTrue(resetPoseToLimelightPoseCommand);
-        tippingTrigger.onTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
+
 
         driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2)));
         driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2)));
@@ -177,11 +187,13 @@ public class RobotContainer implements Loggable {
         OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
             isCone.set(false);
             staticPurpleColorLedCommand.schedule();
+
+
         }).ignoringDisable(true));
 
         OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 1 : 3)).ignoringDisable(true));
         OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
-        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 3 :  1)).ignoringDisable(true));
+        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 3 : 1)).ignoringDisable(true));
 
         OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
         OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(!AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
@@ -200,7 +212,6 @@ public class RobotContainer implements Loggable {
         return 1 - squaredShiftModeValue * OperatorConstants.MINIMUM_SHIFT_VALUE_COEFFICIENT;
     }
 
-    @Log(name = "stickDegrees", methodName = "getDegrees")
     private Rotation2d getRightStickAsRotation2d() {
         if (isRightStickStill())
             return poseEstimator.getCurrentPose().getRotation();
@@ -308,5 +319,12 @@ public class RobotContainer implements Loggable {
     private void setupArmBrakeModeWithUserButtonCommands() {
         userButton.onTrue(new InstantCommand(() -> ARM.setNeutralMode(false)).ignoringDisable(true));
         userButton.onFalse(new InstantCommand(ARM::setNeutralMode).ignoringDisable(true));
+    }
+
+    private void configDriverCam() {
+        var cam = CameraServer.startAutomaticCapture(2);
+        cam.setResolution(424, 240);
+        System.out.println(cam.setFPS(60));
+        cam.setPixelFormat(VideoMode.PixelFormat.kYUYV);
     }
 }

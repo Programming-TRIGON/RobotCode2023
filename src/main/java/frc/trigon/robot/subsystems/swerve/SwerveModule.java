@@ -77,7 +77,6 @@ public abstract class SwerveModule implements Loggable {
      *
      * @param velocity the target velocity
      */
-    @Config(name = "setTargetVelocity")
     private void setTargetVelocity(double velocity) {
         targetVelocity = velocity;
         if (driveMotorClosedLoop)
@@ -86,7 +85,6 @@ public abstract class SwerveModule implements Loggable {
             setTargetOpenLoopVelocity(velocity);
     }
 
-    @Config(name = "setTargetAngle")
     private void setTargetDegrees(double degrees) {
         setTargetAngle(Rotation2d.fromDegrees(degrees));
     }

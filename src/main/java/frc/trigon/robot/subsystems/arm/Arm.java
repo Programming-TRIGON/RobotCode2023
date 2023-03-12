@@ -275,8 +275,6 @@ public class Arm extends LoggableSubsystemBase {
         return targetState.velocity < 0 && getCurrentEndEffectorLocation().getY() < 20;
     }
 
-    @Log(name = "End Effector X", methodName = "getX")
-    @Log(name = "End Effector Y", methodName = "getY")
     private Translation2d getCurrentEndEffectorLocation() {
         return calculateEndEffectorLocation(getFirstMotorPosition(), getSecondMotorPosition());
     }
@@ -313,12 +311,10 @@ public class Arm extends LoggableSubsystemBase {
         return Conversions.magTicksToDegrees(secondMotor.getSelectedSensorPosition());
     }
 
-    @Log(name = "First Motor Velocity")
     private double getFirstMotorVelocity() {
         return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(firstMotor.getSelectedSensorVelocity()));
     }
 
-    @Log(name = "Second Motor Velocity")
     private double getSecondMotorVelocity() {
         return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(secondMotor.getSelectedSensorVelocity()));
     }
@@ -327,12 +323,10 @@ public class Arm extends LoggableSubsystemBase {
         return getSecondMotorPosition() >= ArmConstants.RETRACTED_DEGREES;
     }
 
-    @Log(name = "First Motor Supply Current")
     private double getFirstMotorSupplyCurrent() {
         return firstMotor.getSupplyCurrent();
     }
 
-    @Log(name = "Second Motor Supply Current")
     private double getSecondMotorSupplyCurrent() {
         return secondMotor.getSupplyCurrent();
     }

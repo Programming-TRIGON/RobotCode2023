@@ -26,6 +26,7 @@ import java.util.List;
 public class PoseEstimator extends LoggableSubsystemBase {
     private final static PoseEstimator INSTANCE = new PoseEstimator();
 
+    @Log.Exclude
     private final Swerve swerve = RobotContainer.SWERVE;
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
     @Log
@@ -42,7 +43,7 @@ public class PoseEstimator extends LoggableSubsystemBase {
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
-
+        
         putAprilTagsOnFieldWidget();
     }
 
@@ -112,7 +113,6 @@ public class PoseEstimator extends LoggableSubsystemBase {
     private void updatePoseEstimator() {
         updatePoseEstimatorStates();
         attemptToUpdateWithRobotPoseSources();
-        putAprilTagsOnFieldWidget();
         field.setRobotPose(getCurrentPose());
     }
 
