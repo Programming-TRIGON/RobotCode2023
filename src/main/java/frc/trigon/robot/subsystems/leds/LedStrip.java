@@ -7,12 +7,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class LedStrip extends LoggableSubsystemBase {
     private final boolean inverted;
     private final int length;
     private final AddressableLED led = LedsConstants.LED;
+    private static final HashMap<Color, Color> COLOR_COLOR_HASH_MAP = new HashMap<>();
 
     /**
      * Constructs a new LedStrip
@@ -50,6 +52,10 @@ public class LedStrip extends LoggableSubsystemBase {
     }
 
     private static Color applyBrightness(Color color, double brightness) {
+        if(brightness == 1)
+            return color;
+        if(brightness == 0)
+            return Color.kBlack;
         return new Color(color.red * brightness, color.green * brightness, color.blue * brightness);
     }
 
@@ -66,8 +72,14 @@ public class LedStrip extends LoggableSubsystemBase {
     }
 
     private Color convertToTrihardColorIfReal(Color color) {
-        if (Robot.isReal())
-            return rgbToGrb(balance(color));
+        if (Robot.isReal()) {
+            var saved = COLOR_COLOR_HASH_MAP.get(color);
+            if(saved != null)
+                return saved;
+            var converted = rgbToGrb(balance(color));
+            COLOR_COLOR_HASH_MAP.put(color, converted);
+            return converted;
+        }
         else return color;
     }
 }

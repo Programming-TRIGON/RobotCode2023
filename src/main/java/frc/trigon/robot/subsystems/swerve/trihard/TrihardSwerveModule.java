@@ -33,7 +33,6 @@ public class TrihardSwerveModule extends SwerveModule {
         return steerEncoder.getAbsolutePosition();
     }
 
-    @Log(name = "steerEncoderDifference")
     private double getSteerEncoderDifference() {
         return Conversions.offsetRead(getRawSteerAngle(), offset) - getCurrentAngle().getRotations();
     }

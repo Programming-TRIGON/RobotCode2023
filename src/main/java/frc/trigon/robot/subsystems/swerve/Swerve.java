@@ -80,7 +80,6 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the swerve's profiled pid controller for rotation
      */
-    @Log(name = "rotationController")
     protected abstract ProfiledPIDController getRotationController();
 
     /**
@@ -129,7 +128,6 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the robot's current velocity
      */
-    @Log(name = "velocity", methodName = "toString")
     public ChassisSpeeds getCurrentVelocity() {
         final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
 
