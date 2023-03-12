@@ -58,12 +58,15 @@ public class Commands {
     }
 
     private static CommandBase getDriveToPoseCommand(PathConstraints driveConstraints, Pose2d targetPose) {
+        if (!AllianceUtilities.isBlueAlliance()) {
+            targetPose = new Pose2d(
+                    targetPose.getTranslation().getX(),
+                    FieldConstants.FIELD_WIDTH_METERS - targetPose.getTranslation().getY(),
+                    targetPose.getRotation().unaryMinus()
+            );
+        }
+
         final Pose2d currentPose = POSE_ESTIMATOR.getCurrentPose();
-        targetPose = new Pose2d(
-                targetPose.getX(),
-                AllianceUtilities.isBlueAlliance() ? targetPose.getY() : FieldConstants.FIELD_WIDTH_METERS - targetPose.getY(),
-                targetPose.getRotation()
-        );
         final Rotation2d heading = Maths.getAngleBetweenTranslations(
                 currentPose.getTranslation(),
                 targetPose.getTranslation()
@@ -75,7 +78,7 @@ public class Commands {
         );
         final PathPoint targetPoint = new PathPoint(
                 targetPose.getTranslation(),
-                targetPose.getRotation(),
+                heading,
                 targetPose.getRotation()
         );
         final PathPlannerTrajectory path = PathPlanner.generatePath(driveConstraints, currentPoint, targetPoint);

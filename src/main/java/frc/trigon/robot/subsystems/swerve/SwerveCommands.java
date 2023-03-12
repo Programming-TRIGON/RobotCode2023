@@ -51,9 +51,9 @@ public class SwerveCommands {
      */
     public static SequentialCommandGroup getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap) {
         final PathPlannerTrajectory lastPath = pathGroup.get(pathGroup.size() - 1);
-        final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
+        final Command initializeDriveAndPutShowCommand = new InstantCommand(() -> {
             initializeDrive(false);
-            addTargetPoseToField(lastPath);
+            addTargetPoseToField(lastPath, true);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -67,7 +67,7 @@ public class SwerveCommands {
                 SWERVE
         );
 
-        return initializeDriveAndPutTargetCommand.andThen(swerveAutoBuilder.fullAuto(pathGroup));
+        return initializeDriveAndPutShowCommand.andThen(swerveAutoBuilder.fullAuto(pathGroup));
     }
 
     /**
@@ -78,9 +78,9 @@ public class SwerveCommands {
      * @return the command
      */
     public static SequentialCommandGroup getFollowPathCommand(PathPlannerTrajectory path) {
-        final Command initializeDriveAndPutTargetCommand = new InstantCommand(() -> {
+        final Command initializeDriveAndShowTargetCommand = new InstantCommand(() -> {
             initializeDrive(true);
-            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
+            addTargetPoseToField(path, false);
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
@@ -90,11 +90,11 @@ public class SwerveCommands {
                 SWERVE.getRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
                 new HashMap<>(),
-                true,
+                false,
                 SWERVE
         );
 
-        return initializeDriveAndPutTargetCommand.andThen(swerveAutoBuilder.followPath(path));
+        return initializeDriveAndShowTargetCommand.andThen(swerveAutoBuilder.followPath(path));
     }
 
     /**
@@ -237,14 +237,23 @@ public class SwerveCommands {
         );
     }
 
-    private static void addTargetPoseToField(PathPlannerTrajectory path) {
+    private static Pose2d getHolonomicPose(PathPlannerTrajectory.PathPlannerState state) {
+        return new Pose2d(state.poseMeters.getTranslation(), state.holonomicRotation);
+    }
+
+    private static void addTargetPoseToField(PathPlannerTrajectory path, boolean useAllianceColor) {
+        if (!useAllianceColor) {
+            POSE_ESTIMATOR.getField().getObject("target").setPose(getHolonomicPose(path.getEndState()));
+            return;
+        }
+
         if (AllianceUtilities.isBlueAlliance()) {
-            POSE_ESTIMATOR.getField().getObject("target").setPose(path.getEndState().poseMeters);
+            POSE_ESTIMATOR.getField().getObject("target").setPose(getHolonomicPose(path.getEndState()));
             return;
         }
 
         final PathPlannerTrajectory transformedPath = PathPlannerTrajectory.transformTrajectoryForAlliance(path, DriverStation.Alliance.Red);
-        POSE_ESTIMATOR.getField().getObject("target").setPose(transformedPath.getEndState().poseMeters);
+        POSE_ESTIMATOR.getField().getObject("target").setPose(getHolonomicPose(transformedPath.getEndState()));
     }
 
     private static void initializePosePIDControllers(PIDController xPIDController, PIDController yPIDController, PIDController thetaPIDController, Pose2d targetPose) {
