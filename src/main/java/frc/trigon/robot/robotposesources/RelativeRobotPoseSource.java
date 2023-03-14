@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Transform3d;
  * A pose source that provides the robot's pose, relative to a given pose.
  */
 public abstract class RelativeRobotPoseSource extends RobotPoseSource {
-    private Transform2d whenWasReset = new Transform2d();
+    private Pose2d relativePose = new Pose2d();
 
     protected RelativeRobotPoseSource(Transform3d cameraToRobotCenter) {
         super(cameraToRobotCenter);
@@ -16,25 +16,24 @@ public abstract class RelativeRobotPoseSource extends RobotPoseSource {
 
     @Override
     public Pose2d getRobotPose() {
-        return new Pose2d(
-                super.getRobotPose().getTranslation().minus(whenWasReset.getTranslation()),
-                super.getRobotPose().getRotation().minus(whenWasReset.getRotation())
-        );
+        return subtractPose(super.getRobotPose(), relativePose);
     }
 
     /**
      * Sets the relative pose of the pose source.
-     *rr
+     * This should be the current pose of the robot.
+     *
      * @param pose the pose to set
      */
     public void setRelativePose(Pose2d pose) {
-//        whenWasReset = pose2dToTransform2d(pose.plus(pose2dToTransform2d(super.getRobotPose())));
-//        whenWasReset = super.getRobotPose().minus(pose);
-        whenWasReset = new Transform2d(
-                super.getRobotPose().getTranslation().minus(pose.getTranslation()),
-                super.getRobotPose().getRotation().minus(pose.getRotation())
+        relativePose = subtractPose(super.getRobotPose(), pose);
+    }
+
+    private Pose2d subtractPose(Pose2d pose, Pose2d toSubtract) {
+        return new Pose2d(
+                pose.getTranslation().minus(toSubtract.getTranslation()),
+                pose.getRotation().minus(toSubtract.getRotation())
         );
-        System.out.println("when was reset: " + whenWasReset.toString());
     }
 
     private Transform2d pose2dToTransform2d(Pose2d pose) {
