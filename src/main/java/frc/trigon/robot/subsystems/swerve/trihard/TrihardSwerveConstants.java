@@ -4,6 +4,7 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -19,6 +20,10 @@ public class TrihardSwerveConstants {
     static final double
             SIDE_LENGTH_METERS = 0.7,
             DISTANCE_FROM_CENTER_OF_BASE = SIDE_LENGTH_METERS / 2;
+    private static final double RATE_LIMIT = 5.5;
+    static final SlewRateLimiter
+            X_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT),
+            Y_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT);
     private static final Translation2d[] LOCATIONS = {
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0).location,
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1).location,
@@ -33,8 +38,8 @@ public class TrihardSwerveConstants {
     };
     static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
-            TRANSLATION_PID_CONSTANTS = new PIDConstants(10, 0, 0),
-            ROTATION_PID_CONSTANTS = new PIDConstants(5, 0, 0);
+            TRANSLATION_PID_CONSTANTS = new PIDConstants(3, 0, 0),
+            ROTATION_PID_CONSTANTS = new PIDConstants(3, 0.0008, 0.5);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
@@ -42,14 +47,14 @@ public class TrihardSwerveConstants {
             1200
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            2,
-            0,
-            0,
+            3,
+            ROTATION_PID_CONSTANTS.kI,
+            ROTATION_PID_CONSTANTS.kD,
             ROTATION_CONSTRAINTS
     );
     static final double
-            TRANSLATION_TOLERANCE = 0.01,
-            ROTATION_TOLERANCE = 1,
+            TRANSLATION_TOLERANCE = 0.03,
+            ROTATION_TOLERANCE = 2,
             TRANSLATION_VELOCITY_TOLERANCE = 0.05,
             ROTATION_VELOCITY_TOLERANCE = 0.05;
 
@@ -66,5 +71,7 @@ public class TrihardSwerveConstants {
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_2_Gyro, 1000);
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_4_Mag, 1000);
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_6_Accel, 1000);
+
+        GYRO.configMountPose(90.0146, -0.95211,-0.796127);
     }
 }

@@ -17,14 +17,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.Conversions;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
-public class Arm extends SubsystemBase implements Loggable {
+public class Arm extends LoggableSubsystemBase {
     private static final Arm INSTANCE = new Arm();
     private final WPI_TalonFX
             firstMotor = ArmConstants.FIRST_JOINT_FIRST_MOTOR,
@@ -35,6 +34,7 @@ public class Arm extends SubsystemBase implements Loggable {
     private TrapezoidProfile firstMotorProfile, secondMotorProfile;
     private double firstMotorProfileLastSetTime, secondMotorProfileLastSetTime;
     private String firstArmToMove = "";
+    private double lastSpeedFactor;
 
     private Arm() {
         setCurrentLimits();
@@ -56,11 +56,16 @@ public class Arm extends SubsystemBase implements Loggable {
     }
 
     public boolean atGoal() {
-        return
-                Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE &&
-                        Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE &&
-                        Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE &&
-                        Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
+        boolean
+                firstMotorAtGoal = Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE,
+                secondMotorAtGoal = Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE,
+                firstMotorVelocityAtGoal = Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE,
+                secondMotorVelocityAtGoal = Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
+        SmartDashboard.putBoolean("firstMotorAtGoal", firstMotorAtGoal);
+        SmartDashboard.putBoolean("secondMotorAtGoal", secondMotorAtGoal);
+        SmartDashboard.putBoolean("firstMotorVelocityAtGoal", firstMotorVelocityAtGoal);
+        SmartDashboard.putBoolean("secondMotorVelocityAtGoal", secondMotorVelocityAtGoal);
+        return firstMotorAtGoal && secondMotorAtGoal && firstMotorVelocityAtGoal && secondMotorVelocityAtGoal;
     }
 
     public static Arm getInstance() {
@@ -78,24 +83,24 @@ public class Arm extends SubsystemBase implements Loggable {
      * @param state the target state
      * @return the command
      */
-    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder) {
+    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder, double speedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(state, byOrder),
+                () -> setTargetState(state, byOrder, speedFactor),
                 () -> {},
                 this
         );
     }
 
     public CommandBase getGoToStateCommand(ArmConstants.ArmStates state) {
-        return getGoToStateCommand(state, true);
+        return getGoToStateCommand(state, true, 1);
     }
 
-    private void setTargetState(ArmStates targetState, boolean byOrder) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder);
+    private void setTargetState(ArmStates targetState, boolean byOrder, double speedFactor) {
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder, speedFactor);
     }
 
     private void setTargetState(ArmStates targetState) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true);
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true, 1);
     }
 
     /**
@@ -105,16 +110,16 @@ public class Arm extends SubsystemBase implements Loggable {
      * @param secondJointAngle the angle of the second joint
      * @return the command
      */
-    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder) {
+    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double speedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder),
+                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, speedFactor),
                 () -> {},
                 this
         );
     }
 
     public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle) {
-        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true);
+        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true, 1);
     }
 
     public void setNeutralMode(boolean brake) {
@@ -128,9 +133,10 @@ public class Arm extends SubsystemBase implements Loggable {
         secondMotor.setNeutralMode(ArmConstants.SECOND_JOINT_NEUTRAL_MODE);
     }
 
-    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder) {
-        generateFirstMotorProfile(firstMotorPosition);
-        generateSecondMotorProfile(secondMotorPosition);
+    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder, double speedFactor) {
+        lastSpeedFactor = speedFactor;
+        generateFirstMotorProfile(firstMotorPosition, speedFactor);
+        generateSecondMotorProfile(secondMotorPosition, speedFactor);
         if (byOrder)
             firstArmToMove = getFirstMotorDistanceToGoal() > 0 ? "first" : "second";
         else
@@ -147,18 +153,18 @@ public class Arm extends SubsystemBase implements Loggable {
         }
     }
 
-    private void generateFirstMotorProfile(double position) {
+    private void generateFirstMotorProfile(double position, double speedFactor) {
         firstMotorProfile = new TrapezoidProfile(
-                ArmConstants.FIRST_JOINT_CONSTRAINTS,
+                Conversions.scaleConstraints(ArmConstants.FIRST_JOINT_CONSTRAINTS, speedFactor),
                 new TrapezoidProfile.State(position, 0),
                 new TrapezoidProfile.State(getFirstMotorPosition(), getFirstMotorVelocity())
         );
         firstMotorProfileLastSetTime = Timer.getFPGATimestamp();
     }
 
-    private void generateSecondMotorProfile(double position) {
+    private void generateSecondMotorProfile(double position, double speedFactor) {
         secondMotorProfile = new TrapezoidProfile(
-                ArmConstants.SECOND_JOINT_CONSTRAINTS,
+                Conversions.scaleConstraints(ArmConstants.SECOND_JOINT_CONSTRAINTS, speedFactor),
                 new TrapezoidProfile.State(position, 0),
                 new TrapezoidProfile.State(getSecondMotorPosition(), getSecondMotorVelocity())
         );
@@ -178,7 +184,7 @@ public class Arm extends SubsystemBase implements Loggable {
         boolean goingToHitTheGround = goingToHitTheGround(targetState);
         boolean waitingForOtherJoint = isNotFirstToMove("first") && (isSecondJointOnlyStarting() && !isSecondJointRetracted());
         if (goingToHitTheGround || waitingForOtherJoint) {
-            generateFirstMotorProfile(getFirstMotorGoal());
+            generateFirstMotorProfile(getFirstMotorGoal(), lastSpeedFactor);
             return;
         }
 
@@ -202,8 +208,9 @@ public class Arm extends SubsystemBase implements Loggable {
 
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
         if (goingToHitTheGround || waitingForOtherJoint) {
-            generateSecondMotorProfile(getSecondMotorGoal());
-            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
+            generateSecondMotorProfile(getSecondMotorGoal(), lastSpeedFactor);
+            secondMotor.stopMotor();
+//            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
         }
         double feedforward = calculateFeedforward(
                 secondMotorFeedforward,
@@ -267,8 +274,6 @@ public class Arm extends SubsystemBase implements Loggable {
         return targetState.velocity < 0 && getCurrentEndEffectorLocation().getY() < 20;
     }
 
-    @Log(name = "End Effector X", methodName = "getX")
-    @Log(name = "End Effector Y", methodName = "getY")
     private Translation2d getCurrentEndEffectorLocation() {
         return calculateEndEffectorLocation(getFirstMotorPosition(), getSecondMotorPosition());
     }
@@ -305,12 +310,10 @@ public class Arm extends SubsystemBase implements Loggable {
         return Conversions.magTicksToDegrees(secondMotor.getSelectedSensorPosition());
     }
 
-    @Log(name = "First Motor Velocity")
     private double getFirstMotorVelocity() {
         return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(firstMotor.getSelectedSensorVelocity()));
     }
 
-    @Log(name = "Second Motor Velocity")
     private double getSecondMotorVelocity() {
         return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(secondMotor.getSelectedSensorVelocity()));
     }
@@ -319,12 +322,10 @@ public class Arm extends SubsystemBase implements Loggable {
         return getSecondMotorPosition() >= ArmConstants.RETRACTED_DEGREES;
     }
 
-    @Log(name = "First Motor Supply Current")
     private double getFirstMotorSupplyCurrent() {
         return firstMotor.getSupplyCurrent();
     }
 
-    @Log(name = "Second Motor Supply Current")
     private double getSecondMotorSupplyCurrent() {
         return secondMotor.getSupplyCurrent();
     }

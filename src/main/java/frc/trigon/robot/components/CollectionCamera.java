@@ -1,5 +1,7 @@
 package frc.trigon.robot.components;
 
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
 import frc.trigon.robot.utilities.Maths;
 import io.github.oblarg.oblog.Loggable;
@@ -10,15 +12,15 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 /**
  * A class that represents a collection camera that looks at the collection system and detects game pieces.
  */
-public class CollectionCamera extends PhotonCamera implements Loggable {
+public class CollectionCamera extends PhotonCamera implements Loggable, Sendable {
     private static final int
             CONES_DETECTION_PIPELINE_INDEX = 0,
-            CUBES_DETECTION_PIPELINE_INDEX = 1;
+            CUBES_DETECTION_PIPELINE_INDEX = 0;
     private static final double
-            YAW_TO_POSITION_POLYNOMIAL_A = 0.0071,
-            YAW_TO_POSITION_POLYNOMIAL_B = 0.9693,
-            YAW_TO_POSITION_POLYNOMIAL_C = 0.7924;
-    private static final double PIPELINES_SWITCHING_RATE = 1.5;
+            YAW_TO_POSITION_POLYNOMIAL_A = 0,
+            YAW_TO_POSITION_POLYNOMIAL_B = 0.98306,
+            YAW_TO_POSITION_POLYNOMIAL_C = -3.98191;
+    private static final double PIPELINES_SWITCHING_RATE = 99999;
     private PhotonTrackedTarget
             lastBestCone = null,
             lastBestCube = null;
@@ -61,12 +63,7 @@ public class CollectionCamera extends PhotonCamera implements Loggable {
     }
 
     private PhotonTrackedTarget getTargetGamePiece() {
-        if (lastBestCube != null)
-            return lastBestCube;
-        if (lastBestCone != null)
-            return lastBestCone;
-
-        return null;
+        return getLatestResult().getBestTarget();
     }
 
     private void updatePipelines() {
@@ -85,10 +82,10 @@ public class CollectionCamera extends PhotonCamera implements Loggable {
 
     private double calculateGamePiecePosition(double gamePieceYaw) {
         return Maths.calculatePolynomial(
-                gamePieceYaw,
                 YAW_TO_POSITION_POLYNOMIAL_A,
                 YAW_TO_POSITION_POLYNOMIAL_B,
-                YAW_TO_POSITION_POLYNOMIAL_C
+                YAW_TO_POSITION_POLYNOMIAL_C,
+                gamePieceYaw
         );
     }
 
@@ -96,5 +93,10 @@ public class CollectionCamera extends PhotonCamera implements Loggable {
         CONE,
         CUBE,
         NONE
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("pos", this::getGamePiecePosition, null);
     }
 }

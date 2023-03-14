@@ -4,6 +4,7 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -11,11 +12,12 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
-public abstract class Swerve extends SubsystemBase implements Loggable {
+public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the swerve's gyro
      */
@@ -78,7 +80,6 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     /**
      * @return the swerve's profiled pid controller for rotation
      */
-    @Log(name = "rotationController")
     protected abstract ProfiledPIDController getRotationController();
 
     /**
@@ -107,6 +108,16 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     protected abstract double getRotationVelocityTolerance();
 
     /**
+     * @return a slew rate limiter for the x-axis
+     */
+    protected abstract SlewRateLimiter getXSlewRateLimiter();
+
+    /**
+     * @return a slew rate limiter for the y-axis
+     */
+    protected abstract SlewRateLimiter getYSlewRateLimiter();
+
+    /**
      * @return the heading of the robot
      */
     @Log(name = "heading", methodName = "getDegrees")
@@ -117,7 +128,6 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
     /**
      * @return the robot's current velocity
      */
-    @Log(name = "velocity", methodName = "toString")
     public ChassisSpeeds getCurrentVelocity() {
         final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
 
@@ -161,7 +171,7 @@ public abstract class Swerve extends SubsystemBase implements Loggable {
         final Rotation2d heading = AllianceUtilities.isBlueAlliance() ? getHeading() : getHeading().plus(Rotation2d.fromRotations(0.5));
 
         ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                translation.getX(),
+                getXSlewRateLimiter().calculate(translation.getX()),
                 translation.getY(),
                 rotation.getRadians(),
                 heading

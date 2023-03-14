@@ -29,7 +29,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.trigon.robot.RobotContainer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.VisionEstimation;
@@ -303,7 +304,7 @@ public class PhotonPoseEstimator {
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
                 break;
             case CLOSEST_TO_HEADING:
-                estimatedPose = closestToHeadingStrategy(cameraResult, RobotContainer.SWERVE.getHeading());
+                estimatedPose = closestToHeadingStrategy(cameraResult, PoseEstimator.getInstance().getCurrentPose().getRotation());
                 break;
             case AVERAGE_BEST_TARGETS:
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
@@ -364,25 +365,20 @@ public class PhotonPoseEstimator {
 
             double altDifference = Math.abs(altTransformPosition.getRotation().toRotation2d().minus(heading).getDegrees());
 
-            if (altDifference < smallestPoseDelta) {
-                smallestPoseDelta = altDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                altTransformPosition, result.getTimestampSeconds(), result.getTargets());
-            }
-            if (bestDifference < smallestPoseDelta) {
-                smallestPoseDelta = bestDifference;
-                lowestDeltaPose =
-                        new EstimatedRobotPose(
-                                bestTransformPosition, result.getTimestampSeconds(), result.getTargets());
-            }
+            boolean isBestBetter = AllianceUtilities.isBlueAlliance() ? bestDifference < altDifference : bestDifference > altDifference;
+            var goodPose = isBestBetter ? bestTransformPosition : altTransformPosition;
+            SmartDashboard.putNumber("good", isBestBetter ? bestDifference:altDifference);
+            SmartDashboard.putNumber("bad", !isBestBetter ? bestDifference:altDifference);
+            PoseEstimator.getInstance().getField().getObject("best").setPose(bestTransformPosition.toPose2d());
+            PoseEstimator.getInstance().getField().getObject("alt").setPose(altTransformPosition.toPose2d());
+            lowestDeltaPose = new EstimatedRobotPose(goodPose, result.getTimestampSeconds(), result.getTargets());
         }
         return Optional.ofNullable(lowestDeltaPose);
     }
 
     private boolean hasAlternate(PhotonTrackedTarget target) {
-        return target.getAlternateCameraToTarget().getX() > 0.05 &&
-                target.getAlternateCameraToTarget().getY() > 0.05;
+        return target.getAlternateCameraToTarget().getX() > 0.01 &&
+                target.getAlternateCameraToTarget().getY() > 0.01;
     }
 
     private Optional<EstimatedRobotPose> multiTagPNPStrategy(PhotonPipelineResult result) {

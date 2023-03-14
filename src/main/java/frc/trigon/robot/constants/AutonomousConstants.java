@@ -3,8 +3,11 @@ package frc.trigon.robot.constants;
 import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.trigon.robot.RobotContainer;
-import frc.trigon.robot.subsystems.arm.ArmCommands;
+import frc.trigon.robot.commands.Commands;
+import frc.trigon.robot.subsystems.arm.Arm;
 import frc.trigon.robot.subsystems.arm.ArmConstants;
+import frc.trigon.robot.subsystems.gripper.Gripper;
+import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.utilities.FilesHandler;
 
 import java.io.File;
@@ -14,7 +17,7 @@ import java.util.List;
 
 public class AutonomousConstants {
     public static final HashMap<String, Command> EVENT_MAP = new HashMap<>();
-    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(2, 2);
+    public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(2, 1.5);
     public static final List<String> AUTONOMOUS_PATHS_NAMES = new ArrayList<>();
     private static final File PATH_PLANNER_DIRECTORY = new File(FilesHandler.DEPLOY_PATH + "pathplanner");
 
@@ -25,13 +28,34 @@ public class AutonomousConstants {
 
     private static void configureEventMap() {
         EVENT_MAP.put(
-                "place-cone-2", ArmCommands.getPlaceConeAtMiddleNodeCommand()
+                "place-cone-2", Commands.getPlaceConeAtHybridCommand()
         );
         EVENT_MAP.put(
-                "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING, true))
+                "place-cone-3", Commands.getPlaceConeAtHighCommandForAuto()
         );
         EVENT_MAP.put(
-                "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED, true))
+                "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING, false, 0))
+        );
+        EVENT_MAP.put(
+                "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED, false, 0.7))
+        );
+        EVENT_MAP.put(
+                "prepare-collect", RobotContainer.ARM.getGoToPositionCommand(-35, ArmConstants.ArmStates.CLOSED_COLLECTING.secondMotorPosition+20, false, 0.7)
+        );
+        EVENT_MAP.put(
+                "place-cube-2", Commands.getPlaceCubeAtMidCommand()
+        );
+        EVENT_MAP.put(
+                "place-cube-3", Commands.getPlaceCubeAtHighCommandForAuto()
+        );
+        EVENT_MAP.put(
+                "balance", SwerveCommands.getBalanceCommand()
+        );
+        EVENT_MAP.put(
+                "prepare-cube-3", Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH)
+        );
+        EVENT_MAP.put(
+                "eject", Gripper.getInstance().getEjectCommand()
         );
     }
 
