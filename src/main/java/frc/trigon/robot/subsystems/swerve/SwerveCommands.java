@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.utilities.AllianceUtilities;
@@ -15,6 +16,7 @@ import frc.trigon.robot.utilities.AllianceUtilities;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -294,16 +296,15 @@ public class SwerveCommands {
         final double
                 currentX = currentPose.getTranslation().getX(),
                 currentY = currentPose.getTranslation().getY(),
-                currentHeading = currentPose.getRotation().getDegrees();
-
-        final double
                 targetX = pose.getTranslation().getX(),
-                targetY = pose.getTranslation().getY(),
-                targetHeading = pose.getRotation().getDegrees();
+                targetY = pose.getTranslation().getY();
+        final Rotation2d
+                currentRotation = currentPose.getRotation(),
+                targetRotation = pose.getRotation();
 
         return (currentX - targetX <= SWERVE.getTranslationTolerance() &&
                 currentY - targetY <= SWERVE.getTranslationTolerance() &&
-                currentHeading - targetHeading <= SWERVE.getRotationTolerance());
+                currentRotation.minus(targetRotation).getDegrees() <= SWERVE.getRotationTolerance());
     }
 
     private static boolean isSwerveStill() {
@@ -356,6 +357,39 @@ public class SwerveCommands {
         return new Translation2d(
                 SWERVE.getXSlewRateLimiter().calculate(xMeterPerSecond),
                 SWERVE.getYSlewRateLimiter().calculate(yMeterPerSecond)
+        );
+    }
+
+    public static CommandBase getBalanceCommand() {
+        AtomicBoolean hasClimbed = new AtomicBoolean(false), hasFinished = new AtomicBoolean(false);
+
+        return new FunctionalCommand(
+                () -> {
+                    hasClimbed.set(false);
+                    hasFinished.set(false);
+                },
+                () -> {
+                    double speed = 0;
+                    double pitch = SWERVE.getPitch() * Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos()), sign = Math.signum(pitch);
+                    hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
+                    if(hasClimbed.get()) {
+                        speed = pitch * pitch * sign * 0.003;
+                    } else {
+                        speed = Math.signum(PoseEstimator.getInstance().getCurrentPose().getX() - 3.777) * -1;
+                    }
+
+                    if(hasFinished.get() || (hasClimbed.get() & Math.abs(pitch) < 5)) {
+                        SWERVE.lockSwerve();
+                        hasFinished.set(true);
+                    }
+                    else
+                        SWERVE.fieldRelativeDrive(new Translation2d(speed, 0), Rotation2d.fromDegrees(0));
+                    SmartDashboard.putNumber("balsp", speed);
+                    SmartDashboard.putBoolean("balhc", hasClimbed.get());
+                },
+                (interrupted) -> stopDrive(),
+                ()->false,
+                SWERVE
         );
     }
 

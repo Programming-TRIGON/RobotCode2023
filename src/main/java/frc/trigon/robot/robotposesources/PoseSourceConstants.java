@@ -13,7 +13,7 @@ import java.util.List;
 public class PoseSourceConstants {
     public static final HashMap<Integer, Pose3d> TAGS_ID_TO_POSE = new HashMap<>();
     static final PhotonPoseEstimator.PoseStrategy
-            PRIMARY_POSE_STRATEGY = PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_HEADING,
+            PRIMARY_POSE_STRATEGY = PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP,
             SECONDARY_POSE_STRATEGY = PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_HEADING;
     static AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT = null;
 

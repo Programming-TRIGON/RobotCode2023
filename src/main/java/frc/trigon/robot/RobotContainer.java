@@ -2,23 +2,23 @@ package frc.trigon.robot;
 
 import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
+import frc.trigon.robot.components.CollectionCamera;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
@@ -38,18 +38,20 @@ import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
 public class RobotContainer implements Loggable {
     // Subsystems TODO: make them not singletons
+
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
 
     public static final Gripper GRIPPER = Gripper.getInstance();
+
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
+    private final CollectionCamera collectionCamera = new CollectionCamera("limelight-collection");
 
     // private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
 
@@ -71,11 +73,15 @@ public class RobotContainer implements Loggable {
     public static final LedStrip leds = new LedStrip(63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-
             () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
             () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
             () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
     ),
+            collectFromFeederWithManualDriveCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
+                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> Rotation2d.fromDegrees(-90)
+            ),
             selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
                     () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
                     () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
@@ -90,7 +96,7 @@ public class RobotContainer implements Loggable {
             fieldRelativeDrivenAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
                     () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    this::getRightStickAsRotation2d
+                    ()->Rotation2d.fromDegrees(180)
             ),
             alignToGridCommand = Commands.getDriveToPoseCommand(
                     new PathConstraints(1, 1),
@@ -98,16 +104,13 @@ public class RobotContainer implements Loggable {
             ),
             applyFirstArmStateCommand = getGoToCurrentFirstArmPositionCommand(),
             applySecondArmStateCommand = getGoToCurrentSecondArmPositionCommand(),
-            placeGamePieceAtHybridCommand = ARM.getGoToStateCommand(ArmStates.HYBRID_1).alongWith(
-                    new WaitCommand(0.8).until(ARM::atGoal).andThen(GRIPPER.getSlowEjectCommand())
-            ),
             redClimbingLEDCommand = new MovingColorsLedCommand(leds, Color.kRed, 0.02, 5, Color.kBlack),
-            flamesLEDCommand = new MovingColorsLedCommand(leds, new Color(0f, 0f, 1f), 0.02, 7, Color.kRed),
+            flamesLEDCommand = new MovingColorsLedCommand(leds, new Color(0f, 0f, 1f), 0.04, 7, Color.kRed),
             staticYellowColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kYellow),
             staticPurpleColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kPurple),
             resetPoseToLimelightPoseCommand = new InstantCommand(
                     () -> poseEstimator.resetPose(CameraConstants.FORWARD_LIMELIGHT.getRobotPose())
-            );
+            ).ignoringDisable(true);
 
     public RobotContainer() {
         LiveWindow.disableAllTelemetry();
@@ -115,11 +118,18 @@ public class RobotContainer implements Loggable {
         setPoseEstimatorPoseSources();
         bindCommands();
         PhotonCamera.setVersionCheckEnabled(false);
-        keyboardController.f8().whileTrue(Commands.getPlaceConeAtMiddleCommand());
-        keyboardController.f9().whileTrue(Commands.getPlaceCubeAtHighCommand());
-//        new ProxyCommand(()->new PrintCommand(input.getHID().getRawAxis(0) +"")).repeatedly().schedule();
+        keyboardController.f8().whileTrue(Commands.getPlaceConeAtMidCommand());
+        keyboardController.f9().whileTrue(Commands.getPlaceConeAtHighCommand());
+        var x = new ProxyCommand(this::getDriveAndPlaceCommand);
+        keyboardController.p().whileTrue(x);
+        OperatorConstants.GO_AND_PLACE_TRIGGER.whileTrue(x);
+        CommandScheduler.getInstance().onCommandInterrupt((cmd) -> {
+            if(cmd.equals(x))
+                SmartDashboard.putString("int", "int");
+        });
         keyboardController.numpad0().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
-        keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false).ignoringDisable(true)));
+        keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false, 1).ignoringDisable(true)));
+
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
         SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
 
@@ -144,8 +154,8 @@ public class RobotContainer implements Loggable {
 
     private void bindControllerCommands() {
         OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetHeadingCommand);
-        OperatorConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.onTrue(toggleFieldAndSelfDrivenCommand);
-        OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
+        OperatorConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.whileTrue(fieldRelativeDrivenAngleFromSticksCommand);
+        //        OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
         OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
         OperatorConstants.ALIGN_TO_GRID_TRIGGER.whileTrue(alignToGridCommand);
         OperatorConstants.APPLY_FIRST_ARM_STATE_TRIGGER.whileTrue(applyFirstArmStateCommand);
@@ -153,15 +163,16 @@ public class RobotContainer implements Loggable {
         OperatorConstants.EJECT_TRIGGER.whileTrue(Gripper.getInstance().getEjectCommand());
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
         OperatorConstants.LED_FLAMES_TRIGGER.onTrue(flamesLEDCommand);
-        OperatorConstants.PLACE_GAME_PIECE_AT_HYBRID_TRIGGER.whileTrue(placeGamePieceAtHybridCommand);
         OperatorConstants.RESET_POSE_TO_LIMELIGHT_TRIGGER.onTrue(resetPoseToLimelightPoseCommand);
-
 
         driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2)));
         driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2)));
-//        driverController.rightBumper().whileTrue(GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5)));
+        driverController.a().whileTrue(
+                GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5)).alongWith(
+                        collectFromFeederWithManualDriveCommand));
         driverController.leftBumper().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
 
+        keyboardController.b().whileTrue(SwerveCommands.getBalanceCommand());
         configureTargetPlacingPositionSetters();
     }
 
@@ -229,7 +240,7 @@ public class RobotContainer implements Loggable {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);
+        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);//,CameraConstants.t265);
     }
 
     private FieldConstants.GridAlignment getGridAlignment() {
@@ -275,33 +286,33 @@ public class RobotContainer implements Loggable {
 
     private CommandBase getGoToSecondConePositionCommand() {
         if (level.get() == 1)
-            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+            return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID);
         if (level.get() == 2)
             return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2);
         if (level.get() == 3)
-            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_2);
+            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH);
 
         return new InstantCommand();
     }
 
     private CommandBase getGoToFirstConePositionCommand() {
         if (level.get() == 1)
-            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+            return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID);
         if (level.get() == 2)
             return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
         if (level.get() == 3)
-            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH_1);
+            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH);
 
         return new InstantCommand();
     }
 
     private CommandBase getGoToCurrentCubePositionCommand() {
         if (level.get() == 1)
-            return ARM.getGoToStateCommand(ArmStates.HYBRID_1);
+            return ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID);
         if (level.get() == 2)
-            return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE_1);
+            return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE);
         if (level.get() == 3)
-            return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH_1);
+            return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH);
 
         return new InstantCommand();
     }
@@ -326,5 +337,42 @@ public class RobotContainer implements Loggable {
         cam.setResolution(424, 240);
         System.out.println(cam.setFPS(60));
         cam.setPixelFormat(VideoMode.PixelFormat.kYUYV);
+    }
+
+    private CommandBase getDriveAndPlaceCommand() {
+        return Commands.getDriveToPoseCommand(
+                new PathConstraints(1, 1),
+                this::getAlignmentPose
+        ).raceWith(Commands.fakeStaticColor(Color.kYellow)).andThen(
+                new ProxyCommand(getPlaceCommand(isCone.get(), level.get()))
+        );
+    }
+
+    private Pose2d getAlignmentPose() {
+        var alignment = getGridAlignment().inFrontOfGridPose;
+        return new Pose2d(
+                alignment.getX(),
+                alignment.getY() + ((collectionCamera.getGamePiecePosition() / 100d * 1.25) * (DriverStation.getAlliance() == DriverStation.Alliance.Red ? -1 : 1)),
+                alignment.getRotation()
+        );
+    }
+
+    private CommandBase getPlaceCommand(boolean isCone, int level) {
+        if(isCone) {
+            if(level == 1)
+                return Commands.getPlaceConeAtHybridCommand().withName("getPlaceConeAtHybridCommand");
+            if(level == 2)
+                return Commands.getPlaceConeAtMidCommand().withName("getPlaceConeAtMidCommand");
+            if(level == 3)
+                return Commands.getPlaceConeAtHighCommand().withName("getPlaceConeAtHighCommand");
+        } else {
+            if(level == 1)
+                return Commands.getPlaceCubeAtHybridCommand().withName("getPlaceCubeAtHybridCommand");
+            if(level == 2)
+                return Commands.getPlaceCubeAtMidCommand().withName("getPlaceCubeAtMidCommand");
+            if(level == 3)
+                return Commands.getPlaceCubeAtHighCommand().withName("getPlaceCubeAtHighCommand");
+        }
+        return new InstantCommand();
     }
 }

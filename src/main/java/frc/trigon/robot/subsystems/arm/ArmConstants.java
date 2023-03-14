@@ -72,7 +72,7 @@ public class ArmConstants {
 
     private static final boolean
             FIRST_JOINT_SENSOR_PHASE = false,
-            SECOND_JOINT_SENSOR_PHASE = true;
+            SECOND_JOINT_SENSOR_PHASE = false;
 
     private static final double
             FIRST_JOINT_NEUTRAL_DEADBAND = 0.02,
@@ -132,7 +132,7 @@ public class ArmConstants {
             FIRST_JOINT_ENCODER_OFFSET = 128.759766,
             SECOND_JOINT_ENCODER_OFFSET = -1250;
 
-    private static final double FIRST_JOINT_CLOSED = -78, SECOND_JOINT_CLOSED = 156;
+    private static final double FIRST_JOINT_CLOSED = -79, SECOND_JOINT_CLOSED = 156;
 
     static {
         FIRST_JOINT_FIRST_MOTOR.configFactoryDefault();
@@ -151,17 +151,19 @@ public class ArmConstants {
         FIRST_JOINT_FIRST_MOTOR.setSensorPhase(FIRST_JOINT_SENSOR_PHASE);
         SECOND_JOINT_ENCODER.setInverted(SECOND_JOINT_SENSOR_PHASE);
 
-        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
-        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 1, 0);
+        //        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
+        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
 
-        double rawSecondPos = SECOND_JOINT_ENCODER.getSelectedSensorPosition(1)-SECOND_JOINT_ENCODER_OFFSET;
-        if(rawSecondPos > Conversions.degreesToMagTicks(160))
-            rawSecondPos-=Conversions.MAG_TICKS;
-        SECOND_JOINT_ENCODER.setSelectedSensorPosition(
-                rawSecondPos,
-                0,
-                0
-        );
+        if(SECOND_JOINT_ENCODER.hasResetOccurred()) {
+            double rawSecondPos = SECOND_JOINT_ENCODER.getSelectedSensorPosition(0) - SECOND_JOINT_ENCODER_OFFSET;
+            if(rawSecondPos > Conversions.degreesToMagTicks(160))
+                rawSecondPos -= Conversions.MAG_TICKS;
+            SECOND_JOINT_ENCODER.setSelectedSensorPosition(
+                    rawSecondPos,
+                    0,
+                    0
+            );
+        }
 
         SECOND_JOINT_ENCODER.configClosedloopRamp(1);
         SECOND_JOINT_ENCODER.configOpenloopRamp(1);
@@ -169,7 +171,7 @@ public class ArmConstants {
         FIRST_JOINT_ENCODER.setPositionToAbsolute();
         double rawFirstPos = FIRST_JOINT_ENCODER.getAbsolutePosition() + FIRST_JOINT_ENCODER_OFFSET;
         if(rawFirstPos > 200)
-            rawFirstPos-=360;
+            rawFirstPos -= 360;
         FIRST_JOINT_ENCODER.setPosition(rawFirstPos);
 
         FIRST_JOINT_FIRST_MOTOR.configRemoteFeedbackFilter(FIRST_JOINT_ENCODER, 0);
@@ -194,31 +196,40 @@ public class ArmConstants {
         FIRST_JOINT_FIRST_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
         SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
 
-        new Trigger(()->SECOND_JOINT_MOTOR.isFwdLimitSwitchClosed() > 0).whileTrue(
+        new Trigger(() -> SECOND_JOINT_MOTOR.isFwdLimitSwitchClosed() > 0).whileTrue(
                 new StartEndCommand(
-                        ()->        SECOND_JOINT_ENCODER.setSelectedSensorPosition(
+                        () -> SECOND_JOINT_ENCODER.setSelectedSensorPosition(
                                 Conversions.degreesToMagTicks(SECOND_JOINT_CLOSED),
                                 0,
                                 0
                         ),
-                        ()->{}
+                        () -> {}
+                ).ignoringDisable(true)
+        );
+        new Trigger(() -> SECOND_JOINT_MOTOR.isRevLimitSwitchClosed() > 0).whileTrue(
+                new StartEndCommand(
+                        () -> SECOND_JOINT_ENCODER.setSelectedSensorPosition(
+                                Conversions.degreesToMagTicks(ArmStates.CLOSED_COLLECTING.secondMotorPosition),
+                                0,
+                                0
+                        ),
+                        () -> {}
                 ).ignoringDisable(true)
         );
     }
-
 
     public enum ArmStates {
         CLOSED(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
         CLOSED_COLLECTING(FIRST_JOINT_CLOSED, 86.3),
         CLOSED_COLLECTING_STANDING_CONE(FIRST_JOINT_CLOSED, 99),
         CONE_FEEDER(FIRST_JOINT_CLOSED, 143),
-        CUBE_MIDDLE_1(-51, 113),
-        CUBE_HIGH_1(-5, 35),
-        HYBRID_1(FIRST_JOINT_CLOSED, 110),
-        CONE_MIDDLE_1(-30, 105),
-        CONE_MIDDLE_2(-49, 105),
-        CONE_HIGH_1(20, -10),
-        CONE_HIGH_2(-8, 43);
+        CUBE_MIDDLE(-51, 117),
+        CUBE_HIGH(-5, 35),
+        CONE_HYBRID(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
+        CUBE_HYBRID(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
+        CONE_MIDDLE_1(-30, 102),
+        CONE_MIDDLE_2(-49, 102),
+        CONE_HIGH(24, -19);
 
         public final double firstMotorPosition, secondMotorPosition;
 

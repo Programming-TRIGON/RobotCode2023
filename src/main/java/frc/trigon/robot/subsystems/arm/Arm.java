@@ -17,10 +17,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.Conversions;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
@@ -112,16 +110,16 @@ public class Arm extends LoggableSubsystemBase {
      * @param secondJointAngle the angle of the second joint
      * @return the command
      */
-    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder) {
+    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double speedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, 1),
+                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, speedFactor),
                 () -> {},
                 this
         );
     }
 
     public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle) {
-        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true);
+        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true, 1);
     }
 
     public void setNeutralMode(boolean brake) {
@@ -211,7 +209,8 @@ public class Arm extends LoggableSubsystemBase {
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
         if (goingToHitTheGround || waitingForOtherJoint) {
             generateSecondMotorProfile(getSecondMotorGoal(), lastSpeedFactor);
-            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
+            secondMotor.stopMotor();
+//            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
         }
         double feedforward = calculateFeedforward(
                 secondMotorFeedforward,

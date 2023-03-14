@@ -29,6 +29,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -366,6 +367,10 @@ public class PhotonPoseEstimator {
 
             boolean isBestBetter = AllianceUtilities.isBlueAlliance() ? bestDifference < altDifference : bestDifference > altDifference;
             var goodPose = isBestBetter ? bestTransformPosition : altTransformPosition;
+            SmartDashboard.putNumber("good", isBestBetter ? bestDifference:altDifference);
+            SmartDashboard.putNumber("bad", !isBestBetter ? bestDifference:altDifference);
+            PoseEstimator.getInstance().getField().getObject("best").setPose(bestTransformPosition.toPose2d());
+            PoseEstimator.getInstance().getField().getObject("alt").setPose(altTransformPosition.toPose2d());
             lowestDeltaPose = new EstimatedRobotPose(goodPose, result.getTimestampSeconds(), result.getTargets());
         }
         return Optional.ofNullable(lowestDeltaPose);

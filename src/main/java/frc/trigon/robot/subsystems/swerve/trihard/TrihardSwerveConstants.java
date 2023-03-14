@@ -39,7 +39,7 @@ public class TrihardSwerveConstants {
     static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
             TRANSLATION_PID_CONSTANTS = new PIDConstants(3, 0, 0),
-            ROTATION_PID_CONSTANTS = new PIDConstants(4, 0, 0);
+            ROTATION_PID_CONSTANTS = new PIDConstants(3, 0.0008, 0.5);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
@@ -47,14 +47,14 @@ public class TrihardSwerveConstants {
             1200
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            ROTATION_PID_CONSTANTS.kP,
+            3,
             ROTATION_PID_CONSTANTS.kI,
             ROTATION_PID_CONSTANTS.kD,
             ROTATION_CONSTRAINTS
     );
     static final double
-            TRANSLATION_TOLERANCE = 0.01,
-            ROTATION_TOLERANCE = 1,
+            TRANSLATION_TOLERANCE = 0.03,
+            ROTATION_TOLERANCE = 2,
             TRANSLATION_VELOCITY_TOLERANCE = 0.05,
             ROTATION_VELOCITY_TOLERANCE = 0.05;
 
@@ -71,5 +71,7 @@ public class TrihardSwerveConstants {
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_2_Gyro, 1000);
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_4_Mag, 1000);
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_6_Accel, 1000);
+
+        GYRO.configMountPose(90.0146, -0.95211,-0.796127);
     }
 }

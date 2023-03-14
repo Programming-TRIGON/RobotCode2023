@@ -4,7 +4,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
 public abstract class SwerveModule implements Loggable {
@@ -36,7 +35,7 @@ public abstract class SwerveModule implements Loggable {
      *
      * @param targetState the target state
      */
-    protected void setTargetState(SwerveModuleState targetState) {
+    public void setTargetState(SwerveModuleState targetState) {
         this.targetState = targetState = optimizeState(targetState);
         setTargetAngle(targetState.angle);
         setTargetVelocity(targetState.speedMetersPerSecond);

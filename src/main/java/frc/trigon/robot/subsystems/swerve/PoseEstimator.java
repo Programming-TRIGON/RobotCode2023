@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -40,7 +41,7 @@ public class PoseEstimator extends LoggableSubsystemBase {
                 swerve.getKinematics(),
                 swerve.getHeading(),
                 swerve.getModulePositions(),
-                new Pose2d(0, 0, swerve.getHeading()),
+                new Pose2d(0, 0, getSwerveAllianceHeading()),
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
@@ -97,6 +98,13 @@ public class PoseEstimator extends LoggableSubsystemBase {
     private void updateFieldWidget() {
         putAprilTagsOnFieldWidget();
         lastAlliance = DriverStation.getAlliance();
+    }
+
+    private Rotation2d getSwerveAllianceHeading() {
+        if (AllianceUtilities.isBlueAlliance())
+            return swerve.getHeading();
+
+        return swerve.getHeading().plus(Rotation2d.fromRotations(0.5));
     }
 
     private boolean didAllianceChange() {

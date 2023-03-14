@@ -1,6 +1,7 @@
 package frc.trigon.robot.subsystems.gripper;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
@@ -10,7 +11,8 @@ public class GripperConstants {
 
     private static final double
             HOLD_TRIGGER_DURATION = 0.05,
-            HOLD_TRIGGER_CURRENT = 40;
+            HOLD_TRIGGER_CURRENT = 40,
+            CURRENT_LIMIT = 43;
 
     static final WPI_TalonFX MOTOR = new WPI_TalonFX(MOTOR_ID);
 
@@ -25,6 +27,9 @@ public class GripperConstants {
 
         MOTOR.setInverted(INVERTED);
         MOTOR.setNeutralMode(NeutralMode.Brake);
+        MOTOR.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(
+                true, CURRENT_LIMIT, CURRENT_LIMIT, 0.001
+        ));
     }
 
     enum GripperState {

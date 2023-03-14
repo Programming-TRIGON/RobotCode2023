@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveModule;
 
@@ -78,10 +79,12 @@ public class TrihardSwerve extends Swerve {
     @Override
     protected void lockSwerve() {
         setBrake(true);
-        swerveModules[TrihardSwerveModuleConstants.FRONT_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
-        swerveModules[TrihardSwerveModuleConstants.FRONT_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
-        swerveModules[TrihardSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
-        swerveModules[TrihardSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
+        final SwerveModuleState right = new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+        left = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
+        swerveModules[TrihardSwerveModuleConstants.FRONT_LEFT_ID].setTargetState(right);
+        swerveModules[TrihardSwerveModuleConstants.FRONT_RIGHT_ID].setTargetState(left);
+        swerveModules[TrihardSwerveModuleConstants.REAR_LEFT_ID].setTargetState(left);
+        swerveModules[TrihardSwerveModuleConstants.REAR_RIGHT_ID].setTargetState(right);
     }
 
     @Override

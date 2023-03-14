@@ -30,8 +30,10 @@ public abstract class RobotPoseSource {
         final Pose3d cameraPose = getCameraPose();
         if (cameraPose == null)
             return lastRobotPose;
-
-        lastRobotPose = cameraPose.plus(cameraToRobotCenter).toPose2d();
+        lastRobotPose = new Pose3d(
+                cameraPose.getTranslation().plus(cameraToRobotCenter.getTranslation()),
+                cameraPose.getRotation().plus(cameraToRobotCenter.getRotation())
+        ).toPose2d();
         return lastRobotPose;
     }
 
