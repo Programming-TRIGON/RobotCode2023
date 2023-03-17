@@ -1,6 +1,8 @@
 package frc.trigon.robot;
 
 import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -38,6 +40,7 @@ import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
@@ -73,10 +76,10 @@ public class RobotContainer implements Loggable {
     public static final LedStrip leds = new LedStrip(63, false);
     private final CommandBase
             fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-            () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-            () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-            () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
-    ),
+                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
+                    () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
+            ),
             collectFromFeederWithManualDriveCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
                     () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
@@ -110,6 +113,9 @@ public class RobotContainer implements Loggable {
             staticPurpleColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kPurple),
             resetPoseToLimelightPoseCommand = new InstantCommand(
                     () -> poseEstimator.resetPose(CameraConstants.FORWARD_LIMELIGHT.getRobotPose())
+            ).ignoringDisable(true),
+            preloadCurrentAutoCommand = new InstantCommand(
+                    this::preloadCurrentAuto
             ).ignoringDisable(true);
 
     public RobotContainer() {
@@ -164,6 +170,7 @@ public class RobotContainer implements Loggable {
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
         OperatorConstants.LED_FLAMES_TRIGGER.onTrue(flamesLEDCommand);
         OperatorConstants.RESET_POSE_TO_LIMELIGHT_TRIGGER.onTrue(resetPoseToLimelightPoseCommand);
+        OperatorConstants.PRELOAD_CURRENT_AUTO_TRIGGER.onTrue(preloadCurrentAutoCommand);
 
         driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2)));
         driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2)));
@@ -355,6 +362,11 @@ public class RobotContainer implements Loggable {
                 alignment.getY() + ((collectionCamera.getGamePiecePosition() / 100d * 1.25) * (DriverStation.getAlliance() == DriverStation.Alliance.Red ? -1 : 1)),
                 alignment.getRotation()
         );
+    }
+
+    private void preloadCurrentAuto() {
+        final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(autonomousPathNameChooser.getSelected(), AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
+        AutonomousConstants.PRELOADED_PATHS.put(autonomousPathNameChooser.getSelected(), pathGroup);
     }
 
     private CommandBase getPlaceCommand(boolean isCone, int level) {

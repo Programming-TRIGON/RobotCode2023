@@ -40,7 +40,13 @@ public class Commands {
      * @return the command
      */
     public static SequentialCommandGroup getAutonomousCommand(String pathName) {
-        final List<PathPlannerTrajectory> autonomousPathGroup = PathPlanner.loadPathGroup(pathName, AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
+        final List<PathPlannerTrajectory> autonomousPathGroup;
+        if (AutonomousConstants.PRELOADED_PATHS.containsKey(pathName)) {
+            autonomousPathGroup = AutonomousConstants.PRELOADED_PATHS.get(pathName);
+        } else {
+            autonomousPathGroup = PathPlanner.loadPathGroup(pathName, AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
+            AutonomousConstants.PRELOADED_PATHS.put(pathName, autonomousPathGroup);
+        }
 
         return SwerveCommands.getFollowPathGroupCommand(autonomousPathGroup, AutonomousConstants.EVENT_MAP);
     }

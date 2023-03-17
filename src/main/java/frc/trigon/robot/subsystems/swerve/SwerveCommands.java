@@ -369,7 +369,7 @@ public class SwerveCommands {
                     hasFinished.set(false);
                 },
                 () -> {
-                    double speed = 0;
+                    double speed;
                     double pitch = SWERVE.getPitch() * Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos()), sign = Math.signum(pitch);
                     hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
                     if(hasClimbed.get()) {
@@ -388,7 +388,7 @@ public class SwerveCommands {
                     SmartDashboard.putBoolean("balhc", hasClimbed.get());
                 },
                 (interrupted) -> stopDrive(),
-                ()->false,
+                () -> false,
                 SWERVE
         );
     }

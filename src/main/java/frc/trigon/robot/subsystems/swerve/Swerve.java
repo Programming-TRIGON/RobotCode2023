@@ -11,10 +11,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 public abstract class Swerve extends LoggableSubsystemBase {
@@ -22,7 +20,6 @@ public abstract class Swerve extends LoggableSubsystemBase {
      * @return the swerve's gyro
      */
     protected abstract Pigeon2 getGyro();
-
 
     /**
      * @return the pitch of the swerve
