@@ -60,6 +60,11 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected abstract PIDConstants getRotationPIDConstants();
 
     /**
+     * @return the swerve's rotation PID constants for auto
+     */
+    protected abstract PIDConstants getAutoRotationPIDConstants();
+
+    /**
      * @return the swerve's max speed in meters per second
      */
     protected abstract double getMaxSpeedMetersPerSecond();
@@ -77,7 +82,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the swerve's profiled pid controller for rotation
      */
-    protected abstract ProfiledPIDController getRotationController();
+    public abstract ProfiledPIDController getRotationController();
 
     /**
      * Locks the swerve, so it'll be hard to move it.
@@ -124,6 +129,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the acceleration of the gyro in the y-axis
      */
+    @Log(name="yAccel")
     public short getGyroYAcceleration() {
         return getGyroAccelerometer()[1];
     }
@@ -146,6 +152,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the robot's current velocity
      */
+    @Log(methodName = "toString")
     public ChassisSpeeds getCurrentVelocity() {
         final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
 

@@ -79,12 +79,12 @@ public class ArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 720,
-            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 420;
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 1600,
+            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 720;
 
     private static final double
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 460,
-            SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 180;
+            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 1600,
+            SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 240;
 
     static final TrapezoidProfile.Constraints
             FIRST_JOINT_CONSTRAINTS = new TrapezoidProfile.Constraints(
@@ -214,6 +214,7 @@ public class ArmConstants {
                                 0,
                                 0
                         ),
+
                         () -> {}
                 ).ignoringDisable(true)
         );
@@ -230,7 +231,7 @@ public class ArmConstants {
         CUBE_HYBRID(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
         CONE_MIDDLE_1(-30, 102),
         CONE_MIDDLE_2(-49, 102),
-        CONE_HIGH(24, -19);
+        CONE_HIGH(22, -19);
 
         public final double firstMotorPosition, secondMotorPosition;
 

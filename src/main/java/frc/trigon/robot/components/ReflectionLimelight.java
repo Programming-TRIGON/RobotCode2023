@@ -5,8 +5,10 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 
-public class ReflectionLimelight implements Sendable {
+public class ReflectionLimelight implements Sendable, Loggable {
     private final NetworkTableEntry tv, tx, ty, ts, ta, ledMode, driverCam, pipeline, snapshot;
 
     /**
@@ -31,6 +33,7 @@ public class ReflectionLimelight implements Sendable {
     /**
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
+    @Log
     public double getTy() {
         return ty.getDouble(0);
     }
@@ -38,6 +41,7 @@ public class ReflectionLimelight implements Sendable {
     /**
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
+    @Log
     public double getTx() {
         return tx.getDouble(0);
     }
@@ -59,6 +63,7 @@ public class ReflectionLimelight implements Sendable {
     /**
      * @return true if the limelight has any valid targets, false otherwise
      */
+    @Log
     public boolean hasTarget() {
         return tv.getDouble(0) == 1;
     }

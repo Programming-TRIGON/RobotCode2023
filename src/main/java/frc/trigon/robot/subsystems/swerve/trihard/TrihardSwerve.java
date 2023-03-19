@@ -57,6 +57,11 @@ public class TrihardSwerve extends Swerve {
     }
 
     @Override
+    protected PIDConstants getAutoRotationPIDConstants() {
+        return TrihardSwerveConstants.AUTO_ROTATION_PID_CONSTANTS;
+    }
+
+    @Override
     protected double getMaxSpeedMetersPerSecond() {
         return TrihardSwerveConstants.MAX_SPEED_METERS_PER_SECOND;
     }
@@ -72,7 +77,7 @@ public class TrihardSwerve extends Swerve {
     }
 
     @Override
-    protected ProfiledPIDController getRotationController() {
+    public ProfiledPIDController getRotationController() {
         return TrihardSwerveConstants.ROTATION_CONTROLLER;
     }
 

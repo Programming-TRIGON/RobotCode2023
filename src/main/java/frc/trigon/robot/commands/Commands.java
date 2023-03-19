@@ -112,7 +112,7 @@ public class Commands {
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0)).withTimeout(0.1).alongWith(
-                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 3, 3
+                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 1, 1
                                 )
                                 .until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.12, () -> 0, () -> 0)).withTimeout(0.3),

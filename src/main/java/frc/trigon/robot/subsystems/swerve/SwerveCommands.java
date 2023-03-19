@@ -87,7 +87,7 @@ public class SwerveCommands {
                 POSE_ESTIMATOR::resetPose,
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
-                SWERVE.getRotationPIDConstants(),
+                SWERVE.getAutoRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
                 eventMap,
                 true,
@@ -136,7 +136,6 @@ public class SwerveCommands {
 
     /**
      * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in closed loop mode.
-     * All velocities are in percent output from -1 to 1.
      *
      * @param x     the target forwards velocity
      * @param y     the target leftwards velocity
@@ -185,6 +184,28 @@ public class SwerveCommands {
      * @return the command
      */
     public static FunctionalCommand getFieldRelativeOpenLoopSupplierDriveCommand(
+            DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
+        return new FunctionalCommand(
+                () -> {
+                    initializeDrive(false);
+                    SWERVE.getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
+                },
+                () -> fieldRelativeDrive(x.getAsDouble(), y.getAsDouble(), angle.get()),
+                (interrupted) -> stopDrive(),
+                () -> false,
+                SWERVE
+        );
+    }
+    /**
+     * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in closed loop mode.
+     * The angle should be the target angle of the robot, not the target angular velocity.
+     *
+     * @param x     the target forwards velocity
+     * @param y     the target leftwards velocity
+     * @param angle the target angle of the robot
+     * @return the command
+     */
+    public static FunctionalCommand getFieldRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
         return new FunctionalCommand(
                 () -> {
@@ -265,7 +286,7 @@ public class SwerveCommands {
     }
 
     private static boolean atAngle(Rotation2d targetAngle) {
-        return Math.abs(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees() - targetAngle.getDegrees()) < SWERVE.getRotationTolerance();
+        return Math.abs(POSE_ESTIMATOR.getCurrentPose().getRotation().minus(targetAngle).getDegrees()) < SWERVE.getRotationTolerance();
     }
 
     private static Pose2d getHolonomicPose(PathPlannerTrajectory.PathPlannerState state) {

@@ -56,6 +56,11 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
+    protected PIDConstants getAutoRotationPIDConstants() {
+        return TestingSwerveConstants.AUTO_ROTATION_PID_CONSTANTS;
+    }
+
+    @Override
     protected double getMaxSpeedMetersPerSecond() {
         return TestingSwerveConstants.MAX_SPEED_METERS_PER_SECOND;
     }
@@ -71,7 +76,7 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
-    protected ProfiledPIDController getRotationController() {
+    public ProfiledPIDController getRotationController() {
         return TestingSwerveConstants.ROTATION_CONTROLLER;
     }
 

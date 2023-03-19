@@ -37,6 +37,7 @@ public class GripperConstants {
         COLLECT(-0.9),
         SLOW_COLLECT(-0.3),
         EJECT(0.43),
+        FULL_EJECT(1),
         SLOW_EJECT(0.12),
         HOLD(-0.1);
 

@@ -91,6 +91,14 @@ public class Gripper extends LoggableSubsystemBase {
         );
     }
 
+    public CommandBase getFullEjectCommand(){
+        return new ProxyCommand(new StartEndCommand(
+                () -> setState(GripperConstants.GripperState.FULL_EJECT),
+                () -> setState(GripperConstants.GripperState.STOP),
+                this
+        ));
+    }
+
     private void setPowerDistributionPortRequirements() {
             GripperConstants.HOLD_TRIGGER_CONFIG.setup(
                     () -> {

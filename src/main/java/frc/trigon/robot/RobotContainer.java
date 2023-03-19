@@ -18,7 +18,9 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.trigon.robot.commands.AlignToReflectorCommand;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.CollectionCamera;
 import frc.trigon.robot.components.ReflectionLimelight;
@@ -179,8 +181,8 @@ public class RobotContainer implements Loggable {
             else
                 selfRelativeDriveFromSticksCommand.schedule();
         }));
-        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2, 1.6)));
-        driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2, 2)));
+        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2, 0.7)));
+        driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2, 0.7)));
         driverController.a().whileTrue(
                 GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5, 0.5)).alongWith(
                         collectFromFeederWithManualDriveCommand));
@@ -198,7 +200,7 @@ public class RobotContainer implements Loggable {
 
     private void bindDefaultCommands() {
         SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
+        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED, true, 1.4, 1.4).ignoringDisable(false));
         leds.setDefaultCommand(flamesLEDCommand);
     }
 
@@ -240,6 +242,9 @@ public class RobotContainer implements Loggable {
         OperatorConstants.CONE_LOW_TRIGGER.whileTrue(Commands.getPlaceConeAtHybridCommand());
         OperatorConstants.CONE_MIDDLE_TRIGGER.whileTrue(Commands.getPlaceConeAtMidCommand());
         OperatorConstants.CONE_HIGH_TRIGGER.whileTrue(Commands.getPlaceConeAtHighCommand());
+
+        keyboardController.a().whileTrue(new AlignToReflectorCommand());
+        keyboardController.backtick().whileTrue(GRIPPER.getFullEjectCommand());
     }
 
     private void configureAutonomousChooser() {
@@ -362,6 +367,12 @@ public class RobotContainer implements Loggable {
     private void setupArmBrakeModeWithUserButtonCommands() {
         userButton.onTrue(new InstantCommand(() -> ARM.setNeutralMode(false)).ignoringDisable(true));
         userButton.onFalse(new InstantCommand(ARM::setNeutralMode).ignoringDisable(true));
+        userButton.whileTrue(
+                new StartEndCommand(
+                        () -> ARM.setNeutralMode(false),
+                        () -> ARM.setNeutralMode(true)
+                ).deadlineWith(Commands.fakeStaticColor(Color.kLightPink)).ignoringDisable(true)
+        );
     }
 
     private void configDriverCam() {
