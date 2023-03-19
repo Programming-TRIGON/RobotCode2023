@@ -11,8 +11,9 @@ import frc.trigon.robot.components.ReflectionLimelight;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 
 public class AlignToReflectorCommand extends SequentialCommandGroup {
+    private final ReflectionLimelight reflectionLimelight = RobotContainer.REFLECTION_LIMELIGHT;
+
     public AlignToReflectorCommand() {
-        final ReflectionLimelight reflectionLimelight = RobotContainer.REFLECTION_LIMELIGHT;
         final PIDController translationPIDController = pidConstantsToController(RobotContainer.SWERVE.getTranslationPIDConstants());
 
         final CommandBase turnToDriverStationCommand = SwerveCommands.turnToAngleCommand(Rotation2d.fromDegrees(0.5));
@@ -24,14 +25,22 @@ public class AlignToReflectorCommand extends SequentialCommandGroup {
                 () -> translationPIDController.calculate(reflectionLimelight.getTx()),
                 () -> 0,
                 () -> 0
-        ).until(() -> reflectionLimelight.hasTarget() && Math.abs(reflectionLimelight.getTx()) < 0.5);
+        ).until(this::isRobotAlignedToLimelight);
         final CommandBase alignYInFrontOfReflectorCommand = SwerveCommands.getFieldRelativeClosedLoopSupplierDriveCommand(
                 () -> 0,
                 () -> 1,
                 () -> 0
-        ).until(() -> Math.abs(RobotContainer.SWERVE.getGyroXAcceleration()) <= 0.1);
+        ).until(this::isRobotStopping);
 
         addCommands(turnToDriverStationCommand,initializePIDControllerCommand, alignXInFrontOfReflectorCommand, alignYInFrontOfReflectorCommand);
+    }
+
+    private boolean isRobotAlignedToLimelight() {
+        return reflectionLimelight.hasTarget() && Math.abs(RobotContainer.REFLECTION_LIMELIGHT.getTx()) < 0.5;
+    }
+
+    private boolean isRobotStopping() {
+        return RobotContainer.SWERVE.getGyroXAcceleration() <= -5;
     }
 
     private PIDController pidConstantsToController(PIDConstants pidConstants) {
