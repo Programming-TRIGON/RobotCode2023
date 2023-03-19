@@ -29,6 +29,20 @@ public class SwerveCommands {
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     /**
+     * Creates a command that will turn the robot to the given angle.
+     *
+     * @param targetAngle the angle to turn to
+     * @return the command
+     */
+    public static ParallelRaceGroup turnToAngleCommand(Rotation2d targetAngle) {
+        return getFieldRelativeOpenLoopSupplierDriveCommand(
+                () -> 0,
+                () -> 0,
+                () -> targetAngle
+        ).until(() -> SWERVE.getRotationController().atSetpoint());
+    }
+
+    /**
      * Creates a command that locks the swerve and brakes it.
      * This should be used when you want to make it hard to move the swerve.
      *

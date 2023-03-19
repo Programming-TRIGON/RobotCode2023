@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.CollectionCamera;
+import frc.trigon.robot.components.ReflectionLimelight;
 import frc.trigon.robot.components.XboxController;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
@@ -46,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
 
 public class RobotContainer implements Loggable {
+    public static final ReflectionLimelight REFLECTION_LIMELIGHT = new ReflectionLimelight("limelight");
     // Subsystems TODO: make them not singletons
 
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
