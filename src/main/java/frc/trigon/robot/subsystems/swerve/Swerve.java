@@ -52,7 +52,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the swerve's translation PID constants
      */
-    protected abstract PIDConstants getTranslationPIDConstants();
+    public abstract PIDConstants getTranslationPIDConstants();
 
     /**
      * @return the swerve's rotation PID constants
@@ -113,6 +113,27 @@ public abstract class Swerve extends LoggableSubsystemBase {
      * @return a slew rate limiter for the y-axis
      */
     protected abstract SlewRateLimiter getYSlewRateLimiter();
+
+    /**
+     * @return the acceleration of the gyro in the z-axis
+     */
+    public short getGyroZAcceleration() {
+        return getGyroAccelerometer()[2];
+    }
+
+    /**
+     * @return the acceleration of the gyro in the y-axis
+     */
+    public short getGyroYAcceleration() {
+        return getGyroAccelerometer()[1];
+    }
+
+    /**
+     * @return the acceleration of the gyro in the x-axis
+     */
+    public short getGyroXAcceleration() {
+        return getGyroAccelerometer()[0];
+    }
 
     /**
      * @return the heading of the robot
@@ -225,6 +246,13 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
         for (int i = 0; i < getModules().length; i++)
             getModules()[i].setTargetState(swerveModuleStates[i]);
+    }
+
+    private short[] getGyroAccelerometer() {
+        final short[] accelerometer = new short[3];
+        getGyro().getBiasedAccelerometer(accelerometer);
+
+        return accelerometer;
     }
 
     @Log(name = "rotationController/error")

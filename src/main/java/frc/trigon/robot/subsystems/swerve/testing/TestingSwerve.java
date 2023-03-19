@@ -46,7 +46,7 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
-    protected PIDConstants getTranslationPIDConstants() {
+    public PIDConstants getTranslationPIDConstants() {
         return TestingSwerveConstants.TRANSLATION_PID_CONSTANTS;
     }
 

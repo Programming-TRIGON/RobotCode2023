@@ -4,6 +4,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -30,75 +30,23 @@ public class SwerveCommands {
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     /**
-     * Creates a command that drives the robot on the x-axis util the given target is reached.
+     * Creates a command that will turn the robot to the given angle, and end when the robot is at the angle.
      *
-     * @param current   the current position supplier
-     * @param target    the target setpoint position
-     * @param hasTarget if the target is valid
+     * @param angle the angle to turn to
      * @return the command
      */
-    public static FunctionalCommand driveToTargetSetpointOnXCommand(DoubleSupplier current, double target, BooleanSupplier hasTarget) {
-        final PIDController xPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants());
+    public static FunctionalCommand turnToAngleCommand(Rotation2d angle) {
+        final ProfiledPIDController rotationController = SWERVE.getRotationController();
+
         return new FunctionalCommand(
                 () -> {
-                    initializeDrive(false);
-                    xPIDController.setSetpoint(target);
+                    initializeDrive(true);
+                    rotationController.reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
                 },
-                () -> {
-                    if (!hasTarget.getAsBoolean()) {
-                        selfRelativeDrive(1, 0, 0);
-                        return;
-                    }
-
-                    selfRelativeDrive(xPIDController.calculate(current.getAsDouble()), 0, 0);
-                },
-                (interrupted) -> SWERVE.stop(),
-                xPIDController::atSetpoint,
-                SWERVE
+                () -> fieldRelativeDrive(0, 0, angle),
+                (interrupted) -> stopDrive(),
+                () -> atAngle(angle)
         );
-    }
-
-    /**
-     * Creates a command that drives the robot on the y-axis util the given target is reached.
-     *
-     * @param current   the current position supplier
-     * @param target    the target setpoint position
-     * @param hasTarget if the target is valid
-     * @return the command
-     */
-    public static FunctionalCommand driveToTargetSetpointOnYCommand(DoubleSupplier current, double target, BooleanSupplier hasTarget) {
-        final PIDController yPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants());
-        return new FunctionalCommand(
-                () -> {
-                    initializeDrive(false);
-                    yPIDController.setSetpoint(target);
-                },
-                () -> {
-                    if (!hasTarget.getAsBoolean()) {
-                        selfRelativeDrive(0, 1, 0);
-                        return;
-                    }
-
-                    selfRelativeDrive(0, yPIDController.calculate(current.getAsDouble()), 0);
-                },
-                (interrupted) -> SWERVE.stop(),
-                yPIDController::atSetpoint,
-                SWERVE
-        );
-    }
-
-    /**
-     * Creates a command that will turn the robot to the given angle.
-     *
-     * @param targetAngle the angle to turn to
-     * @return the command
-     */
-    public static ParallelRaceGroup turnToAngleCommand(Rotation2d targetAngle) {
-        return getFieldRelativeOpenLoopSupplierDriveCommand(
-                () -> 0,
-                () -> 0,
-                () -> targetAngle
-        ).until(() -> SWERVE.getRotationController().atSetpoint());
     }
 
     /**
@@ -314,6 +262,10 @@ public class SwerveCommands {
                 () -> false,
                 SWERVE
         );
+    }
+
+    private static boolean atAngle(Rotation2d targetAngle) {
+        return Math.abs(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees() - targetAngle.getDegrees()) < SWERVE.getRotationTolerance();
     }
 
     private static Pose2d getHolonomicPose(PathPlannerTrajectory.PathPlannerState state) {
