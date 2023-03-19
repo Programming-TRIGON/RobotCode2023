@@ -154,16 +154,17 @@ public class ArmConstants {
         //        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
         SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
 
-        if(SECOND_JOINT_ENCODER.hasResetOccurred()) {
-            double rawSecondPos = SECOND_JOINT_ENCODER.getSelectedSensorPosition(0) - SECOND_JOINT_ENCODER_OFFSET;
-            if(rawSecondPos > Conversions.degreesToMagTicks(160))
-                rawSecondPos -= Conversions.MAG_TICKS;
-            SECOND_JOINT_ENCODER.setSelectedSensorPosition(
-                    rawSecondPos,
-                    0,
-                    0
-            );
-        }
+//        if(SECOND_JOINT_ENCODER.hasResetOccurred()) {
+//            double rawSecondPos = SECOND_JOINT_ENCODER.getSelectedSensorPosition(0) - SECOND_JOINT_ENCODER_OFFSET;
+//            if(rawSecondPos > Conversions.degreesToMagTicks(160))
+//                rawSecondPos -= Conversions.MAG_TICKS;
+//            SECOND_JOINT_ENCODER.setSelectedSensorPosition(
+//                    rawSecondPos,
+//                    0,
+//                    0
+//            );
+//        }
+        SECOND_JOINT_ENCODER.setSelectedSensorPosition(Conversions.degreesToMagTicks(SECOND_JOINT_CLOSED-6));
 
         SECOND_JOINT_ENCODER.configClosedloopRamp(1);
         SECOND_JOINT_ENCODER.configOpenloopRamp(1);

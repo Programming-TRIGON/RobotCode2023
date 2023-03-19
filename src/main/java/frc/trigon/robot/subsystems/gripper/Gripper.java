@@ -1,11 +1,8 @@
 package frc.trigon.robot.subsystems.gripper;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class Gripper extends LoggableSubsystemBase {
@@ -20,63 +17,68 @@ public class Gripper extends LoggableSubsystemBase {
 
     private Gripper() {
         setPowerDistributionPortRequirements();
+        setDefaultCommand(
+                new StartEndCommand(
+                        () -> setState(GripperConstants.GripperState.HOLD),
+                        () -> setState(GripperConstants.GripperState.STOP),
+                        this
+                )
+        );
     }
 
     /**
      * @return a command that makes the gripper collect, and stops the gripper at the end of it
      */
-    public StartEndCommand getCollectCommand() {
-        return new StartEndCommand(
+    public CommandBase getCollectCommand() {
+        return new ProxyCommand(new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.COLLECT),
                 () -> setState(GripperConstants.GripperState.STOP),
                 this
-        );
+        ));
     }
 
     /**
      * @return a command that makes the gripper collect slowly, and stops the gripper at the end of it
      */
-    public StartEndCommand getSlowCollectCommand() {
-        return new StartEndCommand(
+    public CommandBase getSlowCollectCommand() {
+        return new ProxyCommand(new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.SLOW_COLLECT),
                 () -> setState(GripperConstants.GripperState.STOP),
                 this
-        );
+        ));
     }
-
-
 
     /**
      * @return a command that makes the gripper eject, and stops the gripper at the end of it
      */
-    public StartEndCommand getEjectCommand() {
-        return new StartEndCommand(
+    public CommandBase getEjectCommand() {
+        return new ProxyCommand(new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.EJECT),
                 () -> setState(GripperConstants.GripperState.STOP),
                 this
-        );
+        ));
     }
 
     /**
      * @return a command that makes the gripper eject slowly, and stops the gripper at the end of it
      */
-    public StartEndCommand getSlowEjectCommand() {
-        return new StartEndCommand(
+    public CommandBase getSlowEjectCommand() {
+        return new ProxyCommand(new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.SLOW_EJECT),
                 () -> setState(GripperConstants.GripperState.STOP),
                 this
-        );
+        ));
     }
 
     /**
      * @return a command that makes the gripper hold, and stops the gripper at the end of it
      */
-    public StartEndCommand getHoldCommand() {
-        return new StartEndCommand(
+    public CommandBase getHoldCommand() {
+        return new ProxyCommand(new StartEndCommand(
                 () -> setState(GripperConstants.GripperState.HOLD),
                 () -> setState(GripperConstants.GripperState.STOP),
                 this
-        );
+        ));
     }
 
     /**

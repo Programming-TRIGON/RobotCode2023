@@ -8,15 +8,19 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
+import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.utilities.AllianceUtilities;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -362,27 +366,44 @@ public class SwerveCommands {
 
     public static CommandBase getBalanceCommand() {
         AtomicBoolean hasClimbed = new AtomicBoolean(false), hasFinished = new AtomicBoolean(false);
-
+        AtomicReference<Double> finishTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> direction = new AtomicReference<>((double) 0);
+        final Command
+                firstStageLedCommand = Commands.fakeStaticColor(Color.kFirstBlue),
+                secondStageLedCommand = Commands.fakeStaticColor(Color.kDeepPink),
+                thirdStageLedCommand = Commands.fakeStaticColor(Color.kWhite),
+                fourthStageLedCommand = Commands.fakeStaticColor(Color.kDarkGreen);
         return new FunctionalCommand(
                 () -> {
                     hasClimbed.set(false);
                     hasFinished.set(false);
+                    direction.set(Math.signum(PoseEstimator.getInstance().getCurrentPose().getX() - 3.777));
+                    firstStageLedCommand.schedule();
                 },
                 () -> {
-                    double speed;
+                    double speed = 0;
                     double pitch = SWERVE.getPitch() * Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos()), sign = Math.signum(pitch);
-                    hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
-                    if(hasClimbed.get()) {
-                        speed = pitch * pitch * sign * 0.003;
-                    } else {
-                        speed = Math.signum(PoseEstimator.getInstance().getCurrentPose().getX() - 3.777) * -1;
-                    }
+                    if(!hasFinished.get()) {
+                        hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
+                        if(hasClimbed.get()) {
+                            speed = pitch * pitch * sign * 0.005;
+                            secondStageLedCommand.schedule();
+                        } else {
+                            speed = direction.get() * -1;
+                        }
 
-                    if(hasFinished.get() || (hasClimbed.get() & Math.abs(pitch) < 5)) {
-                        SWERVE.lockSwerve();
-                        hasFinished.set(true);
+                        hasFinished.set(hasClimbed.get() & Math.abs(pitch) < 5);
+                        finishTime.set(Timer.getFPGATimestamp());
                     }
-                    else
+                    if(hasFinished.get()) {
+                        if(Math.abs(pitch) > 3) {
+                            speed = direction.get() * 1;
+                            thirdStageLedCommand.schedule();
+                        } else {
+                            SWERVE.lockSwerve();
+                            fourthStageLedCommand.schedule();
+                        }
+                    } else
                         SWERVE.fieldRelativeDrive(new Translation2d(speed, 0), Rotation2d.fromDegrees(0));
                     SmartDashboard.putNumber("balsp", speed);
                     SmartDashboard.putBoolean("balhc", hasClimbed.get());
