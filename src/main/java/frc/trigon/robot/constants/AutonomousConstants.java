@@ -36,13 +36,13 @@ public class AutonomousConstants {
                 "place-cone-3", Commands.getPlaceConeAtHighForAutoCommand()
         );
         EVENT_MAP.put(
-                "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING, false, 0))
+                "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING))
         );
         EVENT_MAP.put(
-                "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED, true, 1.5))
+                "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED, true, 1.5, 1.5))
         );
         EVENT_MAP.put(
-                "prepare-collect", RobotContainer.ARM.getGoToPositionCommand(-35, ArmConstants.ArmStates.CLOSED_COLLECTING.secondMotorPosition+20, false, 0.7)
+                "prepare-collect", RobotContainer.ARM.getGoToPositionCommand(-35, ArmConstants.ArmStates.CLOSED_COLLECTING.secondMotorPosition+20, false, 0.7, 0.7)
         );
         EVENT_MAP.put(
                 "place-cube-2", Commands.getPlaceCubeAtMidForAutoCommand()

@@ -133,7 +133,7 @@ public class RobotContainer implements Loggable {
         keyboardController.f8().whileTrue(Commands.getPlaceConeAtMidCommand());
         keyboardController.f9().whileTrue(Commands.getPlaceConeAtHighCommand());
         keyboardController.numpad0().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
-        keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false, 1).ignoringDisable(true)));
+        keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0)).ignoringDisable(true)));
 
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
         SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
@@ -177,10 +177,10 @@ public class RobotContainer implements Loggable {
             else
                 selfRelativeDriveFromSticksCommand.schedule();
         }));
-        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2)));
-        driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2)));
+        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2, 1.6)));
+        driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2, 2)));
         driverController.a().whileTrue(
-                GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5)).alongWith(
+                GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5, 0.5)).alongWith(
                         collectFromFeederWithManualDriveCommand));
 
         OperatorConstants.BALANCE_TRIGGER.whileTrue(SwerveCommands.getBalanceCommand());

@@ -34,7 +34,7 @@ public class Arm extends LoggableSubsystemBase {
     private TrapezoidProfile firstMotorProfile, secondMotorProfile;
     private double firstMotorProfileLastSetTime, secondMotorProfileLastSetTime;
     private String firstArmToMove = "";
-    private double lastSpeedFactor;
+    private double lastFirstMotorSpeedFactor, lastSecondMotorSpeedFactor;
 
     private Arm() {
         setCurrentLimits();
@@ -83,24 +83,24 @@ public class Arm extends LoggableSubsystemBase {
      * @param state the target state
      * @return the command
      */
-    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder, double speedFactor) {
+    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(state, byOrder, speedFactor),
+                () -> setTargetState(state, byOrder, firstMotorSpeedFactor, secondMotorSpeedFactor),
                 () -> {},
                 this
         );
     }
 
     public CommandBase getGoToStateCommand(ArmConstants.ArmStates state) {
-        return getGoToStateCommand(state, true, 1);
+        return getGoToStateCommand(state, true, 1, 1);
     }
 
-    private void setTargetState(ArmStates targetState, boolean byOrder, double speedFactor) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder, speedFactor);
+    private void setTargetState(ArmStates targetState, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder, firstMotorSpeedFactor, secondMotorSpeedFactor);
     }
 
     private void setTargetState(ArmStates targetState) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true, 1);
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true, 1, 1);
     }
 
     /**
@@ -110,16 +110,16 @@ public class Arm extends LoggableSubsystemBase {
      * @param secondJointAngle the angle of the second joint
      * @return the command
      */
-    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double speedFactor) {
+    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, speedFactor),
+                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, firstJointSpeedFactor, secondJointSpeedFactor),
                 () -> {},
                 this
         );
     }
 
     public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle) {
-        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true, 1);
+        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true, 1, 1);
     }
 
     public void setNeutralMode(boolean brake) {
@@ -133,10 +133,11 @@ public class Arm extends LoggableSubsystemBase {
         secondMotor.setNeutralMode(ArmConstants.SECOND_JOINT_NEUTRAL_MODE);
     }
 
-    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder, double speedFactor) {
-        lastSpeedFactor = speedFactor;
-        generateFirstMotorProfile(firstMotorPosition, speedFactor);
-        generateSecondMotorProfile(secondMotorPosition, speedFactor);
+    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
+        lastFirstMotorSpeedFactor = firstJointSpeedFactor;
+        lastSecondMotorSpeedFactor = secondJointSpeedFactor;
+        generateFirstMotorProfile(firstMotorPosition, firstJointSpeedFactor);
+        generateSecondMotorProfile(secondMotorPosition, secondJointSpeedFactor);
         if (byOrder)
             firstArmToMove = getFirstMotorDistanceToGoal() > 0 ? "first" : "second";
         else
@@ -184,7 +185,7 @@ public class Arm extends LoggableSubsystemBase {
         boolean goingToHitTheGround = goingToHitTheGround(targetState);
         boolean waitingForOtherJoint = isNotFirstToMove("first") && (isSecondJointOnlyStarting() && !isSecondJointRetracted());
         if (goingToHitTheGround || waitingForOtherJoint) {
-            generateFirstMotorProfile(getFirstMotorGoal(), lastSpeedFactor);
+            generateFirstMotorProfile(getFirstMotorGoal(), lastFirstMotorSpeedFactor);
             return;
         }
 
@@ -208,7 +209,7 @@ public class Arm extends LoggableSubsystemBase {
 
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
         if (goingToHitTheGround || waitingForOtherJoint) {
-            generateSecondMotorProfile(getSecondMotorGoal(), lastSpeedFactor);
+            generateSecondMotorProfile(getSecondMotorGoal(), lastSecondMotorSpeedFactor);
             secondMotor.stopMotor();
 //            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
         }

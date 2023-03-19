@@ -96,9 +96,9 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
                 getWaitForContinueCommand(),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 parallel(
                         Gripper.getInstance().getSlowEjectCommand(),
                         new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0))
@@ -112,7 +112,7 @@ public class Commands {
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0)).withTimeout(0.1).alongWith(
-                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 3
+                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 3, 3
                                 )
                                 .until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.12, () -> 0, () -> 0)).withTimeout(0.3),
@@ -130,8 +130,8 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 parallel(
                         Gripper.getInstance().getSlowEjectCommand(),
                         SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0)
@@ -144,7 +144,7 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
         ).alongWith(
@@ -155,7 +155,7 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 getWaitForContinueCommand(),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
@@ -168,7 +168,7 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
         );
@@ -178,7 +178,7 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 getWaitForContinueCommand(),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
@@ -188,7 +188,7 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
         );
@@ -199,7 +199,7 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HYBRID, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HYBRID).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
         );
@@ -209,7 +209,7 @@ public class Commands {
         AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID, true, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
         );
@@ -220,8 +220,7 @@ public class Commands {
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1).alongWith(
-                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 3
-                                )
+                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 3, 3)
                                 .until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
                 SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.12, () -> 0, () -> 0).withTimeout(0.3),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.6).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
