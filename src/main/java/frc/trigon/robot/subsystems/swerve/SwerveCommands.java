@@ -21,12 +21,71 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class SwerveCommands {
     private static final Swerve SWERVE = RobotContainer.SWERVE;
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+
+    /**
+     * Creates a command that drives the robot on the x-axis util the given target is reached.
+     *
+     * @param current   the current position supplier
+     * @param target    the target setpoint position
+     * @param hasTarget if the target is valid
+     * @return the command
+     */
+    public static FunctionalCommand driveToTargetSetpointOnXCommand(DoubleSupplier current, double target, BooleanSupplier hasTarget) {
+        final PIDController xPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants());
+        return new FunctionalCommand(
+                () -> {
+                    initializeDrive(false);
+                    xPIDController.setSetpoint(target);
+                },
+                () -> {
+                    if (!hasTarget.getAsBoolean()) {
+                        selfRelativeDrive(1, 0, 0);
+                        return;
+                    }
+
+                    selfRelativeDrive(xPIDController.calculate(current.getAsDouble()), 0, 0);
+                },
+                (interrupted) -> SWERVE.stop(),
+                xPIDController::atSetpoint,
+                SWERVE
+        );
+    }
+
+    /**
+     * Creates a command that drives the robot on the y-axis util the given target is reached.
+     *
+     * @param current   the current position supplier
+     * @param target    the target setpoint position
+     * @param hasTarget if the target is valid
+     * @return the command
+     */
+    public static FunctionalCommand driveToTargetSetpointOnYCommand(DoubleSupplier current, double target, BooleanSupplier hasTarget) {
+        final PIDController yPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants());
+        return new FunctionalCommand(
+                () -> {
+                    initializeDrive(false);
+                    yPIDController.setSetpoint(target);
+                },
+                () -> {
+                    if (!hasTarget.getAsBoolean()) {
+                        selfRelativeDrive(0, 1, 0);
+                        return;
+                    }
+
+                    selfRelativeDrive(0, yPIDController.calculate(current.getAsDouble()), 0);
+                },
+                (interrupted) -> SWERVE.stop(),
+                yPIDController::atSetpoint,
+                SWERVE
+        );
+    }
 
     /**
      * Creates a command that will turn the robot to the given angle.
@@ -160,7 +219,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(true),
-                () -> selfRelativeDriveFromSuppliers(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
+                () -> selfRelativeDrive(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -230,7 +289,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(false),
-                () -> selfRelativeDriveFromSuppliers(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
+                () -> selfRelativeDrive(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -357,7 +416,7 @@ public class SwerveCommands {
         );
     }
 
-    private static void selfRelativeDriveFromSuppliers(double x, double y, double theta) {
+    private static void selfRelativeDrive(double x, double y, double theta) {
         SWERVE.selfRelativeDrive(
                 getDriveTranslation(x, y),
                 getDriveRotation(theta)
