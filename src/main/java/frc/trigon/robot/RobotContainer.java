@@ -186,6 +186,9 @@ public class RobotContainer implements Loggable {
         driverController.a().whileTrue(
                 GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5, 0.5)).alongWith(
                         collectFromFeederWithManualDriveCommand));
+        driverController.leftBumper().and(()->ARM.getCurrentCommand().equals(ARM.getDefaultCommand()) && ARM.atGoal()).whileTrue(
+                new AlignToReflectorCommand()
+        );
 
         OperatorConstants.BALANCE_TRIGGER.whileTrue(SwerveCommands.getBalanceCommand());
         configureTargetPlacingPositionSetters();
