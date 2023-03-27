@@ -181,12 +181,12 @@ public class RobotContainer implements Loggable {
             else
                 selfRelativeDriveFromSticksCommand.schedule();
         }));
-        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2, 0.7)));
+        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2, 1.7)));
         driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2, 0.7)));
         driverController.a().whileTrue(
                 GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5, 0.5)).alongWith(
                         collectFromFeederWithManualDriveCommand));
-        driverController.leftBumper().and(()->ARM.getCurrentCommand().equals(ARM.getDefaultCommand()) && ARM.atGoal()).whileTrue(
+        driverController.leftBumper().and(()->ARM.getDefaultCommand().equals(ARM.getCurrentCommand()) && ARM.atGoal()).whileTrue(
                 new AlignToReflectorCommand()
         );
 
@@ -405,7 +405,13 @@ public class RobotContainer implements Loggable {
 
     private void preloadCurrentAuto() {
         final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(autonomousPathNameChooser.getSelected(), AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
+        var ppjraj  = PathPlannerTrajectory.transformTrajectoryForAlliance(pathGroup.get(0), DriverStation.getAlliance());
+        poseEstimator.resetPose(ppjraj.getInitialHolonomicPose());
         AutonomousConstants.PRELOADED_PATHS.put(autonomousPathNameChooser.getSelected(), pathGroup);
+    }
+
+    private Pose2d getHolonomicPose(PathPlannerTrajectory.PathPlannerState state) {
+        return new Pose2d(state.poseMeters.getTranslation(), state.holonomicRotation);
     }
 
     private CommandBase getPlaceCommand(boolean isCone, int level) {

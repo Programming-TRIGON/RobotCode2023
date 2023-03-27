@@ -45,12 +45,13 @@ public class AlignToReflectorCommand extends SequentialCommandGroup {
                 turnToDriverStationCommand.deadlineWith(Commands.fakeStaticColor(Color.kFirstBlue)),
                 alignYInFrontOfReflectorCommand.deadlineWith(Commands.fakeStaticColor(Color.kRed)),
                 SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(()->-0.05, ()->0, ()->0).withTimeout(0.3),
-                alignXInFrontOfReflectorCommand.deadlineWith(Commands.fakeStaticColor(Color.kDarkGreen)),
+                alignXInFrontOfReflectorCommand.deadlineWith(Commands.fakeStaticColor(Color.kDeepPink)),
                 SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
                         () -> 0.07,
                         () -> 0,
                         () -> 0
-                ).withTimeout(0.3).deadlineWith(Commands.fakeStaticColor(Color.kRed))
+                ).withTimeout(0.3).deadlineWith(Commands.fakeStaticColor(Color.kRed)),
+                new InstantCommand(()->Commands.fakeStaticColor(Color.kDarkGreen)).withTimeout(0.4)
         );
     }
 

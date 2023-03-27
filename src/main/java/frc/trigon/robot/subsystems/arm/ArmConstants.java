@@ -187,28 +187,6 @@ public class ArmConstants {
 
         FIRST_JOINT_FIRST_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
         SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
-
-//        new Trigger(() -> SECOND_JOINT_MOTOR.isFwdLimitSwitchClosed() > 0).whileTrue(
-//                new StartEndCommand(
-//                        () -> SECOND_JOINT_ENCODER.setSelectedSensorPosition(
-//                                Conversions.degreesToMagTicks(SECOND_JOINT_CLOSED),
-//                                0,
-//                                0
-//                        ),
-//                        () -> {}
-//                ).ignoringDisable(true)
-//        );
-//        new Trigger(() -> SECOND_JOINT_MOTOR.isRevLimitSwitchClosed() > 0).whileTrue(
-//                new StartEndCommand(
-//                        () -> SECOND_JOINT_ENCODER.setSelectedSensorPosition(
-//                                Conversions.degreesToMagTicks(ArmStates.CLOSED_COLLECTING.secondMotorPosition),
-//                                0,
-//                                0
-//                        ),
-//
-//                        () -> {}
-//                ).ignoringDisable(true)
-//        );
     }
 
     public enum ArmStates {
@@ -222,7 +200,8 @@ public class ArmConstants {
         CUBE_HYBRID(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
         CONE_MIDDLE_1(-30, 102),
         CONE_MIDDLE_2(-49, 102),
-        CONE_HIGH(22, -19);
+        CONE_HIGH(22, -19),
+        AUTO_CONE_HIGH(24, -19);
 
         public final double firstMotorPosition, secondMotorPosition;
 

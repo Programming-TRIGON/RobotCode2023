@@ -39,6 +39,9 @@ public class AutonomousConstants {
                 "collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING))
         );
         EVENT_MAP.put(
+                "blind-collect", RobotContainer.GRIPPER.getCollectCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED_COLLECTING, false, 1, 1))
+        );
+        EVENT_MAP.put(
                 "close-collect", RobotContainer.GRIPPER.getHoldCommand().alongWith(RobotContainer.ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED, true, 1.5, 1.5))
         );
         EVENT_MAP.put(
@@ -58,6 +61,9 @@ public class AutonomousConstants {
         );
         EVENT_MAP.put(
                 "eject", Gripper.getInstance().getEjectCommand()
+        );
+        EVENT_MAP.put(
+                "quick-eject", Gripper.getInstance().getFullEjectCommand().withTimeout(0.5)
         );
     }
 

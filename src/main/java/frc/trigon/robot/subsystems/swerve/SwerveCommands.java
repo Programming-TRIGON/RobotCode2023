@@ -9,8 +9,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
@@ -20,8 +18,6 @@ import frc.trigon.robot.utilities.AllianceUtilities;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -84,7 +80,7 @@ public class SwerveCommands {
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                POSE_ESTIMATOR::resetPose,
+                (pose) -> {},
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
                 SWERVE.getAutoRotationPIDConstants(),
@@ -411,53 +407,72 @@ public class SwerveCommands {
     }
 
     public static CommandBase getBalanceCommand() {
-        AtomicBoolean hasClimbed = new AtomicBoolean(false), hasFinished = new AtomicBoolean(false);
-        AtomicReference<Double> finishTime = new AtomicReference<>((double) 0);
-        AtomicReference<Double> direction = new AtomicReference<>((double) 0);
-        final Command
-                firstStageLedCommand = Commands.fakeStaticColor(Color.kFirstBlue),
-                secondStageLedCommand = Commands.fakeStaticColor(Color.kDeepPink),
-                thirdStageLedCommand = Commands.fakeStaticColor(Color.kWhite),
-                fourthStageLedCommand = Commands.fakeStaticColor(Color.kDarkGreen);
-        return new FunctionalCommand(
-                () -> {
-                    hasClimbed.set(false);
-                    hasFinished.set(false);
-                    direction.set(Math.signum(PoseEstimator.getInstance().getCurrentPose().getX() - 3.777));
-                    firstStageLedCommand.schedule();
-                },
-                () -> {
-                    double speed = 0;
-                    double pitch = SWERVE.getPitch() * Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos()), sign = Math.signum(pitch);
-                    if(!hasFinished.get()) {
-                        hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
-                        if(hasClimbed.get()) {
-                            speed = pitch * pitch * sign * 0.005;
-                            secondStageLedCommand.schedule();
-                        } else {
-                            speed = direction.get() * -1;
-                        }
+        return new ProxyCommand(() -> {
+            double driveDirection = Math.signum(PoseEstimator.getInstance().getCurrentPose().getX() - 3.777);
+            double pitchSignum = Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos());
+            final double speed1 = 0.2, speed2 = 0.2;
+            return new SequentialCommandGroup(
+                    getFieldRelativeClosedLoopSupplierDriveCommand(
+                            () -> -speed1 * driveDirection, () -> 0, () -> 0
+                    ).until(() -> Math.abs(SWERVE.getPitch()) > 15).deadlineWith(Commands.fakeStaticColor(Color.kFirstBlue)),
+                    getFieldRelativeClosedLoopSupplierDriveCommand(
+                            () -> -speed2 * driveDirection, () -> 0, () -> 0
+                    ).withTimeout(1.5).deadlineWith(Commands.fakeStaticColor(Color.kDeepPink)),
+                    getFieldRelativeClosedLoopSupplierDriveCommand(
+                            () -> SWERVE.getPitch() * pitchSignum * 0.005, () -> 0, () -> 0
+                    ).until(() -> Math.abs(SWERVE.getPitch()) < -1),
+                    getLockSwerveCommand().alongWith(Commands.fakeStaticColor(Color.kWhite))
+            );
+        });
 
-                        hasFinished.set(hasClimbed.get() & Math.abs(pitch) < 5);
-                        finishTime.set(Timer.getFPGATimestamp());
-                    }
-                    if(hasFinished.get()) {
-                        if(Math.abs(pitch) > 3) {
-                            speed = direction.get() * 1;
-                            thirdStageLedCommand.schedule();
-                        } else {
-                            SWERVE.lockSwerve();
-                            fourthStageLedCommand.schedule();
-                        }
-                    } else
-                        SWERVE.fieldRelativeDrive(new Translation2d(speed, 0), Rotation2d.fromDegrees(0));
-                    SmartDashboard.putNumber("balsp", speed);
-                    SmartDashboard.putBoolean("balhc", hasClimbed.get());
-                },
-                (interrupted) -> stopDrive(),
-                () -> false,
-                SWERVE
-        );
+        //        final Command
+        //                firstStageLedCommand = Commands.fakeStaticColor(Color.kFirstBlue),
+        //                secondStageLedCommand = Commands.fakeStaticColor(Color.kDeepPink),
+        //                thirdStageLedCommand = Commands.fakeStaticColor(Color.kWhite),
+        //                fourthStageLedCommand = Commands.fakeStaticColor(Color.kDarkGreen);
+        //        AtomicBoolean hasClimbed = new AtomicBoolean(false), hasFinished = new AtomicBoolean(false);
+        //        AtomicReference<Double> finishTime = new AtomicReference<>((double) 0);
+        //        AtomicReference<Double> direction = new AtomicReference<>((double) 0);
+
+        //        return new FunctionalCommand(
+        //                () -> {
+        //                    hasClimbed.set(false);
+        //                    hasFinished.set(false);
+        //                    direction.set();
+        //                    firstStageLedCommand.schedule();
+        //                },
+        //                () -> {
+        //                    double speed = 0;
+        //                    double pitch = SWERVE.getPitch() * Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos()), sign = Math.signum(pitch);
+        //                    if(!hasFinished.get()) {
+        //                        hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
+        //                        if(hasClimbed.get()) {
+        //                            speed = pitch * pitch * sign * 0.005;
+        //                            secondStageLedCommand.schedule();
+        //                        } else {
+        //                            speed = direction.get() * -1;
+        //                        }
+        //
+        //                        hasFinished.set(hasClimbed.get() & Math.abs(pitch) < 5);
+        //                        finishTime.set(Timer.getFPGATimestamp());
+        //                    }
+        //                    if(hasFinished.get()) {
+        //                        if(Math.abs(pitch) > 3) {
+        //                            speed = direction.get() * 1;
+        //                            thirdStageLedCommand.schedule();
+        //                        } else {
+        //                            SWERVE.lockSwerve();
+        //                            fourthStageLedCommand.schedule();
+        //                        }
+        //                    } else
+        //                        SWERVE.fieldRelativeDrive(new Translation2d(speed, 0), Rotation2d.fromDegrees(0));
+        //                    SmartDashboard.putNumber("balsp", speed);
+        //                    SmartDashboard.putBoolean("balhc", hasClimbed.get());
+        //                },
+        //                (interrupted) -> stopDrive(),
+        //                () -> false,
+        //                SWERVE
+        //        );
     }
 
     private static void stopDrive() {
