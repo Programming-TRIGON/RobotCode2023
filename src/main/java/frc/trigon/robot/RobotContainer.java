@@ -145,6 +145,10 @@ public class RobotContainer implements Loggable {
         configDriverCam();
     }
 
+    public void teleopInit() {
+        SWERVE.getDefaultCommand().schedule();
+    }
+
     /**
      * @return the command to run in autonomous mode
      */
@@ -164,7 +168,7 @@ public class RobotContainer implements Loggable {
     private void bindControllerCommands() {
         OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetHeadingCommand);
         OperatorConstants.TURN_TO_GRID_TRIGGER.whileTrue(fieldRelativeDrivenAngleFromSticksCommand);
-        //        OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
+//        OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
         OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
         OperatorConstants.ALIGN_TO_GRID_TRIGGER.whileTrue(alignToGridCommand);
         OperatorConstants.APPLY_FIRST_ARM_STATE_TRIGGER.whileTrue(applyFirstArmStateCommand);
@@ -381,7 +385,6 @@ public class RobotContainer implements Loggable {
     private void configDriverCam() {
         var cam = CameraServer.startAutomaticCapture(2);
         cam.setResolution(424, 240);
-        System.out.println(cam.setFPS(60));
         cam.setPixelFormat(VideoMode.PixelFormat.kYUYV);
     }
 
@@ -431,9 +434,5 @@ public class RobotContainer implements Loggable {
                 return Commands.getPlaceCubeAtHighForAutoCommand().withName("getPlaceCubeAtHighCommand");
         }
         return new InstantCommand();
-    }
-
-    public void teleopInit() {
-        SWERVE.getDefaultCommand().schedule();
     }
 }
