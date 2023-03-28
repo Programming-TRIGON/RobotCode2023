@@ -62,6 +62,223 @@ public class Commands {
         return new ProxyCommand(() -> getDriveToPoseCommand(driveConstraints, targetPoseSupplier.get()));
     }
 
+    /**
+     * @return a command that places a cone at the middle note, for autonomous mode
+     */
+    public static SequentialCommandGroup getPlaceConeAtMidForAutoCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                parallel(
+                        Gripper.getInstance().getSlowEjectCommand(),
+                        SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0)
+                ).withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * @return a command that places a cone at the high node, for autonomous mode
+     */
+    public static CommandBase getPlaceCubeAtHighForAutoCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        ).alongWith(
+                SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1)
+        );
+    }
+
+    /**
+     * @return a command that places a cube at the high node
+     */
+    public static CommandBase getPlaceCubeAtHighCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                getWaitForContinueCommand(),
+                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        ).alongWith(
+                new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1))
+        );
+    }
+
+    /**
+     * @return a command that places a cube at the high node, for autonomous mode
+     */ 
+    public static CommandBase getPlaceCubeAtHighCommandForAuto() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * @return a command that places a cube at the middle node
+     */
+    public static CommandBase getPlaceCubeAtMidCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE, false, 1.5, 1.5).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                getWaitForContinueCommand(),
+                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * @return a command that places a cube at the middle node, for autonomous mode
+     */
+    public static CommandBase getPlaceCubeAtMidForAutoCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * @return a command that places a cube at the hybrid node
+     */
+    public static CommandBase getPlaceCubeAtHybridCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HYBRID).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * @return a command that places a cone at the hybrid node
+     */
+    public static CommandBase getPlaceConeAtHybridCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * @return a command that places a cone at the high node, for autonomous mode
+     */
+    public static CommandBase getPlaceConeAtHighForAutoCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1).alongWith(
+                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.AUTO_CONE_HIGH, true, 2, 2)
+                                .until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
+                SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.1, () -> 0, () -> 0).withTimeout(0.4),
+                new WaitCommand(0.2),
+                Gripper.getInstance().getEjectCommand().withTimeout(1.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * @return a command that places a cone at the high node
+     */
+    public static CommandBase getPlaceConeAtHighCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0)).withTimeout(0.1).alongWith(
+                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 2, 2)
+                                .until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
+                new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.07, () -> 0, () -> 0)).withTimeout(0.23),
+                getWaitForContinueCommand(),
+                Gripper.getInstance().getEjectCommand().withTimeout(1.5).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
+    /**
+     * Constructs a command that will run the given command, but will not require any subsystems.
+     *
+     * @param command the command to run
+     * @return the command
+     */
+    public static CommandBase withoutRequirements(Command command) {
+        return new FunctionalCommand(
+                command::initialize,
+                command::execute,
+                command::end,
+                command::isFinished
+        );
+    }
+
+    /**
+     * Checks if the subsystem is running its default command.
+     *
+     * @param subsystem the subsystem to check
+     * @return whether the default command is running
+     */
+    public static boolean isRunningDefaultCommand(Subsystem subsystem) {
+        return subsystem.getDefaultCommand() == null || subsystem.getDefaultCommand().isScheduled();
+    }
+
+    /**
+     * Checks if any of the subsystems required by the command are running their default command.
+     *
+     * @param command the command to check
+     * @return whether the default command is running
+     */
+    public static boolean isRunningDefaultCommand(Command command) {
+        if (command == null)
+            return true;
+        for (Subsystem subsystem : command.getRequirements()) {
+            if (isRunningDefaultCommand(subsystem))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Constructs a command that sets the color of the LEDs to the given color, but as the moving colors command.
+     *
+     * @param color the color to set the LEDs to
+     * @return the command
+     */
+    public static CommandBase fakeStaticColor(Color color) {
+        return new ProxyCommand(new MovingColorsLedCommand(RobotContainer.leds, Color.kBlack, 1, 0, color));
+    }
+
+    /**
+     * @return a command that places a cone at the middle node
+     */
+    public static SequentialCommandGroup getPlaceConeAtMidCommand() {
+        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        return new SequentialCommandGroup(
+                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1, true, 2, 1.5).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
+                getWaitForContinueCommand(),
+                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2, true, 0.5, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
+                parallel(
+                        Gripper.getInstance().getSlowEjectCommand(),
+                        new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0))
+                ).withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
+                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+        );
+    }
+
     private static CommandBase getDriveToPoseCommand(PathConstraints driveConstraints, Pose2d targetPose) {
         if (!AllianceUtilities.isBlueAlliance()) {
             targetPose = new Pose2d(
@@ -92,168 +309,7 @@ public class Commands {
         return SwerveCommands.getFollowPathCommand(path).andThen(SwerveCommands.getDriveToPoseWithPIDCommand(targetPose));
     }
 
-    public static SequentialCommandGroup getPlaceConeAtMidCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1, true, 2, 1.5).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
-                getWaitForContinueCommand(),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2, true, 0.5, 1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                parallel(
-                        Gripper.getInstance().getSlowEjectCommand(),
-                        new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0))
-                ).withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-
     private static CommandBase getWaitForContinueCommand() {
         return new WaitUntilCommand(OperatorConstants.CONTINUE_PLACEMENT_TRIGGER);//.deadlineWith(new ProxyCommand(() -> withoutRequirements(RobotContainer.SWERVE.getDefaultCommand())));
-    }
-
-    public static SequentialCommandGroup getPlaceConeAtMidForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                parallel(
-                        Gripper.getInstance().getSlowEjectCommand(),
-                        SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0)
-                ).withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-    public static CommandBase getPlaceCubeAtHighForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        ).alongWith(
-                SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1)
-        );
-    }
-    public static CommandBase getPlaceCubeAtHighCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                getWaitForContinueCommand(),
-                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        ).alongWith(
-                new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1))
-        );
-    }
-
-    public static CommandBase getPlaceCubeAtHighCommandForAuto() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-    public static CommandBase getPlaceCubeAtMidCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE, false, 1.5, 1.5).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                getWaitForContinueCommand(),
-                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-    public static CommandBase getPlaceCubeAtMidForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-
-    public static CommandBase getPlaceCubeAtHybridCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CUBE_HYBRID).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-    public static CommandBase getPlaceConeAtHybridCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID).until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
-                Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-    public static CommandBase getPlaceConeAtHighForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1).alongWith(
-                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.AUTO_CONE_HIGH, true, 2, 2)
-                                .until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
-                SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.1, () -> 0, () -> 0).withTimeout(0.4),
-                new WaitCommand(0.2),
-                Gripper.getInstance().getEjectCommand().withTimeout(1.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-
-    public static CommandBase getPlaceConeAtHighCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
-        return new SequentialCommandGroup(
-                runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
-                new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0)).withTimeout(0.1).alongWith(
-                        Arm.getInstance().getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 2, 2)
-                                .until(Arm.getInstance()::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
-                new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.07, () -> 0, () -> 0)).withTimeout(0.23),
-                getWaitForContinueCommand(),
-                Gripper.getInstance().getEjectCommand().withTimeout(1.5).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
-        );
-    }
-
-    public static CommandBase withoutRequirements(Command command){
-        return new FunctionalCommand(
-                command::initialize,
-                command::execute,
-                command::end,
-                command::isFinished
-        );
-    }
-
-    public static boolean isRunningDefaultCommand(Subsystem subsystem){
-        return subsystem.getDefaultCommand() == null || subsystem.getDefaultCommand().isScheduled();
-    }
-
-    public static boolean isRunningDefaultCommand(Command command){
-        if(command == null)
-            return true;
-        for(Subsystem subsystem : command.getRequirements()){
-            if(isRunningDefaultCommand(subsystem))
-                return true;
-        }
-        return false;
-    }
-
-    public static CommandBase fakeStaticColor(Color color) {
-        return new ProxyCommand(new MovingColorsLedCommand(RobotContainer.leds, Color.kBlack, 1, 0, color));
     }
 }
