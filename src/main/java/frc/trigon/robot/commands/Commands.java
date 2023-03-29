@@ -25,6 +25,8 @@ import frc.trigon.robot.utilities.Maths;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
@@ -32,6 +34,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
 public class Commands {
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+    private static final Arm ARM = Arm.getInstance();
 
     /**
      * Creates a command that follows a path group from an autonomous path's name. This command will also reset the pose.
@@ -258,7 +261,7 @@ public class Commands {
      * @return the command
      */
     public static CommandBase fakeStaticColor(Color color) {
-        return new ProxyCommand(new MovingColorsLedCommand(RobotContainer.leds, Color.kBlack, 1, 0, color));
+        return new ProxyCommand(new MovingColorsLedCommand(RobotContainer.LEDS, Color.kBlack, 1, 0, color));
     }
 
     /**
@@ -277,6 +280,85 @@ public class Commands {
                 ).withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
                 runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
         );
+    }
+
+    public static ProxyCommand getDriveAndPlaceCommand(Supplier<Pose2d> alignmentPose, BooleanSupplier isCone, IntSupplier level) {
+        return new ProxyCommand(Commands.getDriveToPoseCommand(
+                new PathConstraints(1, 1),
+                alignmentPose.get()
+        ).raceWith(Commands.fakeStaticColor(Color.kYellow)).andThen(
+                new ProxyCommand(getPlaceCommand(isCone.getAsBoolean(), level.getAsInt()))
+        ));
+    }
+
+    public static ProxyCommand getGoToCurrentFirstArmPositionCommand(BooleanSupplier isCone, IntSupplier level) {
+        return new ProxyCommand(() -> {
+            if (isCone.getAsBoolean())
+                return getGoToFirstConePositionCommand(level.getAsInt());
+
+            return getGoToCurrentCubePositionCommand(level.getAsInt());
+        });
+    }
+
+    public static ProxyCommand getGoToCurrentSecondArmPositionCommand(BooleanSupplier isCone, IntSupplier level) {
+        return new ProxyCommand(() -> {
+            if (isCone.getAsBoolean())
+                return getGoToSecondConePositionCommand(level.getAsInt());
+
+            return getGoToCurrentCubePositionCommand(level.getAsInt());
+        });
+    }
+
+    private static CommandBase getPlaceCommand(boolean isCone, int level) {
+        if(isCone) {
+            if(level == 1)
+                return Commands.getPlaceConeAtHybridCommand().withName("getPlaceConeAtHybridCommand");
+            if(level == 2)
+                return Commands.getPlaceConeAtMidCommand().withName("getPlaceConeAtMidCommand");
+            if(level == 3)
+                return Commands.getPlaceConeAtHighCommand().withName("getPlaceConeAtHighCommand");
+        } else {
+            if(level == 1)
+                return Commands.getPlaceCubeAtHybridCommand().withName("getPlaceCubeAtHybridCommand");
+            if(level == 2)
+                return Commands.getPlaceCubeAtMidForAutoCommand().withName("getPlaceCubeAtMidCommand");
+            if(level == 3)
+                return Commands.getPlaceCubeAtHighForAutoCommand().withName("getPlaceCubeAtHighCommand");
+        }
+        return new InstantCommand();
+    }
+
+    private static CommandBase getGoToSecondConePositionCommand(int level) {
+        if (level == 1)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID);
+        if (level == 2)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_2);
+        if (level == 3)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH);
+
+        return new InstantCommand();
+    }
+
+    private static CommandBase getGoToFirstConePositionCommand(int level) {
+        if (level == 1)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID);
+        if (level == 2)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1);
+        if (level == 3)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH);
+
+        return new InstantCommand();
+    }
+
+    private static CommandBase getGoToCurrentCubePositionCommand(int level) {
+        if (level == 1)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HYBRID);
+        if (level == 2)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE);
+        if (level == 3)
+            return ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH);
+
+        return new InstantCommand();
     }
 
     private static CommandBase getDriveToPoseCommand(PathConstraints driveConstraints, Pose2d targetPose) {
