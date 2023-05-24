@@ -1,5 +1,7 @@
 package frc.trigon.robot.utilities;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+
 public class Conversions {
     public static final double
             MAG_TICKS = 4096,
@@ -220,16 +222,26 @@ public class Conversions {
         return revolutions * wheelDiameter * Math.PI;
     }
 
+    /**
+     * Converts a target output voltage to a percentage output when voltage compensation is enabled.
+     * The voltage compensation saturation determines what voltage represents 100% output.
+     * The compensated power is the voltage represented by a percentage of the saturation voltage.
+     *
+     * @param voltage    the target voltage output
+     * @param saturation the configured saturation which represents 100% output
+     * @return the percentage output to achieve the target voltage
+     */
     public static double voltageToCompensatedPower(double voltage, double saturation) {
-        /**
-         * Converts a target output voltage to a percentage output when voltage compensation is enabled.
-         * The voltage compensation saturation determines what voltage represents 100% output.
-         * The compensated power is the voltage represented by a percentage of the saturation voltage.
-         *
-         * @param voltage    the target voltage output
-         * @param saturation the configured saturation which represents 100% output
-         * @return the percentage output to achieve the target voltage
-         */
         return voltage / saturation;
+    }
+
+    /**
+     * Scales a TrapezoidProfile.Constraints object by a given scale factor.
+     * @param constraints the constraints to scale
+     * @param scale the scale factor
+     * @return the scaled constraints
+     */
+    public static TrapezoidProfile.Constraints scaleConstraints(TrapezoidProfile.Constraints constraints, double scale) {
+        return new TrapezoidProfile.Constraints(constraints.maxVelocity * scale, constraints.maxAcceleration * scale);
     }
 }

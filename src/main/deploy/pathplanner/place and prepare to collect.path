@@ -1,0 +1,103 @@
+{
+  "waypoints": [
+    {
+      "anchorPoint": {
+        "x": 2.0724148811718064,
+        "y": 0.5141066814200143
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.640606648734665,
+        "y": 0.5823775750115614
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "place-cone-2"
+        ],
+        "executionBehavior": "sequential",
+        "waitBehavior": "deadline",
+        "waitTime": 4.0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 3.702589285520452,
+        "y": 0.7079884245238581
+      },
+      "prevControl": {
+        "x": 3.10879254237141,
+        "y": 0.6965692563863752
+      },
+      "nextControl": {
+        "x": 3.97683641030188,
+        "y": 0.7132624076927324
+      },
+      "holonomicAngle": 108.97040780848654,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": true,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 4.970116948780905,
+        "y": 0.7765034333487463
+      },
+      "prevControl": {
+        "x": 4.336446661891613,
+        "y": 0.8876225222392587
+      },
+      "nextControl": {
+        "x": 5.603787235670198,
+        "y": 0.6653843444582338
+      },
+      "holonomicAngle": 17.35402463626136,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 7.0484055498025535,
+        "y": 0.8792759465860819
+      },
+      "prevControl": {
+        "x": 6.334368492274757,
+        "y": 0.8792759465860819
+      },
+      "nextControl": null,
+      "holonomicAngle": 0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "close-collect"
+        ],
+        "executionBehavior": "sequential",
+        "waitBehavior": "deadline",
+        "waitTime": 1.0
+      }
+    }
+  ],
+  "markers": []
+}

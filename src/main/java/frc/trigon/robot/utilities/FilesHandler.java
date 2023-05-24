@@ -10,7 +10,6 @@ import java.nio.file.Path;
 
 /**
  * A class that handles writing, deleting, and renaming files.
- * <p>
  * This class also holds the "DEPLOY_PATH" constant, which is the absolute path of the deploy folder.
  */
 public class FilesHandler {
@@ -26,11 +25,11 @@ public class FilesHandler {
     public static void setDeployFolderPermissions(boolean isReadable, boolean isWriteable, boolean isExecutable) throws IOException {
         final File deployFolder = Filesystem.getDeployDirectory();
 
-        if (!deployFolder.setReadable(isReadable))
+        if (!deployFolder.canRead() && !deployFolder.setReadable(isReadable))
             throw new IOException("Failed to set the deploy folder's readable permission to " + isReadable + ".");
-        if (!deployFolder.setWritable(isWriteable))
+        if (!deployFolder.canWrite() && !deployFolder.setWritable(isWriteable))
             throw new IOException("Failed to set the deploy folder's writeable permission to " + isWriteable + ".");
-        if (!deployFolder.setExecutable(isExecutable))
+        if (!deployFolder.canExecute() && !deployFolder.setExecutable(isExecutable))
             throw new IOException("Failed to set the deploy folder's executable permission to " + isExecutable + ".");
     }
 
