@@ -23,7 +23,7 @@ public class OperatorConstants {
             FIELD_RELATIVE_DRIVEN_ANGLE_TRIGGER = DRIVE_CONTROLLER.x(),
             LOCK_SWERVE_TRIGGER = DRIVE_CONTROLLER.a(),
             DRIVE_FROM_DPAD_TRIGGER = new Trigger(() -> DRIVE_CONTROLLER.getPov() != -1),
-            DRIVE_AND_PLACE_TRIGGER = new Trigger(),
+            DRIVE_AND_PLACE_TRIGGER = new Trigger(() -> false),
             SELF_RELATIVE_DRIVE_TRIGGER = DRIVE_CONTROLLER.b(),
             CLOSED_COLLECTING_TRIGGER = DRIVE_CONTROLLER.leftTrigger(),
             CLOSED_COLLECTING_STANDING_CONE_TRIGGER = DRIVE_CONTROLLER.rightBumper(),

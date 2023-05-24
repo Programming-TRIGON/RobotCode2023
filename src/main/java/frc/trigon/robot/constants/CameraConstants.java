@@ -26,14 +26,6 @@ public class CameraConstants {
                     )
             )
     );
-    //            new Translation3d(-1+1.027,-1.22+1.072-0.121+0.072,-1.17),
-    //            new Rotation3d(new Quaternion(
-    //                    0.11, -0.241, -0.00111, 0.9641
-    //            )).unaryMinus().rotateBy(new Rotation3d(0,0,Math.toRadians(180)))
-    //    );
-    //            new Translation3d(0.0205, -0.22-0.05, 1.04),
-    //            new Rotation3d(Math.toRadians(3), Math.toRadians(-23), Math.toRadians(20)).unaryMinus()
-    //    ).inverse();
     public static final RobotPoseSource FORWARD_LIMELIGHT = new AprilTagPhotonCamera(
             "limelight-forward",
             FORWARD_LIMELIGHT_TO_ROBOT

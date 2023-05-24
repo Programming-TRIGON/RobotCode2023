@@ -55,10 +55,6 @@ public class AlignToReflectorCommand extends SequentialCommandGroup {
         );
     }
 
-    private double calculateRot() {
-        return rotationController.calculate(PoseEstimator.getInstance().getCurrentPose().getRotation().getDegrees());
-    }
-
     private boolean isRobotAlignedToLimelight() {
         return reflectionLimelight.hasTarget() && translationPIDController.atSetpoint();
     }

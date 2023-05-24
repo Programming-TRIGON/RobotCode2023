@@ -99,6 +99,10 @@ public class Gripper extends LoggableSubsystemBase {
         ));
     }
 
+    public boolean isHolding() {
+        return state == GripperConstants.GripperState.HOLD;
+    }
+
     private void setPowerDistributionPortRequirements() {
             GripperConstants.HOLD_TRIGGER_CONFIG.setup(
                     () -> {
