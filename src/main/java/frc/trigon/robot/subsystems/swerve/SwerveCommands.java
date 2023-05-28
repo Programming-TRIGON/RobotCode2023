@@ -4,25 +4,46 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
+import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.utilities.AllianceUtilities;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class SwerveCommands {
     private static final Swerve SWERVE = RobotContainer.SWERVE;
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
+
+    /**
+     * Creates a command that will turn the robot to the given angle, and end when the robot is at the angle.
+     *
+     * @param angle the angle to turn to
+     * @return the command
+     */
+    public static FunctionalCommand turnToAngleCommand(Rotation2d angle) {
+        final ProfiledPIDController rotationController = SWERVE.getRotationController();
+
+        return new FunctionalCommand(
+                () -> {
+                    initializeDrive(true);
+                    rotationController.reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
+                },
+                () -> fieldRelativeDrive(0, 0, angle),
+                (interrupted) -> stopDrive(),
+                () -> atAngle(angle)
+        );
+    }
 
     /**
      * Creates a command that locks the swerve and brakes it.
@@ -59,10 +80,10 @@ public class SwerveCommands {
         });
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
-                POSE_ESTIMATOR::resetPose,
+                (pose) -> {},
                 SWERVE.getKinematics(),
                 SWERVE.getTranslationPIDConstants(),
-                SWERVE.getRotationPIDConstants(),
+                SWERVE.getAutoRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
                 eventMap,
                 true,
@@ -111,7 +132,6 @@ public class SwerveCommands {
 
     /**
      * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in closed loop mode.
-     * All velocities are in percent output from -1 to 1.
      *
      * @param x     the target forwards velocity
      * @param y     the target leftwards velocity
@@ -142,7 +162,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(true),
-                () -> selfRelativeDriveFromSuppliers(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
+                () -> selfRelativeDrive(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -160,6 +180,28 @@ public class SwerveCommands {
      * @return the command
      */
     public static FunctionalCommand getFieldRelativeOpenLoopSupplierDriveCommand(
+            DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
+        return new FunctionalCommand(
+                () -> {
+                    initializeDrive(false);
+                    SWERVE.getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
+                },
+                () -> fieldRelativeDrive(x.getAsDouble(), y.getAsDouble(), angle.get()),
+                (interrupted) -> stopDrive(),
+                () -> false,
+                SWERVE
+        );
+    }
+    /**
+     * Creates a command that drives the swerve with the given velocities, relative to the field's frame of reference, in closed loop mode.
+     * The angle should be the target angle of the robot, not the target angular velocity.
+     *
+     * @param x     the target forwards velocity
+     * @param y     the target leftwards velocity
+     * @param angle the target angle of the robot
+     * @return the command
+     */
+    public static FunctionalCommand getFieldRelativeClosedLoopSupplierDriveCommand(
             DoubleSupplier x, DoubleSupplier y, Supplier<Rotation2d> angle) {
         return new FunctionalCommand(
                 () -> {
@@ -212,7 +254,7 @@ public class SwerveCommands {
             DoubleSupplier x, DoubleSupplier y, DoubleSupplier theta) {
         return new FunctionalCommand(
                 () -> initializeDrive(false),
-                () -> selfRelativeDriveFromSuppliers(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
+                () -> selfRelativeDrive(x.getAsDouble(), y.getAsDouble(), theta.getAsDouble()),
                 (interrupted) -> stopDrive(),
                 () -> false,
                 SWERVE
@@ -237,6 +279,10 @@ public class SwerveCommands {
                 () -> false,
                 SWERVE
         );
+    }
+
+    private static boolean atAngle(Rotation2d targetAngle) {
+        return Math.abs(POSE_ESTIMATOR.getCurrentPose().getRotation().minus(targetAngle).getDegrees()) < SWERVE.getRotationTolerance();
     }
 
     private static Pose2d getHolonomicPose(PathPlannerTrajectory.PathPlannerState state) {
@@ -339,7 +385,7 @@ public class SwerveCommands {
         );
     }
 
-    private static void selfRelativeDriveFromSuppliers(double x, double y, double theta) {
+    private static void selfRelativeDrive(double x, double y, double theta) {
         SWERVE.selfRelativeDrive(
                 getDriveTranslation(x, y),
                 getDriveRotation(theta)
@@ -361,36 +407,72 @@ public class SwerveCommands {
     }
 
     public static CommandBase getBalanceCommand() {
-        AtomicBoolean hasClimbed = new AtomicBoolean(false), hasFinished = new AtomicBoolean(false);
+        return new ProxyCommand(() -> {
+            double driveDirection = Math.signum(PoseEstimator.getInstance().getCurrentPose().getX() - 3.777);
+            double pitchSignum = Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos());
+            final double speed1 = 0.2, speed2 = 0.2;
+            return new SequentialCommandGroup(
+                    getFieldRelativeClosedLoopSupplierDriveCommand(
+                            () -> -speed1 * driveDirection, () -> 0, () -> 0
+                    ).until(() -> Math.abs(SWERVE.getPitch()) > 15).deadlineWith(Commands.fakeStaticColor(Color.kFirstBlue)),
+                    getFieldRelativeClosedLoopSupplierDriveCommand(
+                            () -> -speed2 * driveDirection, () -> 0, () -> 0
+                    ).withTimeout(1.5).deadlineWith(Commands.fakeStaticColor(Color.kDeepPink)),
+                    getFieldRelativeClosedLoopSupplierDriveCommand(
+                            () -> SWERVE.getPitch() * pitchSignum * 0.005, () -> 0, () -> 0
+                    ).until(() -> Math.abs(SWERVE.getPitch()) < -1),
+                    getLockSwerveCommand().alongWith(Commands.fakeStaticColor(Color.kWhite))
+            );
+        });
 
-        return new FunctionalCommand(
-                () -> {
-                    hasClimbed.set(false);
-                    hasFinished.set(false);
-                },
-                () -> {
-                    double speed = 0;
-                    double pitch = SWERVE.getPitch() * Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos()), sign = Math.signum(pitch);
-                    hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
-                    if(hasClimbed.get()) {
-                        speed = pitch * pitch * sign * 0.003;
-                    } else {
-                        speed = Math.signum(PoseEstimator.getInstance().getCurrentPose().getX() - 3.777) * -1;
-                    }
+        //        final Command
+        //                firstStageLedCommand = Commands.fakeStaticColor(Color.kFirstBlue),
+        //                secondStageLedCommand = Commands.fakeStaticColor(Color.kDeepPink),
+        //                thirdStageLedCommand = Commands.fakeStaticColor(Color.kWhite),
+        //                fourthStageLedCommand = Commands.fakeStaticColor(Color.kDarkGreen);
+        //        AtomicBoolean hasClimbed = new AtomicBoolean(false), hasFinished = new AtomicBoolean(false);
+        //        AtomicReference<Double> finishTime = new AtomicReference<>((double) 0);
+        //        AtomicReference<Double> direction = new AtomicReference<>((double) 0);
 
-                    if(hasFinished.get() || (hasClimbed.get() & Math.abs(pitch) < 5)) {
-                        SWERVE.lockSwerve();
-                        hasFinished.set(true);
-                    }
-                    else
-                        SWERVE.fieldRelativeDrive(new Translation2d(speed, 0), Rotation2d.fromDegrees(0));
-                    SmartDashboard.putNumber("balsp", speed);
-                    SmartDashboard.putBoolean("balhc", hasClimbed.get());
-                },
-                (interrupted) -> stopDrive(),
-                ()->false,
-                SWERVE
-        );
+        //        return new FunctionalCommand(
+        //                () -> {
+        //                    hasClimbed.set(false);
+        //                    hasFinished.set(false);
+        //                    direction.set();
+        //                    firstStageLedCommand.schedule();
+        //                },
+        //                () -> {
+        //                    double speed = 0;
+        //                    double pitch = SWERVE.getPitch() * Math.signum(-POSE_ESTIMATOR.getCurrentPose().getRotation().getCos()), sign = Math.signum(pitch);
+        //                    if(!hasFinished.get()) {
+        //                        hasClimbed.set(hasClimbed.get() || pitch * sign > 15);
+        //                        if(hasClimbed.get()) {
+        //                            speed = pitch * pitch * sign * 0.005;
+        //                            secondStageLedCommand.schedule();
+        //                        } else {
+        //                            speed = direction.get() * -1;
+        //                        }
+        //
+        //                        hasFinished.set(hasClimbed.get() & Math.abs(pitch) < 5);
+        //                        finishTime.set(Timer.getFPGATimestamp());
+        //                    }
+        //                    if(hasFinished.get()) {
+        //                        if(Math.abs(pitch) > 3) {
+        //                            speed = direction.get() * 1;
+        //                            thirdStageLedCommand.schedule();
+        //                        } else {
+        //                            SWERVE.lockSwerve();
+        //                            fourthStageLedCommand.schedule();
+        //                        }
+        //                    } else
+        //                        SWERVE.fieldRelativeDrive(new Translation2d(speed, 0), Rotation2d.fromDegrees(0));
+        //                    SmartDashboard.putNumber("balsp", speed);
+        //                    SmartDashboard.putBoolean("balhc", hasClimbed.get());
+        //                },
+        //                (interrupted) -> stopDrive(),
+        //                () -> false,
+        //                SWERVE
+        //        );
     }
 
     private static void stopDrive() {

@@ -76,6 +76,7 @@ public class PoseEstimator extends LoggableSubsystemBase {
         final Pose2d currentBluePose = AllianceUtilities.toAlliancePose(currentPose);
         swerve.setHeading(currentBluePose.getRotation());
 
+//        resetPoseEstimator(currentBluePose);
         new Notifier(() -> resetPoseEstimator(currentBluePose)).startSingle(PoseEstimatorConstants.GYRO_UPDATE_TIME_SECONDS);
     }
 
@@ -114,6 +115,7 @@ public class PoseEstimator extends LoggableSubsystemBase {
     private void resetPoseEstimator(Pose2d currentPose) {
         swerveDrivePoseEstimator.resetPosition(
                 swerve.getHeading(),
+//                currentPose.getRotation(),
                 swerve.getModulePositions(),
                 currentPose
         );

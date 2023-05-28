@@ -10,7 +10,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class TrihardSwerveConstants {
-    static final double BRAKE_TIME_SECONDS = 2;
+    static final double BRAKE_TIME_SECONDS = 4;
     static final double
             MAX_SPEED_METERS_PER_SECOND = 4.25,
             MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND = 12.03;
@@ -39,7 +39,8 @@ public class TrihardSwerveConstants {
     static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     static final PIDConstants
             TRANSLATION_PID_CONSTANTS = new PIDConstants(3, 0, 0),
-            ROTATION_PID_CONSTANTS = new PIDConstants(3, 0.0008, 0.5);
+            ROTATION_PID_CONSTANTS = new PIDConstants(3, 22, 0),
+            AUTO_ROTATION_PID_CONSTANTS = new PIDConstants(3, 0.0008, 0.5);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
     private static final TrapezoidProfile.Constraints ROTATION_CONSTRAINTS = new TrapezoidProfile.Constraints(
@@ -47,7 +48,7 @@ public class TrihardSwerveConstants {
             1200
     );
     static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
-            3,
+            ROTATION_PID_CONSTANTS.kP,
             ROTATION_PID_CONSTANTS.kI,
             ROTATION_PID_CONSTANTS.kD,
             ROTATION_CONSTRAINTS
@@ -60,6 +61,7 @@ public class TrihardSwerveConstants {
 
     static {
         ROTATION_CONTROLLER.enableContinuousInput(-180, 180);
+        ROTATION_CONTROLLER.setIntegratorRange(-30, 30);
         GYRO.configFactoryDefault();
 
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_1_General, 200);
@@ -70,7 +72,7 @@ public class TrihardSwerveConstants {
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_11_GyroAccum, 1000);
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_2_Gyro, 1000);
         GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_4_Mag, 1000);
-        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_6_Accel, 1000);
+        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_6_Accel, 30);
 
         GYRO.configMountPose(90.0146, -0.95211,-0.796127);
     }

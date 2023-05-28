@@ -46,13 +46,18 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
-    protected PIDConstants getTranslationPIDConstants() {
+    public PIDConstants getTranslationPIDConstants() {
         return TestingSwerveConstants.TRANSLATION_PID_CONSTANTS;
     }
 
     @Override
     protected PIDConstants getRotationPIDConstants() {
         return TestingSwerveConstants.ROTATION_PID_CONSTANTS;
+    }
+
+    @Override
+    protected PIDConstants getAutoRotationPIDConstants() {
+        return TestingSwerveConstants.AUTO_ROTATION_PID_CONSTANTS;
     }
 
     @Override
@@ -71,7 +76,7 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
-    protected ProfiledPIDController getRotationController() {
+    public ProfiledPIDController getRotationController() {
         return TestingSwerveConstants.ROTATION_CONTROLLER;
     }
 
