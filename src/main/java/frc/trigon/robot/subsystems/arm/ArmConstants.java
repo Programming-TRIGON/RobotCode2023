@@ -7,6 +7,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.utilities.Conversions;
@@ -79,11 +81,11 @@ public class ArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 720,
-            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 420;
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 1600,
+            SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 720;
 
     private static final double
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 460,
+            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 1600,
             SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 180;
 
     static final TrapezoidProfile.Constraints
@@ -151,19 +153,9 @@ public class ArmConstants {
         FIRST_JOINT_FIRST_MOTOR.setSensorPhase(FIRST_JOINT_SENSOR_PHASE);
         SECOND_JOINT_ENCODER.setInverted(SECOND_JOINT_SENSOR_PHASE);
 
-        //        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
-        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
 
-        if(SECOND_JOINT_ENCODER.hasResetOccurred()) {
-            double rawSecondPos = SECOND_JOINT_ENCODER.getSelectedSensorPosition(0) - SECOND_JOINT_ENCODER_OFFSET;
-            if(rawSecondPos > Conversions.degreesToMagTicks(160))
-                rawSecondPos -= Conversions.MAG_TICKS;
-            SECOND_JOINT_ENCODER.setSelectedSensorPosition(
-                    rawSecondPos,
-                    0,
-                    0
-            );
-        }
+        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
+        SECOND_JOINT_ENCODER.setSelectedSensorPosition(Conversions.offsetRead(SECOND_JOINT_ENCODER.getSensorCollection().getPulseWidthPosition(), Conversions.degreesToMagTicks(133.287109)));
 
         SECOND_JOINT_ENCODER.configClosedloopRamp(1);
         SECOND_JOINT_ENCODER.configOpenloopRamp(1);
@@ -195,27 +187,6 @@ public class ArmConstants {
 
         FIRST_JOINT_FIRST_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
         SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
-
-        new Trigger(() -> SECOND_JOINT_MOTOR.isFwdLimitSwitchClosed() > 0).whileTrue(
-                new StartEndCommand(
-                        () -> SECOND_JOINT_ENCODER.setSelectedSensorPosition(
-                                Conversions.degreesToMagTicks(SECOND_JOINT_CLOSED),
-                                0,
-                                0
-                        ),
-                        () -> {}
-                ).ignoringDisable(true)
-        );
-        new Trigger(() -> SECOND_JOINT_MOTOR.isRevLimitSwitchClosed() > 0).whileTrue(
-                new StartEndCommand(
-                        () -> SECOND_JOINT_ENCODER.setSelectedSensorPosition(
-                                Conversions.degreesToMagTicks(ArmStates.CLOSED_COLLECTING.secondMotorPosition),
-                                0,
-                                0
-                        ),
-                        () -> {}
-                ).ignoringDisable(true)
-        );
     }
 
     public enum ArmStates {
@@ -229,7 +200,8 @@ public class ArmConstants {
         CUBE_HYBRID(FIRST_JOINT_CLOSED, SECOND_JOINT_CLOSED),
         CONE_MIDDLE_1(-30, 102),
         CONE_MIDDLE_2(-49, 102),
-        CONE_HIGH(24, -19);
+        CONE_HIGH(22, -19),
+        AUTO_CONE_HIGH(24, -19);
 
         public final double firstMotorPosition, secondMotorPosition;
 

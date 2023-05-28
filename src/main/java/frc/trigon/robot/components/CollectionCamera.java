@@ -68,12 +68,12 @@ public class CollectionCamera extends PhotonCamera implements Loggable, Sendable
 
     private void updatePipelines() {
         if (getPipelineIndex() == CONES_DETECTION_PIPELINE_INDEX) {
-            lastBestCone = getLatestResult().getBestTarget();
+            lastBestCone = getTargetGamePiece();
             if(lastBestCone != null)
                 lastBestCube = null;
             setPipelineIndex(CUBES_DETECTION_PIPELINE_INDEX);
         } else {
-            lastBestCube = getLatestResult().getBestTarget();
+            lastBestCube = getTargetGamePiece();
             if(lastBestCube != null)
                 lastBestCone = null;
             setPipelineIndex(CONES_DETECTION_PIPELINE_INDEX);

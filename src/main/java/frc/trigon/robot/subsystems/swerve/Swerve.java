@@ -11,10 +11,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 public abstract class Swerve extends LoggableSubsystemBase {
@@ -22,7 +20,6 @@ public abstract class Swerve extends LoggableSubsystemBase {
      * @return the swerve's gyro
      */
     protected abstract Pigeon2 getGyro();
-
 
     /**
      * @return the pitch of the swerve
@@ -55,12 +52,17 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the swerve's translation PID constants
      */
-    protected abstract PIDConstants getTranslationPIDConstants();
+    public abstract PIDConstants getTranslationPIDConstants();
 
     /**
      * @return the swerve's rotation PID constants
      */
     protected abstract PIDConstants getRotationPIDConstants();
+
+    /**
+     * @return the swerve's rotation PID constants for auto
+     */
+    protected abstract PIDConstants getAutoRotationPIDConstants();
 
     /**
      * @return the swerve's max speed in meters per second
@@ -80,7 +82,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the swerve's profiled pid controller for rotation
      */
-    protected abstract ProfiledPIDController getRotationController();
+    public abstract ProfiledPIDController getRotationController();
 
     /**
      * Locks the swerve, so it'll be hard to move it.
@@ -118,6 +120,28 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected abstract SlewRateLimiter getYSlewRateLimiter();
 
     /**
+     * @return the acceleration of the gyro in the z-axis
+     */
+    public short getGyroZAcceleration() {
+        return getGyroAccelerometer()[2];
+    }
+
+    /**
+     * @return the acceleration of the gyro in the y-axis
+     */
+    @Log(name="yAccel")
+    public short getGyroYAcceleration() {
+        return getGyroAccelerometer()[1];
+    }
+
+    /**
+     * @return the acceleration of the gyro in the x-axis
+     */
+    public short getGyroXAcceleration() {
+        return getGyroAccelerometer()[0];
+    }
+
+    /**
      * @return the heading of the robot
      */
     @Log(name = "heading", methodName = "getDegrees")
@@ -128,6 +152,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the robot's current velocity
      */
+    @Log(methodName = "toString")
     public ChassisSpeeds getCurrentVelocity() {
         final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
 
@@ -228,6 +253,13 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
         for (int i = 0; i < getModules().length; i++)
             getModules()[i].setTargetState(swerveModuleStates[i]);
+    }
+
+    private short[] getGyroAccelerometer() {
+        final short[] accelerometer = new short[3];
+        getGyro().getBiasedAccelerometer(accelerometer);
+
+        return accelerometer;
     }
 
     @Log(name = "rotationController/error")

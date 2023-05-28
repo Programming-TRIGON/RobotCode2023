@@ -12,7 +12,7 @@ public class GripperConstants {
     private static final double
             HOLD_TRIGGER_DURATION = 0.05,
             HOLD_TRIGGER_CURRENT = 40,
-            CURRENT_LIMIT = 43;
+            CURRENT_LIMIT = 32;
 
     static final WPI_TalonFX MOTOR = new WPI_TalonFX(MOTOR_ID);
 
@@ -37,6 +37,7 @@ public class GripperConstants {
         COLLECT(-0.9),
         SLOW_COLLECT(-0.3),
         EJECT(0.43),
+        FULL_EJECT(1),
         SLOW_EJECT(0.12),
         HOLD(-0.1);
 

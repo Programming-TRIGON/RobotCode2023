@@ -47,13 +47,18 @@ public class TrihardSwerve extends Swerve {
     }
 
     @Override
-    protected PIDConstants getTranslationPIDConstants() {
+    public PIDConstants getTranslationPIDConstants() {
         return TrihardSwerveConstants.TRANSLATION_PID_CONSTANTS;
     }
 
     @Override
     protected PIDConstants getRotationPIDConstants() {
         return TrihardSwerveConstants.ROTATION_PID_CONSTANTS;
+    }
+
+    @Override
+    protected PIDConstants getAutoRotationPIDConstants() {
+        return TrihardSwerveConstants.AUTO_ROTATION_PID_CONSTANTS;
     }
 
     @Override
@@ -72,7 +77,7 @@ public class TrihardSwerve extends Swerve {
     }
 
     @Override
-    protected ProfiledPIDController getRotationController() {
+    public ProfiledPIDController getRotationController() {
         return TrihardSwerveConstants.ROTATION_CONTROLLER;
     }
 

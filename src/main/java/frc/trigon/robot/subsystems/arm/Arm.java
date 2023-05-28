@@ -34,25 +34,10 @@ public class Arm extends LoggableSubsystemBase {
     private TrapezoidProfile firstMotorProfile, secondMotorProfile;
     private double firstMotorProfileLastSetTime, secondMotorProfileLastSetTime;
     private String firstArmToMove = "";
-    private double lastSpeedFactor;
+    private double lastFirstMotorSpeedFactor, lastSecondMotorSpeedFactor;
 
     private Arm() {
         setCurrentLimits();
-    }
-
-    private void setCurrentLimits() {
-        ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CONFIG.setup(
-                () -> {
-                    firstMotorProfile = null;
-                    DriverStation.reportWarning("Arm first motor current draw is too high!\t" + firstMotor.getStatorCurrent(), false);
-                }
-        );
-        ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CONFIG.setup(
-                () -> {
-                    secondMotorProfile = null;
-                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + secondMotor.getStatorCurrent(), false);
-                }
-        );
     }
 
     public boolean atGoal() {
@@ -80,67 +65,97 @@ public class Arm extends LoggableSubsystemBase {
     /**
      * Constructs a command that sets the target state of the arm.
      *
-     * @param state the target state
+     * @param state                  the target state
+     * @param byOrder                whether to move the arm by order
+     * @param firstMotorSpeedFactor  the speed factor of the first motor
+     * @param secondMotorSpeedFactor the speed factor of the second motor
      * @return the command
      */
-    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder, double speedFactor) {
+    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(state, byOrder, speedFactor),
-                () -> {},
+                () -> setTargetState(state, byOrder, firstMotorSpeedFactor, secondMotorSpeedFactor),
+                () -> {
+                },
                 this
         );
     }
 
+    /**
+     * Constructs a command that sets the target state of the arm.
+     *
+     * @param state the target state
+     * @return the command
+     */
     public CommandBase getGoToStateCommand(ArmConstants.ArmStates state) {
-        return getGoToStateCommand(state, true, 1);
-    }
-
-    private void setTargetState(ArmStates targetState, boolean byOrder, double speedFactor) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder, speedFactor);
-    }
-
-    private void setTargetState(ArmStates targetState) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true, 1);
+        return getGoToStateCommand(state, true, 1, 1);
     }
 
     /**
      * Constructs a command that sets the target position to the arm.
      *
-     * @param firstJointAngle  the angle of the first joint
-     * @param secondJointAngle the angle of the second joint
+     * @param firstJointAngle        the angle of the first joint
+     * @param secondJointAngle       the angle of the second joint
+     * @param byOrder                whether to move the arm by order
+     * @param firstJointSpeedFactor  the speed factor of the first motor
+     * @param secondJointSpeedFactor the speed factor of the second motor
      * @return the command
      */
-    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double speedFactor) {
+    public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, speedFactor),
-                () -> {},
+                () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, firstJointSpeedFactor, secondJointSpeedFactor),
+                () -> {
+                },
                 this
         );
     }
 
+    /**
+     * Constructs a command that sets the target position to the arm.
+     *
+     * @param firstJointAngle        the angle of the first joint
+     * @param secondJointAngle       the angle of the second joint
+     * @return the command
+     */
     public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle) {
-        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true, 1);
+        return getGoToPositionCommand(firstJointAngle, secondJointAngle, true, 1, 1);
     }
 
+    /**
+     * Sets whether the arm is in brake mode or not.
+     *
+     * @param brake whether the arm is in brake mode or not
+     */
     public void setNeutralMode(boolean brake) {
         NeutralMode mode = brake ? NeutralMode.Brake : NeutralMode.Coast;
         firstMotor.setNeutralMode(mode);
         secondMotor.setNeutralMode(mode);
     }
 
+    /**
+     * Sets the mode of operation during neutral throttle output, for the arm motors.
+     */
     public void setNeutralMode() {
         firstMotor.setNeutralMode(ArmConstants.FIRST_JOINT_NEUTRAL_MODE);
         secondMotor.setNeutralMode(ArmConstants.SECOND_JOINT_NEUTRAL_MODE);
     }
 
-    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder, double speedFactor) {
-        lastSpeedFactor = speedFactor;
-        generateFirstMotorProfile(firstMotorPosition, speedFactor);
-        generateSecondMotorProfile(secondMotorPosition, speedFactor);
+    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
+        lastFirstMotorSpeedFactor = firstJointSpeedFactor;
+        lastSecondMotorSpeedFactor = secondJointSpeedFactor;
+        generateFirstMotorProfile(firstMotorPosition, firstJointSpeedFactor);
+        generateSecondMotorProfile(secondMotorPosition, secondJointSpeedFactor);
         if (byOrder)
             firstArmToMove = getFirstMotorDistanceToGoal() > 0 ? "first" : "second";
         else
             firstArmToMove = "";
+    }
+
+    private void setTargetState(ArmStates targetState, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder, firstMotorSpeedFactor, secondMotorSpeedFactor);
+    }
+
+    private void setTargetState(ArmStates targetState) {
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true, 1, 1);
     }
 
     private void setTargetMotorPositions() {
@@ -184,7 +199,7 @@ public class Arm extends LoggableSubsystemBase {
         boolean goingToHitTheGround = goingToHitTheGround(targetState);
         boolean waitingForOtherJoint = isNotFirstToMove("first") && (isSecondJointOnlyStarting() && !isSecondJointRetracted());
         if (goingToHitTheGround || waitingForOtherJoint) {
-            generateFirstMotorProfile(getFirstMotorGoal(), lastSpeedFactor);
+            generateFirstMotorProfile(getFirstMotorGoal(), lastFirstMotorSpeedFactor);
             return;
         }
 
@@ -192,6 +207,21 @@ public class Arm extends LoggableSubsystemBase {
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
 
         setTargetPositionWithFeedforwardForTalonFx(firstMotor, targetPosition, feedforward);
+    }
+
+    private void setCurrentLimits() {
+        ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CONFIG.setup(
+                () -> {
+                    firstMotorProfile = null;
+                    DriverStation.reportWarning("Arm first motor current draw is too high!\t" + firstMotor.getStatorCurrent(), false);
+                }
+        );
+        ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CONFIG.setup(
+                () -> {
+                    secondMotorProfile = null;
+                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + secondMotor.getStatorCurrent(), false);
+                }
+        );
     }
 
     private void setSecondMotorPositionFromProfile() {
@@ -208,7 +238,7 @@ public class Arm extends LoggableSubsystemBase {
 
         double targetPosition = Conversions.degreesToMagTicks(targetState.position);
         if (goingToHitTheGround || waitingForOtherJoint) {
-            generateSecondMotorProfile(getSecondMotorGoal(), lastSpeedFactor);
+            generateSecondMotorProfile(getSecondMotorGoal(), lastSecondMotorSpeedFactor);
             secondMotor.stopMotor();
 //            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
         }

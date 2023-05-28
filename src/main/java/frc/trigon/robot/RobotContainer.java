@@ -1,116 +1,50 @@
 package frc.trigon.robot;
 
-import com.pathplanner.lib.PathConstraints;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.trigon.robot.commands.AlignToReflectorCommand;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.components.CollectionCamera;
-import frc.trigon.robot.components.XboxController;
+import frc.trigon.robot.components.ReflectionLimelight;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
-import frc.trigon.robot.constants.FieldConstants;
+import frc.trigon.robot.constants.CommandsConstants;
 import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.Arm;
+import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
-import frc.trigon.robot.subsystems.leds.commands.MovingColorsLedCommand;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
-import frc.trigon.robot.utilities.AllianceUtilities;
-import frc.trigon.robot.utilities.KeyboardController;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 import org.photonvision.PhotonCamera;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
-
 public class RobotContainer implements Loggable {
-    // Subsystems TODO: make them not singletons
+    public static final ReflectionLimelight REFLECTION_LIMELIGHT = new ReflectionLimelight("limelight");
+    public static final CollectionCamera COLLECTION_CAMERA = new CollectionCamera("limelight-collection");
 
+    // Subsystems TODO: make them not singletons
     public static final Swerve SWERVE = TrihardSwerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
-
     public static final Gripper GRIPPER = Gripper.getInstance();
-
+    public static final LedStrip LEDS = new LedStrip(63, false);
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
-    private final CollectionCamera collectionCamera = new CollectionCamera("limelight-collection");
-
-    // private final CollectionCamera COLLECTION_CAM = new CollectionCamera("limelight-collection");
 
     @Log(name = "autoChooser")
-    private final SendableChooser<String> autonomousPathNameChooser = new SendableChooser<>();
-
-    // Triggers
-    private final XboxController driverController = OperatorConstants.DRIVE_CONTROLLER;
-    private final KeyboardController keyboardController = OperatorConstants.KEYBOARD_CONTROLLER;
-    private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || keyboardController.g().getAsBoolean());
-
-    private final AtomicReference<Integer>
-            level = new AtomicReference<>(1),
-            grid = new AtomicReference<>(1);
-    private final AtomicReference<Boolean>
-            isCone = new AtomicReference<>(false),
-            isLeftRamp = new AtomicReference<>(false);
-
-    public static final LedStrip leds = new LedStrip(63, false);
-    private final CommandBase
-            fieldRelativeDriveFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-            () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-            () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-            () -> driverController.getRightX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue()
-    ),
-            collectFromFeederWithManualDriveCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    () -> Rotation2d.fromDegrees(-90)
-            ),
-            selfRelativeDriveFromDpadCommand = SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(
-                    () -> Math.cos(Units.degreesToRadians(driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
-                    () -> Math.sin(Units.degreesToRadians(-driverController.getPov())) / OperatorConstants.POV_DIVIDER / calculateShiftModeValue(),
-                    () -> 0
-            ),
-            resetHeadingCommand = new InstantCommand(
-                    () -> poseEstimator.resetPose(setRotation(poseEstimator.getCurrentPose(), new Rotation2d()))
-            ),
-            toggleFieldAndSelfDrivenCommand = new InstantCommand(
-                    this::toggleFieldAndSelfDrivenAngle
-            ),
-            fieldRelativeDrivenAngleFromSticksCommand = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
-                    () -> driverController.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    () -> driverController.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    ()->Rotation2d.fromDegrees(180)
-            ),
-            alignToGridCommand = Commands.getDriveToPoseCommand(
-                    new PathConstraints(1, 1),
-                    () -> getGridAlignment().inFrontOfGridPose
-            ),
-            applyFirstArmStateCommand = getGoToCurrentFirstArmPositionCommand(),
-            applySecondArmStateCommand = getGoToCurrentSecondArmPositionCommand(),
-            redClimbingLEDCommand = new MovingColorsLedCommand(leds, Color.kRed, 0.02, 5, Color.kBlack),
-            flamesLEDCommand = new MovingColorsLedCommand(leds, new Color(0f, 0f, 1f), 0.04, 7, Color.kRed),
-            staticYellowColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kYellow),
-            staticPurpleColorLedCommand = new MovingColorsLedCommand(leds, Color.kDarkBlue, 1, 0, Color.kPurple),
-            resetPoseToLimelightPoseCommand = new InstantCommand(
-                    () -> poseEstimator.resetPose(CameraConstants.FORWARD_LIMELIGHT.getRobotPose())
-            ).ignoringDisable(true);
+    public static final SendableChooser<String> AUTONOMOUS_PATH_NAME_CHOOSER = new SendableChooser<>();
+    private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || OperatorConstants.USER_BUTTON_TRIGGER.getAsBoolean());
 
     public RobotContainer() {
         LiveWindow.disableAllTelemetry();
@@ -118,17 +52,6 @@ public class RobotContainer implements Loggable {
         setPoseEstimatorPoseSources();
         bindCommands();
         PhotonCamera.setVersionCheckEnabled(false);
-        keyboardController.f8().whileTrue(Commands.getPlaceConeAtMidCommand());
-        keyboardController.f9().whileTrue(Commands.getPlaceConeAtHighCommand());
-        var x = new ProxyCommand(this::getDriveAndPlaceCommand);
-        keyboardController.p().whileTrue(x);
-        OperatorConstants.GO_AND_PLACE_TRIGGER.whileTrue(x);
-        CommandScheduler.getInstance().onCommandInterrupt((cmd) -> {
-            if(cmd.equals(x))
-                SmartDashboard.putString("int", "int");
-        });
-        keyboardController.numpad0().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
-        keyboardController.f7().whileTrue(new ProxyCommand(() -> Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0), false, 1).ignoringDisable(true)));
 
         SmartDashboard.putNumber("target1", SmartDashboard.getNumber("target1", 0));
         SmartDashboard.putNumber("target2", SmartDashboard.getNumber("target2", 0));
@@ -136,14 +59,18 @@ public class RobotContainer implements Loggable {
         configDriverCam();
     }
 
+    public void teleopInit() {
+        SWERVE.getDefaultCommand().schedule();
+    }
+
     /**
      * @return the command to run in autonomous mode
      */
     CommandBase getAutonomousCommand() {
-        if (autonomousPathNameChooser.getSelected() == null)
+        if (AUTONOMOUS_PATH_NAME_CHOOSER.getSelected() == null)
             return new InstantCommand();
 
-        return Commands.getAutonomousCommand(autonomousPathNameChooser.getSelected());
+        return Commands.getAutonomousCommand(AUTONOMOUS_PATH_NAME_CHOOSER.getSelected());
     }
 
     private void bindCommands() {
@@ -153,226 +80,95 @@ public class RobotContainer implements Loggable {
     }
 
     private void bindControllerCommands() {
-        OperatorConstants.RESET_POSE_TRIGGER.onTrue(resetHeadingCommand);
-        OperatorConstants.TOGGLE_FIELD_AND_SELF_DRIVEN_ANGLE_TRIGGER.whileTrue(fieldRelativeDrivenAngleFromSticksCommand);
-        //        OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
-        OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(selfRelativeDriveFromDpadCommand);
-        OperatorConstants.ALIGN_TO_GRID_TRIGGER.whileTrue(alignToGridCommand);
-        OperatorConstants.APPLY_FIRST_ARM_STATE_TRIGGER.whileTrue(applyFirstArmStateCommand);
-        OperatorConstants.APPLY_SECOND_ARM_STATE_TRIGGER.whileTrue(applySecondArmStateCommand);
+        configureTargetPlacingPositionSetters();
+
+        OperatorConstants.RESET_HEADING_TRIGGER.onTrue(CommandsConstants.RESET_HEADING_COMMAND);
+        OperatorConstants.FIELD_RELATIVE_DRIVEN_ANGLE_TRIGGER.whileTrue(CommandsConstants.FIELD_RELATIVE_DRIVEN_ANGLE_FROM_STICKS_COMMAND);
+//        OperatorConstants.LOCK_SWERVE_TRIGGER.whileTrue(SwerveCommands.getLockSwerveCommand());
+        OperatorConstants.DRIVE_FROM_DPAD_TRIGGER.whileTrue(CommandsConstants.SELF_RELATIVE_DRIVE_FROM_DPAD_COMMAND);
+        OperatorConstants.ALIGN_TO_GRID_TRIGGER.whileTrue(CommandsConstants.ALIGN_TO_GRID_COMMAND);
+        OperatorConstants.APPLY_FIRST_ARM_STATE_TRIGGER.whileTrue(CommandsConstants.APPLY_FIRST_ARM_STATE_COMMAND);
+        OperatorConstants.APPLY_SECOND_ARM_STATE_TRIGGER.whileTrue(CommandsConstants.APPLY_SECOND_ARM_STATE_COMMAND);
         OperatorConstants.EJECT_TRIGGER.whileTrue(Gripper.getInstance().getEjectCommand());
         OperatorConstants.START_AUTO_TRIGGER.whileTrue(new ProxyCommand(this::getAutonomousCommand));
-        OperatorConstants.LED_FLAMES_TRIGGER.onTrue(flamesLEDCommand);
-        OperatorConstants.RESET_POSE_TO_LIMELIGHT_TRIGGER.onTrue(resetPoseToLimelightPoseCommand);
+        OperatorConstants.LED_FLAMES_TRIGGER.onTrue(CommandsConstants.FLAMES_LED_COMMAND);
+        OperatorConstants.PRELOAD_CURRENT_AUTO_TRIGGER.onTrue(CommandsConstants.PRELOAD_CURRENT_AUTO_COMMAND);
 
-        driverController.leftTrigger().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING, true, 2)));
-        driverController.rightBumper().whileTrue(GRIPPER.getCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CLOSED_COLLECTING_STANDING_CONE, true, 2)));
-        driverController.a().whileTrue(
-                GRIPPER.getSlowCollectCommand().alongWith(ARM.getGoToStateCommand(ArmStates.CONE_FEEDER, true, 0.5)).alongWith(
-                        collectFromFeederWithManualDriveCommand));
-        driverController.leftBumper().whileTrue(ARM.getGoToStateCommand(ArmStates.CLOSED));
+        OperatorConstants.PLACE_CONE_AT_MID_TRIGGER.whileTrue(Commands.getPlaceConeAtMidCommand());
+        OperatorConstants.PLACE_CONE_AT_HIGH_TRIGGER.whileTrue(Commands.getPlaceConeAtHighCommand());
+        OperatorConstants.CLOSE_ARM_TRIGGER.whileTrue(ARM.getGoToStateCommand(ArmConstants.ArmStates.CLOSED));
+        OperatorConstants.GO_TO_TARGET_DASHBOARD_POSITION_TRIGGER.whileTrue(CommandsConstants.GO_TO_TARGET_DASHBOARD_POSITION_COMMAND);
 
-        keyboardController.b().whileTrue(SwerveCommands.getBalanceCommand());
-        configureTargetPlacingPositionSetters();
+        OperatorConstants.DRIVE_AND_PLACE_TRIGGER.whileTrue(CommandsConstants.DRIVE_AND_PLACE_COMMAND);
+        OperatorConstants.SELF_RELATIVE_DRIVE_TRIGGER.toggleOnTrue(CommandsConstants.SELF_RELATIVE_DRIVE_FROM_STICKS_COMMAND);
+        OperatorConstants.CLOSED_COLLECTING_TRIGGER.whileTrue(CommandsConstants.CLOSED_COLLECTING_COMMAND);
+        OperatorConstants.CLOSED_COLLECTING_STANDING_CONE_TRIGGER.whileTrue(CommandsConstants.CLOSED_COLLECTING_STANDING_CONE_COMMAND);
+        OperatorConstants.COLLECT_FROM_FEEDER_WITH_MANUAL_DRIVE_TRIGGER.whileTrue(CommandsConstants.COLLECT_FROM_FEEDER_WITH_MANUAL_DRIVE_COMMAND);
+        OperatorConstants.ALIGN_TO_REFLECTOR_WITH_CONTROLLER_TRIGGER.and(this::canAlignToReflector).whileTrue(new AlignToReflectorCommand());
+
+        OperatorConstants.BALANCE_TRIGGER.whileTrue(SwerveCommands.getBalanceCommand());
+        OperatorConstants.RESET_POSE_TO_BEFORE_CHARGE_STATION_TRIGGER.onTrue(CommandsConstants.RESET_POSE_TO_BEFORE_CHARGE_STATION_COMMAND);
+        OperatorConstants.RESET_POSE_TO_AFTER_CHARGE_STATION_TRIGGER.onTrue(CommandsConstants.RESET_POSE_TO_AFTER_CHARGE_STATION_COMMAND);
     }
 
     private void bindDefaultCommands() {
-        SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-        ARM.setDefaultCommand(ARM.getGoToStateCommand(ArmStates.CLOSED).ignoringDisable(false));
-        GRIPPER.setDefaultCommand(GRIPPER.getHoldCommand());
-        leds.setDefaultCommand(flamesLEDCommand);
+        SWERVE.setDefaultCommand(CommandsConstants.FIELD_RELATIVE_OPEN_LOOP_SUPPLIER_DRIVE_COMMAND);
+        ARM.setDefaultCommand(CommandsConstants.CLOSE_ARM_COMMAND);
+        LEDS.setDefaultCommand(CommandsConstants.FLAMES_LED_COMMAND);
     }
 
     private void configureTargetPlacingPositionSetters() {
-        OperatorConstants.LEVEL_1_TRIGGER.onTrue(new InstantCommand(() -> level.set(1)).ignoringDisable(true));
-        OperatorConstants.LEVEL_2_TRIGGER.onTrue(new InstantCommand(() -> level.set(2)).ignoringDisable(true));
-        OperatorConstants.LEVEL_3_TRIGGER.onTrue(new InstantCommand(() -> level.set(3)).ignoringDisable(true));
+        OperatorConstants.LEVEL_1_TRIGGER.onTrue(CommandsConstants.SET_LEVEL_TO_ONE_COMMAND);
+        OperatorConstants.LEVEL_2_TRIGGER.onTrue(CommandsConstants.SET_LEVEL_TO_TWO_COMMAND);
+        OperatorConstants.LEVEL_3_TRIGGER.onTrue(CommandsConstants.SET_LEVEL_TO_THREE_COMMAND);
 
-        staticPurpleColorLedCommand.setName("pur");
-        staticYellowColorLedCommand.setName("yel");
+        OperatorConstants.MIDDLE_CONE_TRIGGER.onTrue(CommandsConstants.SET_TO_MIDDLE_CONE_COMMAND);
+        OperatorConstants.HIGH_CONE_TRIGGER.onTrue(CommandsConstants.SET_TO_HIGH_CONE_COMMAND);
+        OperatorConstants.CUBE_TRIGGER.onTrue(CommandsConstants.SET_TO_CUBE_COMMAND);
 
-        OperatorConstants.CONE_TRIGGER.onTrue(new InstantCommand(() -> {
-            isCone.set(true);
-            staticYellowColorLedCommand.schedule();
-        }).ignoringDisable(true));
-        OperatorConstants.CUBE_TRIGGER.onTrue(new InstantCommand(() -> {
-            isCone.set(false);
-            staticPurpleColorLedCommand.schedule();
+        OperatorConstants.GRID_1_TRIGGER.onTrue(CommandsConstants.SET_TO_GRID_1_COMMAND);
+        OperatorConstants.GRID_2_TRIGGER.onTrue(CommandsConstants.SET_TO_GRID_2_COMMAND);
+        OperatorConstants.GRID_3_TRIGGER.onTrue(CommandsConstants.SET_TO_GRID_3_COMMAND);
 
+        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(CommandsConstants.SET_TO_LEFT_RAMP_COMMAND);
+        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(CommandsConstants.SET_TO_RIGHT_RAMP_COMMAND);
 
-        }).ignoringDisable(true));
+        OperatorConstants.CUBE_LOW_TRIGGER.whileTrue(Commands.getPlaceCubeAtHybridCommand());
+        OperatorConstants.CUBE_MIDDLE_TRIGGER.whileTrue(Commands.getPlaceCubeAtMidCommand());
+        OperatorConstants.CUBE_HIGH_TRIGGER.whileTrue(Commands.getPlaceCubeAtHighCommand());
 
-        OperatorConstants.GRID_1_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 1 : 3)).ignoringDisable(true));
-        OperatorConstants.GRID_2_TRIGGER.onTrue(new InstantCommand(() -> grid.set(2)).ignoringDisable(true));
-        OperatorConstants.GRID_3_TRIGGER.onTrue(new InstantCommand(() -> grid.set(AllianceUtilities.isBlueAlliance() ? 3 : 1)).ignoringDisable(true));
+        OperatorConstants.CONE_LOW_TRIGGER.whileTrue(Commands.getPlaceConeAtHybridCommand());
+        OperatorConstants.CONE_MIDDLE_TRIGGER.whileTrue(Commands.getPlaceConeAtMidCommand());
+        OperatorConstants.CONE_HIGH_TRIGGER.whileTrue(Commands.getPlaceConeAtHighCommand());
 
-        OperatorConstants.LEFT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
-        OperatorConstants.RIGHT_RAMP_TRIGGER.onTrue(new InstantCommand(() -> isLeftRamp.set(!AllianceUtilities.isBlueAlliance())).ignoringDisable(true));
+        OperatorConstants.ALIGN_TO_REFLECTOR_TRIGGER.whileTrue(new AlignToReflectorCommand());
+        OperatorConstants.FULL_EJECT_TRIGGER.whileTrue(GRIPPER.getFullEjectCommand());
     }
 
     private void configureAutonomousChooser() {
-        autonomousPathNameChooser.setDefaultOption("None", null);
+        AUTONOMOUS_PATH_NAME_CHOOSER.setDefaultOption("None", null);
 
         for (String currentPathName : AutonomousConstants.AUTONOMOUS_PATHS_NAMES)
-            autonomousPathNameChooser.addOption(currentPathName, currentPathName);
+            AUTONOMOUS_PATH_NAME_CHOOSER.addOption(currentPathName, currentPathName);
     }
 
-    private double calculateShiftModeValue() {
-        final double squaredShiftModeValue = Math.pow(driverController.getRightTriggerAxis(), 2);
-
-        return 1 - squaredShiftModeValue * OperatorConstants.MINIMUM_SHIFT_VALUE_COEFFICIENT;
-    }
-
-    private Rotation2d getRightStickAsRotation2d() {
-        if (isRightStickStill())
-            return poseEstimator.getCurrentPose().getRotation();
-
-        return snapToClosest45Degrees(new Rotation2d(driverController.getRightY(), driverController.getRightX()));
-    }
-
-    private Rotation2d snapToClosest45Degrees(Rotation2d rotation2d) {
-        return Rotation2d.fromDegrees(Math.round(rotation2d.getDegrees() / 45) * 45);
-    }
-
-    private boolean isRightStickStill() {
-        return Math.abs(driverController.getRightY()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND &&
-                Math.abs(driverController.getRightX()) <= OperatorConstants.DRIVE_CONTROLLER_DEADBAND;
+    private boolean canAlignToReflector() {
+        return ARM.getDefaultCommand().equals(ARM.getCurrentCommand()) && ARM.atGoal();
     }
 
     private void setPoseEstimatorPoseSources() {
         poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);//,CameraConstants.t265);
     }
 
-    private FieldConstants.GridAlignment getGridAlignment() {
-        if (!isCone.get())
-            return FieldConstants.GridAlignment.getGridAlignment(grid.get(), 2);
-
-        final FieldConstants.GridAlignment gridAlignment = FieldConstants.GridAlignment.getGridAlignment(
-                grid.get(),
-                isLeftRamp.get() ? 1 : 3
-        );
-        SmartDashboard.putString("targetGridAlignment", gridAlignment.name());
-        return FieldConstants.GridAlignment.getGridAlignment(
-                grid.get(),
-                isLeftRamp.get() ? 1 : 3
-        );
-    }
-
-    private Pose2d setRotation(Pose2d pose, Rotation2d rotation) {
-        return new Pose2d(
-                pose.getX(),
-                pose.getY(),
-                rotation
-        );
-    }
-
-    private ProxyCommand getGoToCurrentFirstArmPositionCommand() {
-        return new ProxyCommand(() -> {
-            if (isCone.get())
-                return getGoToFirstConePositionCommand();
-
-            return getGoToCurrentCubePositionCommand();
-        });
-    }
-
-    private ProxyCommand getGoToCurrentSecondArmPositionCommand() {
-        return new ProxyCommand(() -> {
-            if (isCone.get())
-                return getGoToSecondConePositionCommand();
-
-            return getGoToCurrentCubePositionCommand();
-        });
-    }
-
-    private CommandBase getGoToSecondConePositionCommand() {
-        if (level.get() == 1)
-            return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID);
-        if (level.get() == 2)
-            return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_2);
-        if (level.get() == 3)
-            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH);
-
-        return new InstantCommand();
-    }
-
-    private CommandBase getGoToFirstConePositionCommand() {
-        if (level.get() == 1)
-            return ARM.getGoToStateCommand(ArmStates.CONE_HYBRID);
-        if (level.get() == 2)
-            return ARM.getGoToStateCommand(ArmStates.CONE_MIDDLE_1);
-        if (level.get() == 3)
-            return ARM.getGoToStateCommand(ArmStates.CONE_HIGH);
-
-        return new InstantCommand();
-    }
-
-    private CommandBase getGoToCurrentCubePositionCommand() {
-        if (level.get() == 1)
-            return ARM.getGoToStateCommand(ArmStates.CUBE_HYBRID);
-        if (level.get() == 2)
-            return ARM.getGoToStateCommand(ArmStates.CUBE_MIDDLE);
-        if (level.get() == 3)
-            return ARM.getGoToStateCommand(ArmStates.CUBE_HIGH);
-
-        return new InstantCommand();
-    }
-
-    private void toggleFieldAndSelfDrivenAngle() {
-        if (SWERVE.getDefaultCommand().equals(fieldRelativeDriveFromSticksCommand)) {
-            SWERVE.setDefaultCommand(fieldRelativeDrivenAngleFromSticksCommand);
-            fieldRelativeDrivenAngleFromSticksCommand.schedule();
-        } else {
-            SWERVE.setDefaultCommand(fieldRelativeDriveFromSticksCommand);
-            fieldRelativeDriveFromSticksCommand.schedule();
-        }
-    }
-
     private void setupArmBrakeModeWithUserButtonCommands() {
-        userButton.onTrue(new InstantCommand(() -> ARM.setNeutralMode(false)).ignoringDisable(true));
-        userButton.onFalse(new InstantCommand(ARM::setNeutralMode).ignoringDisable(true));
+        userButton.onTrue(CommandsConstants.ARM_COAST_COMMAND);
+        userButton.onFalse(CommandsConstants.ARM_BRAKE_COMMAND);
+        userButton.whileTrue(CommandsConstants.ARM_COAST_WITH_PINK_LED_COMMAND);
     }
 
     private void configDriverCam() {
-        var cam = CameraServer.startAutomaticCapture(2);
-        cam.setResolution(424, 240);
-        System.out.println(cam.setFPS(60));
-        cam.setPixelFormat(VideoMode.PixelFormat.kYUYV);
-    }
-
-    private CommandBase getDriveAndPlaceCommand() {
-        return Commands.getDriveToPoseCommand(
-                new PathConstraints(1, 1),
-                this::getAlignmentPose
-        ).raceWith(Commands.fakeStaticColor(Color.kYellow)).andThen(
-                new ProxyCommand(getPlaceCommand(isCone.get(), level.get()))
-        );
-    }
-
-    private Pose2d getAlignmentPose() {
-        var alignment = getGridAlignment().inFrontOfGridPose;
-        return new Pose2d(
-                alignment.getX(),
-                alignment.getY() + ((collectionCamera.getGamePiecePosition() / 100d * 1.25) * (DriverStation.getAlliance() == DriverStation.Alliance.Red ? -1 : 1)),
-                alignment.getRotation()
-        );
-    }
-
-    private CommandBase getPlaceCommand(boolean isCone, int level) {
-        if(isCone) {
-            if(level == 1)
-                return Commands.getPlaceConeAtHybridCommand().withName("getPlaceConeAtHybridCommand");
-            if(level == 2)
-                return Commands.getPlaceConeAtMidCommand().withName("getPlaceConeAtMidCommand");
-            if(level == 3)
-                return Commands.getPlaceConeAtHighCommand().withName("getPlaceConeAtHighCommand");
-        } else {
-            if(level == 1)
-                return Commands.getPlaceCubeAtHybridCommand().withName("getPlaceCubeAtHybridCommand");
-            if(level == 2)
-                return Commands.getPlaceCubeAtMidCommand().withName("getPlaceCubeAtMidCommand");
-            if(level == 3)
-                return Commands.getPlaceCubeAtHighCommand().withName("getPlaceCubeAtHighCommand");
-        }
-        return new InstantCommand();
+        final UsbCamera usbCamera = CameraServer.startAutomaticCapture(2);
+        usbCamera.setResolution(424, 240);
+        usbCamera.setPixelFormat(VideoMode.PixelFormat.kYUYV);
     }
 }

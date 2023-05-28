@@ -392,3 +392,4 @@ simgui.json
 
 # End entries from WPI Lib team
 networktables.json
+/*.wpilog
