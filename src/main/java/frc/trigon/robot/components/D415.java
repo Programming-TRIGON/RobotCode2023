@@ -38,6 +38,33 @@ public class D415 {
         return gamePieces;
     }
 
+    /**
+     * @return true if there are visible game pieces, false otherwise
+     */
+    public boolean hasVisibleGamePieces() {
+        return getJsonDump().results.length > 0;
+    }
+
+    /**
+     * @return the best target game piece, or null if none are visible
+     */
+    public GamePiece getBestGamePiece() {
+        GamePiece bestGamePiece = null;
+        double lastConfidence = 0;
+
+        for (D415JsonDump.Result currentResult : getJsonDump().results) {
+            if (currentResult.confidence > lastConfidence) {
+                bestGamePiece = new GamePiece(
+                        isCone(currentResult),
+                        getPose(currentResult)
+                );
+                lastConfidence = currentResult.confidence;
+            }
+        }
+
+        return bestGamePiece;
+    }
+
     private boolean isCone(D415JsonDump.Result result) {
         return result.classId == 0;
     }
@@ -62,7 +89,7 @@ public class D415 {
         return JsonHandler.parseJsonStringToObject(jsonDump.getString(""), D415JsonDump.class);
     }
 
-    private static class GamePiece {
+    public static class GamePiece {
         private final boolean isCone;
         private final Pose3d pose;
 
@@ -86,7 +113,7 @@ public class D415 {
         private static class Result {
             private double[] translation;
             private double[] rotation;
-            private int confidence;
+            private double confidence;
             @SerializedName("class")
             private int classId;
         }

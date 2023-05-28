@@ -1,6 +1,9 @@
 package frc.trigon.robot.constants;
 
 import com.pathplanner.lib.PathConstraints;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.commands.Commands;
@@ -18,6 +21,7 @@ import java.util.List;
 public class AutonomousConstants {
     public static final HashMap<String, Command> EVENT_MAP = new HashMap<>();
     public static final PathConstraints AUTONOMOUS_PATH_CONSTRAINS = new PathConstraints(2, 1.5);
+    public static final Transform2d GAME_PIECE_TO_PICKUP_POSE = new Transform2d(new Translation2d(1, 0), Rotation2d.fromRotations(0.5));
     public static final List<String> AUTONOMOUS_PATHS_NAMES = new ArrayList<>();
     private static final File PATH_PLANNER_DIRECTORY = new File(FilesHandler.DEPLOY_PATH + "pathplanner");
 
