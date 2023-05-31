@@ -1,38 +1,21 @@
 package frc.trigon.robot.subsystems.swerve.testing;
 
-import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import frc.trigon.robot.subsystems.swerve.Swerve;
-import frc.trigon.robot.subsystems.swerve.SwerveModule;
+
+import java.io.File;
 
 public class TestingSwerve extends Swerve {
     private static final TestingSwerve INSTANCE = new TestingSwerve();
-    private final TestingSwerveModule[] swerveModules = TestingSwerveConstants.SWERVE_MODULES;
 
     private TestingSwerve() {
+        super();
     }
 
     public static TestingSwerve getInstance() {
         return INSTANCE;
-    }
-
-    @Override
-    protected Pigeon2 getGyro() {
-        return TestingSwerveConstants.GYRO;
-    }
-
-    @Override
-    protected SwerveModule[] getModules() {
-        return swerveModules;
-    }
-
-    @Override
-    protected SwerveDriveKinematics getKinematics() {
-        return TestingSwerveConstants.KINEMATICS;
     }
 
     @Override
@@ -51,23 +34,8 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
-    protected PIDConstants getRotationPIDConstants() {
-        return TestingSwerveConstants.ROTATION_PID_CONSTANTS;
-    }
-
-    @Override
     protected PIDConstants getAutoRotationPIDConstants() {
         return TestingSwerveConstants.AUTO_ROTATION_PID_CONSTANTS;
-    }
-
-    @Override
-    protected double getMaxSpeedMetersPerSecond() {
-        return TestingSwerveConstants.MAX_SPEED_METERS_PER_SECOND;
-    }
-
-    @Override
-    protected double getMaxRotationalSpeedRadiansPerSecond() {
-        return TestingSwerveConstants.MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND;
     }
 
     @Override
@@ -81,12 +49,28 @@ public class TestingSwerve extends Swerve {
     }
 
     @Override
-    protected void lockSwerve() {
-        setBrake(true);
-        swerveModules[TestingSwerveModuleConstants.FRONT_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
-        swerveModules[TestingSwerveModuleConstants.FRONT_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
-        swerveModules[TestingSwerveModuleConstants.REAR_LEFT_ID].setTargetAngle(Rotation2d.fromDegrees(-45));
-        swerveModules[TestingSwerveModuleConstants.REAR_RIGHT_ID].setTargetAngle(Rotation2d.fromDegrees(45));
+    public double getStoppingAcceleration() {
+        return TestingSwerveConstants.STOPPING_ACCELERATION;
+    }
+
+    @Override
+    protected boolean getUseHeadingCorrectionForNormalDrive() {
+        return TestingSwerveConstants.USE_HEADING_CORRECTION_FOR_NORMAL_DRIVE;
+    }
+
+    @Override
+    protected boolean getUseHeadingCorrectionForAuto() {
+        return TestingSwerveConstants.USE_HEADING_CORRECTION_FOR_AUTO;
+    }
+
+    @Override
+    protected File getSwerveDirectory() {
+        return TestingSwerveConstants.SWERVE_PATH;
+    }
+
+    @Override
+    protected SimpleMotorFeedforward getFeedforward() {
+        return TestingSwerveConstants.DRIVE_FEEDFORWARD;
     }
 
     @Override
@@ -107,16 +91,6 @@ public class TestingSwerve extends Swerve {
     @Override
     protected double getRotationVelocityTolerance() {
         return TestingSwerveConstants.ROTATION_VELOCITY_TOLERANCE;
-    }
-
-    @Override
-    protected SlewRateLimiter getXSlewRateLimiter() {
-        return TestingSwerveConstants.X_SLEW_RATE_LIMITER;
-    }
-
-    @Override
-    protected SlewRateLimiter getYSlewRateLimiter() {
-        return TestingSwerveConstants.Y_SLEW_RATE_LIMITER;
     }
 }
 

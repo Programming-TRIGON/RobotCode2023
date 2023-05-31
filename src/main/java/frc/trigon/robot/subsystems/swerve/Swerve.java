@@ -1,43 +1,61 @@
 package frc.trigon.robot.subsystems.swerve;
 
-import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
-import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.annotations.Log;
+import swervelib.SwerveDrive;
+import swervelib.parser.SwerveParser;
+import swervelib.telemetry.SwerveDriveTelemetry;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
 
 public abstract class Swerve extends LoggableSubsystemBase {
-    /**
-     * @return the swerve's gyro
-     */
-    protected abstract Pigeon2 getGyro();
+    private SwerveDrive swerveDrive;
+    private boolean openLoop = false;
 
-    /**
-     * @return the pitch of the swerve
-     */
-    @Log
-    public double getPitch() {
-        return getGyro().getPitch();
+    protected Swerve() {
+        configureSwerveDrive();
     }
 
     /**
-     * @return the swerve's modules
+     * @return the swerve's profiled pid controller for rotation
      */
-    protected abstract SwerveModule[] getModules();
+    public abstract ProfiledPIDController getRotationController();
 
     /**
-     * @return the swerve's kinematics
+     * @return the acceleration of the swerve when stopping
      */
-    protected abstract SwerveDriveKinematics getKinematics();
+    public abstract double getStoppingAcceleration();
+
+    /**
+     * @return whether the swerve should use heading correction for normal drive
+     */
+    protected abstract boolean getUseHeadingCorrectionForNormalDrive();
+
+    /**
+     * @return whether the swerve should use heading correction for auto
+     */
+    protected abstract boolean getUseHeadingCorrectionForAuto();
+
+    /**
+     * @return the swerve's drive path
+     */
+    protected abstract File getSwerveDirectory();
+
+    /**
+     * @return the swerve's motor feedforward
+     */
+    protected abstract SimpleMotorFeedforward getFeedforward();
 
     /**
      * @return the swerve's drive neutral deadband
@@ -50,44 +68,19 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected abstract double getRotationNeutralDeadband();
 
     /**
-     * @return the swerve's translation PID constants
-     */
-    public abstract PIDConstants getTranslationPIDConstants();
-
-    /**
-     * @return the swerve's rotation PID constants
-     */
-    protected abstract PIDConstants getRotationPIDConstants();
-
-    /**
      * @return the swerve's rotation PID constants for auto
      */
     protected abstract PIDConstants getAutoRotationPIDConstants();
 
     /**
-     * @return the swerve's max speed in meters per second
+     * @return the swerve's translation PID constants
      */
-    protected abstract double getMaxSpeedMetersPerSecond();
-
-    /**
-     * @return the swerve's max rotational speed in radians per second
-     */
-    protected abstract double getMaxRotationalSpeedRadiansPerSecond();
+    protected abstract PIDConstants getTranslationPIDConstants();
 
     /**
      * @return the swerve's brake time in seconds
      */
     protected abstract double getBrakeTimeSeconds();
-
-    /**
-     * @return the swerve's profiled pid controller for rotation
-     */
-    public abstract ProfiledPIDController getRotationController();
-
-    /**
-     * Locks the swerve, so it'll be hard to move it.
-     */
-    protected abstract void lockSwerve();
 
     /**
      * @return the tolerance for translation in meters
@@ -110,129 +103,39 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected abstract double getRotationVelocityTolerance();
 
     /**
-     * @return a slew rate limiter for the x-axis
+     * @return the pitch of the swerve
      */
-    protected abstract SlewRateLimiter getXSlewRateLimiter();
-
-    /**
-     * @return a slew rate limiter for the y-axis
-     */
-    protected abstract SlewRateLimiter getYSlewRateLimiter();
-
-    /**
-     * @return the acceleration of the gyro in the z-axis
-     */
-    public short getGyroZAcceleration() {
-        return getGyroAccelerometer()[2];
+    public Rotation2d getPitch() {
+        return swerveDrive.getPitch();
     }
 
     /**
-     * @return the acceleration of the gyro in the y-axis
+     * @return the swerve drive
      */
-    @Log(name="yAccel")
-    public short getGyroYAcceleration() {
-        return getGyroAccelerometer()[1];
-    }
-
-    /**
-     * @return the acceleration of the gyro in the x-axis
-     */
-    public short getGyroXAcceleration() {
-        return getGyroAccelerometer()[0];
-    }
-
-    /**
-     * @return the heading of the robot
-     */
-    @Log(name = "heading", methodName = "getDegrees")
-    public Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(MathUtil.inputModulus(getGyro().getYaw(), -180, 180));
-    }
-
-    /**
-     * @return the robot's current velocity
-     */
-    @Log(methodName = "toString")
-    public ChassisSpeeds getCurrentVelocity() {
-        final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
-
-        for (int i = 0; i < getModules().length; i++)
-            states[i] = getModules()[i].getCurrentState();
-
-        return getKinematics().toChassisSpeeds(states);
-    }
-
-    /**
-     * Sets the heading of the robot.
-     *
-     * @param heading the new heading
-     */
-    public void setHeading(Rotation2d heading) {
-        getGyro().setYaw(heading.getDegrees());
-    }
-
-    /**
-     * Drives the swerve with the given velocities, relative to the robot's frame of reference.
-     *
-     * @param translation the target x and y velocities in m/s
-     * @param rotation    the target theta velocity in radians per second
-     */
-    protected void selfRelativeDrive(Translation2d translation, Rotation2d rotation) {
-        ChassisSpeeds chassisSpeeds = new ChassisSpeeds(
-                translation.getX(),
-                translation.getY(),
-                rotation.getRadians()
-        );
-        selfRelativeDrive(chassisSpeeds);
-    }
-
-    /**
-     * Drives the swerve with the given velocities, relative to the field's frame of reference.
-     *
-     * @param translation the target x and y velocities in m/s
-     * @param rotation    the target theta velocity in radians per second
-     */
-    protected void fieldRelativeDrive(Translation2d translation, Rotation2d rotation) {
-        final Rotation2d heading = AllianceUtilities.isBlueAlliance() ? getHeading() : getHeading().plus(Rotation2d.fromRotations(0.5));
-
-        ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                getXSlewRateLimiter().calculate(translation.getX()),
-                translation.getY(),
-                rotation.getRadians(),
-                heading
-        );
-        selfRelativeDrive(chassisSpeeds);
-    }
-
-    /**
-     * @return the swerve's module's positions
-     */
-    protected SwerveModulePosition[] getModulePositions() {
-        final SwerveModulePosition[] swerveModuleStates = new SwerveModulePosition[4];
-        final SwerveModule[] swerveModules = getModules();
-
-        for (int i = 0; i < swerveModules.length; i++)
-            swerveModuleStates[i] = swerveModules[i].getCurrentPosition();
-
-        return swerveModuleStates;
-    }
-
-    /**
-     * Sets whether the swerve drive should be in closed loop control, or in open loop control.
-     *
-     * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
-     */
-    protected void setClosedLoop(boolean closedLoop) {
-        for (SwerveModule module : getModules())
-            module.setDriveMotorClosedLoop(closedLoop);
+    protected SwerveDrive getSwerveDrive() {
+        return swerveDrive;
     }
 
     /**
      * Stops the swerve's motors.
      */
-    protected void stop() {
-        for (SwerveModule module : getModules())
-            module.stop();
+    void stop() {
+        swerveDrive.drive(new Translation2d(), 0, false, false, false);
+    }
+
+    /**
+     * @return the swerve's kinematics
+     */
+    SwerveDriveKinematics getKinematics() {
+        return swerveDrive.kinematics;
+    }
+
+    /**
+     * Point all modules toward the robot center, thus making the robot very difficult to move.
+     * Forcing the robot to keep the current pose.
+     */
+    void lockPose() {
+        swerveDrive.lockPose();
     }
 
     /**
@@ -240,26 +143,129 @@ public abstract class Swerve extends LoggableSubsystemBase {
      *
      * @param brake whether the drive motors should brake or coast
      */
-    protected void setBrake(boolean brake) {
-        for (SwerveModule module : getModules())
-            module.setBrake(brake);
+    void setBrake(boolean brake) {
+        swerveDrive.setMotorIdleMode(brake);
     }
 
     /**
-     * Sets the swerve's target module states.
+     * Sets whether the swerve drive should be in open loop control, or in closed loop control.
      *
-     * @param swerveModuleStates the target module states
+     * @param openLoop true if the drive motor should be in open loop control, false if it should be in closed loop control
      */
-    protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
-        for (int i = 0; i < getModules().length; i++)
-            getModules()[i].setTargetState(swerveModuleStates[i]);
+    void setOpenLoop(boolean openLoop) {
+        this.openLoop = openLoop;
     }
 
-    private short[] getGyroAccelerometer() {
-        final short[] accelerometer = new short[3];
-        getGyro().getBiasedAccelerometer(accelerometer);
+    /**
+     * @return the swerve's rotation PID constants
+     */
+    PIDConstants getRotationPIDConstants() {
+        final double
+                p = swerveDrive.getSwerveController().thetaController.getP(),
+                i = swerveDrive.getSwerveController().thetaController.getI(),
+                d = swerveDrive.getSwerveController().thetaController.getD();
 
-        return accelerometer;
+        return new PIDConstants(p, i, d);
+    }
+
+    /**
+     * @return the heading of the robot
+     */
+    Rotation2d getHeading() {
+        return swerveDrive.getYaw();
+    }
+
+    /**
+     * @return the robot's current velocity
+     */
+    ChassisSpeeds getCurrentVelocity() {
+        return swerveDrive.getRobotVelocity();
+    }
+
+    /**
+     * Sets the heading of the robot.
+     *
+     * @param heading the new heading
+     */
+    void setHeading(Rotation2d heading) {
+        swerveDrive.setGyro(new Rotation3d(0, 0, heading.getRadians()));
+    }
+
+    /**
+     * Drives the swerve with the given velocities, relative to the robot's frame of reference.
+     *
+     * @param translation          the target x and y velocities in m/s
+     * @param rotation             the target theta velocity in radians per second
+     * @param useHeadingCorrection whether to correct heading when driving translationally. Set to true to enable
+     */
+    void selfRelativeDrive(Translation2d translation, Rotation2d rotation, boolean useHeadingCorrection) {
+        swerveDrive.drive(translation, rotation.getRadians(), false, openLoop, useHeadingCorrection);
+    }
+
+    /**
+     * Drives the swerve with the given velocities, relative to the field's frame of reference.
+     *
+     * @param translation          the target x and y velocities in m/s
+     * @param rotation             the target theta velocity in radians per second
+     * @param useHeadingCorrection whether to correct heading when driving translationally. Set to true to enable
+     */
+    void fieldRelativeDrive(Translation2d translation, Rotation2d rotation, boolean useHeadingCorrection) {
+        swerveDrive.drive(translation, rotation.getRadians(), true, openLoop, useHeadingCorrection);
+    }
+
+    /**
+     * Drives the swerve with the given velocities, relative to the robot's frame of reference.
+     *
+     * @param chassisSpeeds the target velocities for the robot
+     */
+    void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
+        if (isStill(chassisSpeeds)) {
+            stop();
+            return;
+        }
+
+        swerveDrive.setChassisSpeeds(chassisSpeeds);
+    }
+
+    /**
+     * Get the chassis speeds based on controller input of 2 joysticks. One for speeds in which
+     * direction. The other for the angle of the robot.
+     *
+     * @param x        X joystick input for the robot to move in the X direction.
+     * @param y        Y joystick input for the robot to move in the Y direction.
+     * @param headingX X joystick which controls the angle of the robot.
+     * @param headingY Y joystick which controls the angle of the robot.
+     * @return {@link ChassisSpeeds} which can be sent to th Swerve Drive.
+     */
+    ChassisSpeeds getTargetSpeeds(double x, double y, double headingX, double headingY) {
+        return swerveDrive.getSwerveController().getTargetSpeeds(x, y, headingX, headingY, swerveDrive.getYaw().getRadians());
+    }
+
+    /**
+     * @return the acceleration of the robot
+     */
+    public Translation3d getAcceleration() {
+        Optional<Translation3d> accel = swerveDrive.getAccel();
+
+        if (accel.isPresent()) {
+            return accel.get();
+        }
+
+        return new Translation3d();
+    }
+
+    /**
+     * @return the swerve's max rotational speed in radians per second
+     */
+    double getMaxRotationalSpeedRadiansPerSecond() {
+        return swerveDrive.swerveDriveConfiguration.attainableMaxRotationalVelocityRadiansPerSecond;
+    }
+
+    /**
+     * @return the swerve's max speed in meters per second
+     */
+    double getMaxSpeedMetersPerSecond() {
+        return swerveDrive.swerveDriveConfiguration.attainableMaxTranslationalSpeedMetersPerSecond;
     }
 
     @Log(name = "rotationController/error")
@@ -272,16 +278,6 @@ public abstract class Swerve extends LoggableSubsystemBase {
         return getRotationController().getSetpoint().position;
     }
 
-    private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
-        if (isStill(chassisSpeeds)) {
-            stop();
-            return;
-        }
-
-        SwerveModuleState[] swerveModuleStates = getKinematics().toSwerveModuleStates(chassisSpeeds);
-        setTargetModuleStates(swerveModuleStates);
-    }
-
     /**
      * Returns whether the given chassis speeds are considered to be "still" by the swerve neutral deadband.
      *
@@ -291,7 +287,19 @@ public abstract class Swerve extends LoggableSubsystemBase {
     private boolean isStill(ChassisSpeeds chassisSpeeds) {
         return
                 Math.abs(chassisSpeeds.vxMetersPerSecond) <= getDriveNeutralDeadband() &&
-                        Math.abs(chassisSpeeds.vyMetersPerSecond) <= getDriveNeutralDeadband() &&
-                        Math.abs(chassisSpeeds.omegaRadiansPerSecond) <= getRotationNeutralDeadband();
+                Math.abs(chassisSpeeds.vyMetersPerSecond) <= getDriveNeutralDeadband() &&
+                Math.abs(chassisSpeeds.omegaRadiansPerSecond) <= getRotationNeutralDeadband();
+    }
+
+    private void configureSwerveDrive() {
+        SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
+
+        try {
+            swerveDrive = new SwerveParser(getSwerveDirectory()).createSwerveDrive();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        swerveDrive.replaceSwerveModuleFeedforward(getFeedforward());
     }
 }

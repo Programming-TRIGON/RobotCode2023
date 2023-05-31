@@ -72,7 +72,7 @@ public class AutoBalanceCommand {
     // returns the magnititude of the robot's tilt calculated by the root of
     // pitch^2 + roll^2, used to compensate for diagonally mounted rio
     public double getTilt() {
-        return RobotContainer.SWERVE.getPitch();
+        return RobotContainer.SWERVE.getPitch().getDegrees();
 //        double pitch = getPitch();
 //        double roll = getRoll();
 //        SmartDashboard.putNumber("pitch", pitch);

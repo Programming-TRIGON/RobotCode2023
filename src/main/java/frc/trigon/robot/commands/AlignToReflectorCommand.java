@@ -12,16 +12,18 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.components.ReflectionLimelight;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
+import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 
 public class AlignToReflectorCommand extends SequentialCommandGroup {
     private final ReflectionLimelight reflectionLimelight = RobotContainer.REFLECTION_LIMELIGHT;
-    final PIDController translationPIDController = pidConstantsToController(new PIDConstants(0.03, 0, 0, 0.02));
+    private final PIDController translationPIDController = pidConstantsToController(new PIDConstants(0.03, 0, 0, 0.02));
     private final ProfiledPIDController rotationController;
+    private final Swerve swerve = RobotContainer.SWERVE;
 
     public AlignToReflectorCommand() {
         translationPIDController.setTolerance(0.5, 0.4);
-        rotationController = RobotContainer.SWERVE.getRotationController();
+        rotationController = swerve.getRotationController();
         final InstantCommand initializePIDControllerCommand = new InstantCommand(() -> {
             translationPIDController.reset();
             translationPIDController.setSetpoint(-2.5);
@@ -60,7 +62,7 @@ public class AlignToReflectorCommand extends SequentialCommandGroup {
     }
 
     private boolean isRobotStopping() {
-        return RobotContainer.SWERVE.getGyroYAcceleration() > 4500;
+        return swerve.getAcceleration().getY() > swerve.getStoppingAcceleration();
     }
 
     private PIDController pidConstantsToController(PIDConstants pidConstants) {
