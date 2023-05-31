@@ -2,15 +2,13 @@ package frc.trigon.robot.subsystems.arm;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
@@ -26,12 +24,12 @@ public class ArmConstants {
             FIRST_JOINT_SECOND_MOTOR_ID = 10,
             SECOND_JOINT_MOTOR_ID = 11;
 
-    static final WPI_TalonFX
-            FIRST_JOINT_FIRST_MOTOR = new WPI_TalonFX(FIRST_JOINT_FIRST_MOTOR_ID),
-            SECOND_JOINT_MOTOR = new WPI_TalonFX(SECOND_JOINT_MOTOR_ID);
-    private static final WPI_TalonFX FIRST_JOINT_SECOND_MOTOR = new WPI_TalonFX(FIRST_JOINT_SECOND_MOTOR_ID);
-    private static final CANCoder
-            FIRST_JOINT_ENCODER = new CANCoder(FIRST_JOINT_FIRST_MOTOR_ID);
+    static final TalonFX
+            FIRST_JOINT_FIRST_MOTOR = new TalonFX(FIRST_JOINT_FIRST_MOTOR_ID),
+            SECOND_JOINT_MOTOR = new TalonFX(SECOND_JOINT_MOTOR_ID);
+    private static final TalonFX FIRST_JOINT_SECOND_MOTOR = new TalonFX(FIRST_JOINT_SECOND_MOTOR_ID);
+    private static final CANcoder
+            FIRST_JOINT_ENCODER = new CANcoder(FIRST_JOINT_FIRST_MOTOR_ID);
     private static final WPI_TalonSRX
             SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID + 1);
 
@@ -53,12 +51,12 @@ public class ArmConstants {
 
     static final CurrentWatcher.CurrentWatcherConfig
             FIRST_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
-            FIRST_JOINT_FIRST_MOTOR::getStatorCurrent,
-            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
-            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
-    ),
+                    () -> FIRST_JOINT_FIRST_MOTOR.getStatorCurrent().getValue(),
+                    FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
+                    FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
+            ),
             SECOND_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
-                    SECOND_JOINT_MOTOR::getStatorCurrent,
+                    () -> FIRST_JOINT_FIRST_MOTOR.getStatorCurrent().getValue(),
                     SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
                     SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
             );
@@ -90,9 +88,9 @@ public class ArmConstants {
 
     static final TrapezoidProfile.Constraints
             FIRST_JOINT_CONSTRAINTS = new TrapezoidProfile.Constraints(
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND,
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED
-    ),
+                    FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND,
+                    FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED
+            ),
             SECOND_JOINT_CONSTRAINTS = new TrapezoidProfile.Constraints(
                     SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND,
                     SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED
@@ -118,11 +116,11 @@ public class ArmConstants {
 
     static final ArmFeedforward
             FIRST_JOINT_FEEDFORWARD = new ArmFeedforward(
-            FIRST_JOINT_KS,
-            FIRST_JOINT_KG,
-            FIRST_JOINT_KV,
-            FIRST_JOINT_KA
-    ),
+                    FIRST_JOINT_KS,
+                    FIRST_JOINT_KG,
+                    FIRST_JOINT_KV,
+                    FIRST_JOINT_KA
+            ),
             SECOND_JOINT_FEEDFORWARD = new ArmFeedforward(
                     SECOND_JOINT_KS,
                     SECOND_JOINT_KG,
@@ -137,6 +135,11 @@ public class ArmConstants {
     private static final double FIRST_JOINT_CLOSED = -79, SECOND_JOINT_CLOSED = 156;
 
     static {
+        var fx_cfg = new TalonFXConfiguration();
+        fx_cfg.Feedback.FeedbackRemoteSensorID = 1;
+        fx_cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+
+        m_talonFX.getConfigurator().apply(fx_cfg);
         FIRST_JOINT_FIRST_MOTOR.configFactoryDefault();
         FIRST_JOINT_SECOND_MOTOR.configFactoryDefault();
         SECOND_JOINT_MOTOR.configFactoryDefault();
