@@ -1,7 +1,7 @@
 package frc.trigon.robot.subsystems.arm;
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -342,12 +342,7 @@ public class Arm extends LoggableSubsystemBase {
 
     private void setTargetPositionWithFeedforward(TalonFX motor, double position, double feedforward) {
         // TODO: check this
-        final PositionDutyCycle positionDutyCycle = new PositionDutyCycle(
-                position, ArmConstants.USE_FOC,
-                feedforward / motor.getSupplyVoltage().getValue(),
-                0, false
-        );
-        motor.setControl(positionDutyCycle);
+        motor.setControl(new PositionVoltage(position, ArmConstants.USE_FOC, feedforward, 0, false));
     }
 
     private double calculateFeedforward(ArmFeedforward feedforward, double position, double velocity) {

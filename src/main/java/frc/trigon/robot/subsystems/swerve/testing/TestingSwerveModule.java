@@ -1,7 +1,7 @@
 package frc.trigon.robot.subsystems.swerve.testing;
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkMax;
@@ -55,15 +55,15 @@ public class TestingSwerveModule extends SwerveModule {
 
         driveMotor.setControl(
                 // TODO: check this
-                new VelocityDutyCycle(driveMotorVelocity, TestingSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward / driveMotor.getSupplyVoltage().getValue(), 0, false)
+                new VelocityVoltage(driveMotorVelocity, TestingSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward, 0, false)
         );
     }
 
     @Override
     protected void setTargetOpenLoopVelocity(double velocity) {
-        double power = velocity / TestingSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
-        driveMotor.set(power);
-//        driveMotor.setControl(new VelocityVoltage(velocity));
+//        double power = velocity / TestingSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
+//        driveMotor.set(power);
+        driveMotor.setControl(new VelocityVoltage(velocity));
     }
 
     @Override

@@ -1,8 +1,8 @@
 package frc.trigon.robot.subsystems.swerve.trihard;
 
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -86,7 +86,7 @@ public class TrihardSwerveModule extends SwerveModule {
         double targetScopedDegrees = scope(rotation2d);
         double targetMotorDegrees = Conversions.systemToMotor(targetScopedDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
         double targetMotorRevolutions = Conversions.degreesToRevolutions(targetMotorDegrees);
-        steerMotor.setControl(new PositionDutyCycle(targetMotorRevolutions));
+        steerMotor.setControl(new PositionVoltage(targetMotorRevolutions));
     }
 
     @Override
@@ -100,7 +100,7 @@ public class TrihardSwerveModule extends SwerveModule {
         final double feedForward = TrihardSwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(velocity);
 
         driveMotor.setControl(
-                new VelocityDutyCycle(driveMotorVelocity, TrihardSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward / driveMotor.getSupplyVoltage().getValue(), 0, false)
+                new VelocityVoltage(driveMotorVelocity, TrihardSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward, 0, false)
         );
     }
 
