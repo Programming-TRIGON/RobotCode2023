@@ -1,13 +1,16 @@
 package frc.trigon.robot.subsystems.gripper;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import edu.wpi.first.wpilibj2.command.*;
+import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class Gripper extends LoggableSubsystemBase {
     private static final Gripper INSTANCE = new Gripper();
-    private final WPI_TalonFX motor = GripperConstants.MOTOR;
+    private final TalonFX motor = GripperConstants.MOTOR;
 
     public static Gripper getInstance() {
         return INSTANCE;
@@ -114,7 +117,7 @@ public class Gripper extends LoggableSubsystemBase {
 
     @Log
     private double getStatorCurrent() {
-        return motor.getStatorCurrent();
+        return motor.getStatorCurrent().getValue();
     }
 
     private void setState(GripperConstants.GripperState state) {

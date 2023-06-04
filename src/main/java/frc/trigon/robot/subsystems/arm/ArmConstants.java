@@ -1,12 +1,16 @@
 package frc.trigon.robot.subsystems.arm;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.trigon.robot.utilities.Conversions;
@@ -14,9 +18,11 @@ import frc.trigon.robot.utilities.CurrentWatcher;
 
 public class ArmConstants {
     static final double
-    FIRST_JOINT_HEIGHT = 101.91482,
-    FIRST_JOINT_LENGTH = 85.88525,
-    SECOND_JOINT_LENGTH = 55;
+            FIRST_JOINT_HEIGHT = 101.91482,
+            FIRST_JOINT_LENGTH = 85.88525,
+            SECOND_JOINT_LENGTH = 55;
+
+    static final boolean USE_FOC = false;
 
     static final double RETRACTED_DEGREES = 130;
     private static final int
@@ -25,9 +31,9 @@ public class ArmConstants {
             SECOND_JOINT_MOTOR_ID = 11;
 
     static final TalonFX
-            FIRST_JOINT_FIRST_MOTOR = new TalonFX(FIRST_JOINT_FIRST_MOTOR_ID),
+            FIRST_JOINT_MASTER_MOTOR = new TalonFX(FIRST_JOINT_FIRST_MOTOR_ID),
+            FIRST_JOINT_FOLLOWER_MOTOR = new TalonFX(FIRST_JOINT_SECOND_MOTOR_ID),
             SECOND_JOINT_MOTOR = new TalonFX(SECOND_JOINT_MOTOR_ID);
-    private static final TalonFX FIRST_JOINT_SECOND_MOTOR = new TalonFX(FIRST_JOINT_SECOND_MOTOR_ID);
     private static final CANcoder
             FIRST_JOINT_ENCODER = new CANcoder(FIRST_JOINT_FIRST_MOTOR_ID);
     private static final WPI_TalonSRX
@@ -51,28 +57,26 @@ public class ArmConstants {
 
     static final CurrentWatcher.CurrentWatcherConfig
             FIRST_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
-                    () -> FIRST_JOINT_FIRST_MOTOR.getStatorCurrent().getValue(),
+                    () -> FIRST_JOINT_MASTER_MOTOR.getStatorCurrent().getValue(),
                     FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
                     FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
             ),
             SECOND_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
-                    () -> FIRST_JOINT_FIRST_MOTOR.getStatorCurrent().getValue(),
+                    () -> FIRST_JOINT_MASTER_MOTOR.getStatorCurrent().getValue(),
                     SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
                     SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
             );
 
-    private static final boolean
-            FIRST_JOINT_MOTOR_INVERTED = false,
-            FIRST_JOINT_SECOND_MOTOR_INVERTED = false,
-            SECOND_JOINT_MOTOR_INVERTED = false;
+    private static final InvertedValue
+            FIRST_JOINT_MASTER_INVERTED_VALUE = InvertedValue.Clockwise_Positive,
+            FIRST_JOINT_FOLLOWER_INVERTED_VALUE = InvertedValue.Clockwise_Positive,
+            SECOND_JOINT_MOTOR_INVERTED_VALUE = InvertedValue.Clockwise_Positive;
+    private static final SensorDirectionValue FIRST_JOINT_SENSOR_DIRECTION_VALUE = SensorDirectionValue.Clockwise_Positive;
+    static final NeutralModeValue
+            FIRST_JOINT_NEUTRAL_MODE = NeutralModeValue.Brake,
+            SECOND_JOINT_NEUTRAL_MODE = NeutralModeValue.Brake;
 
-    static final NeutralMode
-            FIRST_JOINT_NEUTRAL_MODE = NeutralMode.Brake,
-            SECOND_JOINT_NEUTRAL_MODE = NeutralMode.Brake;
-
-    private static final boolean
-            FIRST_JOINT_SENSOR_PHASE = false,
-            SECOND_JOINT_SENSOR_PHASE = false;
+    private static final boolean SECOND_JOINT_SENSOR_PHASE = false;
 
     private static final double
             FIRST_JOINT_NEUTRAL_DEADBAND = 0.02,
@@ -96,9 +100,10 @@ public class ArmConstants {
                     SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED
             );
     private static final double
-            FIRST_JOINT_P = 1.3,
+            FIRST_JOINT_P = 2.6025415444770283, // 0.26025415444770283
             FIRST_JOINT_I = 0,
             FIRST_JOINT_D = 0,
+            // TODO: Check if these values need conversion
             FIRST_JOINT_KS = 1.0169,
             FIRST_JOINT_KV = 0.53077,
             FIRST_JOINT_KA = 0.2618,
@@ -129,67 +134,83 @@ public class ArmConstants {
             );
 
     private static final double
-            FIRST_JOINT_ENCODER_OFFSET = 128.759766,
-            SECOND_JOINT_ENCODER_OFFSET = -1250;
+            FIRST_JOINT_ENCODER_OFFSET = 0.3576660166015625,
+            SECOND_JOINT_ENCODER_OFFSET = 133.287109;
 
-    private static final double FIRST_JOINT_CLOSED = -79, SECOND_JOINT_CLOSED = 156;
+    private static final double
+            FIRST_JOINT_CLOSED = -79,
+            SECOND_JOINT_CLOSED = 156;
 
     static {
-        var fx_cfg = new TalonFXConfiguration();
-        fx_cfg.Feedback.FeedbackRemoteSensorID = 1;
-        fx_cfg.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+        configureEncoders();
+        configureFirstJointMasterMotor();
+        configureFirstJointFollowerMotor();
+        configureSecondJointMotor();
+//        FIRST_JOINT_MASTER_MOTOR.configAllowableClosedloopError(0, Conversions.degreesToMagTicks(1));
+    }
 
-        m_talonFX.getConfigurator().apply(fx_cfg);
-        FIRST_JOINT_FIRST_MOTOR.configFactoryDefault();
-        FIRST_JOINT_SECOND_MOTOR.configFactoryDefault();
-        SECOND_JOINT_MOTOR.configFactoryDefault();
+    private static void configureEncoders() {
+        final CANcoderConfiguration firstJointEncoderConfig = new CANcoderConfiguration();
 
-        FIRST_JOINT_ENCODER.configFactoryDefault();
+        firstJointEncoderConfig.MagnetSensor.SensorDirection = FIRST_JOINT_SENSOR_DIRECTION_VALUE;
+        firstJointEncoderConfig.MagnetSensor.MagnetOffset = FIRST_JOINT_ENCODER_OFFSET;
+        FIRST_JOINT_ENCODER.getConfigurator().apply(firstJointEncoderConfig);
+
         SECOND_JOINT_ENCODER.configFactoryDefault();
-
-        FIRST_JOINT_FIRST_MOTOR.setInverted(FIRST_JOINT_MOTOR_INVERTED);
-        FIRST_JOINT_SECOND_MOTOR.setInverted(FIRST_JOINT_SECOND_MOTOR_INVERTED);
-        SECOND_JOINT_MOTOR.setInverted(SECOND_JOINT_MOTOR_INVERTED);
-
-        FIRST_JOINT_SECOND_MOTOR.follow(FIRST_JOINT_FIRST_MOTOR);
-
-        FIRST_JOINT_FIRST_MOTOR.setSensorPhase(FIRST_JOINT_SENSOR_PHASE);
         SECOND_JOINT_ENCODER.setInverted(SECOND_JOINT_SENSOR_PHASE);
 
-
         SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-        SECOND_JOINT_ENCODER.setSelectedSensorPosition(Conversions.offsetRead(SECOND_JOINT_ENCODER.getSensorCollection().getPulseWidthPosition(), Conversions.degreesToMagTicks(133.287109)));
+        SECOND_JOINT_ENCODER.setSelectedSensorPosition(Conversions.offsetRead(SECOND_JOINT_ENCODER.getSensorCollection().getPulseWidthPosition(), Conversions.degreesToMagTicks(SECOND_JOINT_ENCODER_OFFSET)));
 
         SECOND_JOINT_ENCODER.configClosedloopRamp(1);
         SECOND_JOINT_ENCODER.configOpenloopRamp(1);
 
-        FIRST_JOINT_ENCODER.setPositionToAbsolute();
-        double rawFirstPos = FIRST_JOINT_ENCODER.getAbsolutePosition() + FIRST_JOINT_ENCODER_OFFSET;
-        if(rawFirstPos > 200)
-            rawFirstPos -= 360;
-        FIRST_JOINT_ENCODER.setPosition(rawFirstPos);
+    }
 
-        FIRST_JOINT_FIRST_MOTOR.configRemoteFeedbackFilter(FIRST_JOINT_ENCODER, 0);
-        SECOND_JOINT_MOTOR.configRemoteFeedbackFilter(SECOND_JOINT_ENCODER, 0);
+    private static void configureSecondJointMotor() {
+        final TalonFXConfiguration secondJointMotorConfig = new TalonFXConfiguration();
 
-        FIRST_JOINT_FIRST_MOTOR.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
-        SECOND_JOINT_MOTOR.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
+        secondJointMotorConfig.Slot0.kP = SECOND_JOINT_P;
+        secondJointMotorConfig.Slot0.kI = SECOND_JOINT_I;
+        secondJointMotorConfig.Slot0.kD = SECOND_JOINT_D;
 
-        FIRST_JOINT_FIRST_MOTOR.config_kP(0, FIRST_JOINT_P);
-        FIRST_JOINT_FIRST_MOTOR.config_kI(0, FIRST_JOINT_I);
-        FIRST_JOINT_FIRST_MOTOR.config_kD(0, FIRST_JOINT_D);
-        FIRST_JOINT_FIRST_MOTOR.configAllowableClosedloopError(0, Conversions.degreesToMagTicks(1));
+        secondJointMotorConfig.Feedback.FeedbackRemoteSensorID = SECOND_JOINT_ENCODER.getDeviceID();
+        // TODO: Check if this is correct
+        secondJointMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
 
-        SECOND_JOINT_MOTOR.config_kP(0, SECOND_JOINT_P);
-        SECOND_JOINT_MOTOR.config_kI(0, SECOND_JOINT_I);
-        SECOND_JOINT_MOTOR.config_kD(0, SECOND_JOINT_D);
-        SECOND_JOINT_MOTOR.configClosedLoopPeakOutput(0, SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT);
+        secondJointMotorConfig.MotorOutput.Inverted = SECOND_JOINT_MOTOR_INVERTED_VALUE;
+        secondJointMotorConfig.MotorOutput.NeutralMode = SECOND_JOINT_NEUTRAL_MODE;
+        secondJointMotorConfig.MotorOutput.DutyCycleNeutralDeadband = SECOND_JOINT_NEUTRAL_DEADBAND;
+        secondJointMotorConfig.MotorOutput.PeakForwardDutyCycle = SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
+        secondJointMotorConfig.MotorOutput.PeakReverseDutyCycle = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
 
-        FIRST_JOINT_FIRST_MOTOR.setNeutralMode(FIRST_JOINT_NEUTRAL_MODE);
-        SECOND_JOINT_MOTOR.setNeutralMode(SECOND_JOINT_NEUTRAL_MODE);
+        SECOND_JOINT_MOTOR.getConfigurator().apply(secondJointMotorConfig);
+    }
 
-        FIRST_JOINT_FIRST_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
-        SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
+    private static void configureFirstJointFollowerMotor() {
+        final TalonFXConfiguration firstJointFollowerMotorConfig = new TalonFXConfiguration();
+
+        firstJointFollowerMotorConfig.MotorOutput.Inverted = FIRST_JOINT_FOLLOWER_INVERTED_VALUE;
+
+        FIRST_JOINT_FOLLOWER_MOTOR.getConfigurator().apply(firstJointFollowerMotorConfig);
+        FIRST_JOINT_FOLLOWER_MOTOR.setControl(new Follower(FIRST_JOINT_MASTER_MOTOR.getDeviceID(), false));
+//        FIRST_JOINT_FOLLOWER_MOTOR.setControl(new StrictFollower(FIRST_JOINT_MASTER_MOTOR.getDeviceID()));
+    }
+
+    private static void configureFirstJointMasterMotor() {
+        final TalonFXConfiguration firstJointMasterMotorConfig = new TalonFXConfiguration();
+        firstJointMasterMotorConfig.Slot0.kP = FIRST_JOINT_P;
+        firstJointMasterMotorConfig.Slot0.kI = FIRST_JOINT_I;
+        firstJointMasterMotorConfig.Slot0.kD = FIRST_JOINT_D;
+
+        firstJointMasterMotorConfig.Feedback.FeedbackRemoteSensorID = FIRST_JOINT_ENCODER.getDeviceID();
+        firstJointMasterMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+
+        firstJointMasterMotorConfig.MotorOutput.Inverted = FIRST_JOINT_MASTER_INVERTED_VALUE;
+        firstJointMasterMotorConfig.MotorOutput.NeutralMode = FIRST_JOINT_NEUTRAL_MODE;
+        firstJointMasterMotorConfig.MotorOutput.DutyCycleNeutralDeadband = FIRST_JOINT_NEUTRAL_DEADBAND;
+
+        FIRST_JOINT_MASTER_MOTOR.getConfigurator().apply(firstJointMasterMotorConfig);
     }
 
     public enum ArmStates {
