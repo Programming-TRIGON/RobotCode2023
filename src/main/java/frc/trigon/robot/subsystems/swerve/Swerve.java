@@ -1,6 +1,6 @@
 package frc.trigon.robot.subsystems.swerve;
 
-import com.ctre.phoenix.sensors.Pigeon2;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -26,7 +26,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
      */
     @Log
     public double getPitch() {
-        return getGyro().getPitch();
+        return getGyro().getPitch().getValue();
     }
 
     /**
@@ -122,23 +122,23 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the acceleration of the gyro in the z-axis
      */
-    public short getGyroZAcceleration() {
-        return getGyroAccelerometer()[2];
+    public double getGyroZAcceleration() {
+        return getGyro().getAccelerationZ().getValue();
     }
 
     /**
      * @return the acceleration of the gyro in the y-axis
      */
     @Log(name="yAccel")
-    public short getGyroYAcceleration() {
-        return getGyroAccelerometer()[1];
+    public double getGyroYAcceleration() {
+        return getGyro().getAccelerationY().getValue();
     }
 
     /**
      * @return the acceleration of the gyro in the x-axis
      */
-    public short getGyroXAcceleration() {
-        return getGyroAccelerometer()[0];
+    public double getGyroXAcceleration() {
+        return getGyro().getAccelerationX().getValue();
     }
 
     /**
@@ -146,7 +146,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
      */
     @Log(name = "heading", methodName = "getDegrees")
     public Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(MathUtil.inputModulus(getGyro().getYaw(), -180, 180));
+        return Rotation2d.fromDegrees(MathUtil.inputModulus(getGyro().getYaw().getValue(), -180, 180));
     }
 
     /**
@@ -253,13 +253,6 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
         for (int i = 0; i < getModules().length; i++)
             getModules()[i].setTargetState(swerveModuleStates[i]);
-    }
-
-    private short[] getGyroAccelerometer() {
-        final short[] accelerometer = new short[3];
-        getGyro().getBiasedAccelerometer(accelerometer);
-
-        return accelerometer;
     }
 
     @Log(name = "rotationController/error")

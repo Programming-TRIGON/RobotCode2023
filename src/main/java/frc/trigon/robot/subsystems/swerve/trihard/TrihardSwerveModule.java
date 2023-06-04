@@ -1,9 +1,10 @@
 package frc.trigon.robot.subsystems.swerve.trihard;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.DemandType;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -12,7 +13,7 @@ import frc.trigon.robot.utilities.Conversions;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class TrihardSwerveModule extends SwerveModule {
-    private final WPI_TalonFX driveMotor, steerMotor;
+    private final TalonFX driveMotor, steerMotor;
     private final DutyCycleEncoder steerEncoder;
     private final double offset;
     private final String name;
@@ -44,7 +45,11 @@ public class TrihardSwerveModule extends SwerveModule {
 
     @Override
     protected void setBrake(boolean brake) {
-        driveMotor.setNeutralMode(brake ? NeutralMode.Brake : NeutralMode.Coast);
+        final MotorOutputConfigs driveMotorOutputConfigs = new MotorOutputConfigs();
+
+        driveMotor.getConfigurator().refresh(driveMotorOutputConfigs);
+        driveMotorOutputConfigs.NeutralMode = brake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+        driveMotor.getConfigurator().apply(driveMotorOutputConfigs);
     }
 
     @Override
@@ -55,25 +60,22 @@ public class TrihardSwerveModule extends SwerveModule {
 
     @Override
     protected Rotation2d getCurrentAngle() {
-        double motorTicks = steerMotor.getSelectedSensorPosition();
-        double motorDegrees = Conversions.falconTicksToDegrees(motorTicks);
+        double motorRevolutions = steerMotor.getPosition().getValue();
+        double motorDegrees = Conversions.revolutionsToDegrees(motorRevolutions);
         double systemDegrees = Conversions.motorToSystem(motorDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
         return Rotation2d.fromDegrees(systemDegrees);
     }
 
     @Override
     protected double getCurrentVelocity() {
-        double motorTicksPer100Ms = driveMotor.getSelectedSensorVelocity();
-        double motorRevolutionsPer100Ms = Conversions.falconTicksToRevolutions(motorTicksPer100Ms);
-        double motorRps = Conversions.perHundredMsToPerSecond(motorRevolutionsPer100Ms);
+        double motorRps = driveMotor.getVelocity().getValue();
         double wheelRps = Conversions.motorToSystem(motorRps, TrihardSwerveModuleConstants.DRIVE_GEAR_RATIO);
         return Conversions.revolutionsToDistance(wheelRps, TrihardSwerveModuleConstants.WHEEL_DIAMETER_METERS);
     }
 
     @Override
     protected double getDriveDistance() {
-        double ticks = driveMotor.getSelectedSensorPosition();
-        double motorRevolutions = Conversions.falconTicksToRevolutions(ticks);
+        double motorRevolutions = driveMotor.getPosition().getValue();
         double wheelRevolutions = Conversions.motorToSystem(motorRevolutions, TrihardSwerveModuleConstants.DRIVE_GEAR_RATIO);
         return Conversions.revolutionsToDistance(wheelRevolutions, TrihardSwerveModuleConstants.WHEEL_DIAMETER_METERS);
     }
@@ -83,8 +85,8 @@ public class TrihardSwerveModule extends SwerveModule {
         targetAngle = rotation2d;
         double targetScopedDegrees = scope(rotation2d);
         double targetMotorDegrees = Conversions.systemToMotor(targetScopedDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
-        double targetMotorTicks = Conversions.degreesToFalconTicks(targetMotorDegrees);
-        steerMotor.set(ControlMode.Position, targetMotorTicks);
+        double targetMotorRevolutions = Conversions.degreesToRevolutions(targetMotorDegrees);
+        steerMotor.setControl(new PositionDutyCycle(targetMotorRevolutions));
     }
 
     @Override
@@ -97,9 +99,8 @@ public class TrihardSwerveModule extends SwerveModule {
         final double driveMotorVelocity = Conversions.systemToMotor(velocity, TrihardSwerveModuleConstants.DRIVE_GEAR_RATIO);
         final double feedForward = TrihardSwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(velocity);
 
-        driveMotor.set(
-                ControlMode.Velocity, driveMotorVelocity,
-                DemandType.ArbitraryFeedForward, feedForward / driveMotor.getBusVoltage()
+        driveMotor.setControl(
+                new VelocityDutyCycle(driveMotorVelocity, TrihardSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward / driveMotor.getSupplyVoltage().getValue(), 0, false)
         );
     }
 

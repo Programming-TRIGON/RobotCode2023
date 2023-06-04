@@ -356,20 +356,20 @@ public class Arm extends LoggableSubsystemBase {
 
     @Log(name = "First Motor Position")
     private double getFirstMotorPosition() {
-        return Conversions.magTicksToDegrees(firstMotor.getPosition().getValue());
+        return Conversions.revolutionsToDegrees(firstMotor.getPosition().getValue());
     }
 
     @Log(name = "Second Motor Position")
     private double getSecondMotorPosition() {
-        return Conversions.magTicksToDegrees(secondMotor.getPosition().getValue());
+        return Conversions.revolutionsToDegrees(secondMotor.getPosition().getValue());
     }
 
     private double getFirstMotorVelocity() {
-        return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(firstMotor.getVelocity().getValue()));
+        return Conversions.revolutionsToDegrees(firstMotor.getVelocity().getValue());
     }
 
     private double getSecondMotorVelocity() {
-        return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(secondMotor.getVelocity().getValue()));
+        return Conversions.revolutionsToDegrees(secondMotor.getVelocity().getValue());
     }
 
     private boolean isSecondJointRetracted() {

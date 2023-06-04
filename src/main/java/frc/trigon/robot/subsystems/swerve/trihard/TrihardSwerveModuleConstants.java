@@ -1,7 +1,8 @@
 package frc.trigon.robot.subsystems.swerve.trihard;
 
-import com.ctre.phoenix.motorcontrol.StatusFrame;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -27,32 +28,34 @@ public class TrihardSwerveModuleConstants {
             FRONT_RIGHT_DRIVE_MOTOR_ID = FRONT_RIGHT_ID + 1,
             REAR_LEFT_DRIVE_MOTOR_ID = REAR_LEFT_ID + 1,
             REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID + 1;
-    private static final boolean DRIVE_MOTOR_INVERTED = true;
+    // TODO: Why is this inverted?
+    private static final InvertedValue DRIVE_MOTOR_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive;
     private static final double
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.1,
             DRIVE_CLOSED_LOOP_RAMP_RATE = 0.2;
     static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.21564, 2.7054, 0.38437);
-    private static final WPI_TalonFX
-            FRONT_LEFT_DRIVE_MOTOR = new WPI_TalonFX(FRONT_LEFT_DRIVE_MOTOR_ID),
-            FRONT_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(FRONT_RIGHT_DRIVE_MOTOR_ID),
-            REAR_LEFT_DRIVE_MOTOR = new WPI_TalonFX(REAR_LEFT_DRIVE_MOTOR_ID),
-            REAR_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(REAR_RIGHT_DRIVE_MOTOR_ID);
+    static final boolean DRIVE_MOTOR_FOC = false;
+    private static final TalonFX
+            FRONT_LEFT_DRIVE_MOTOR = new TalonFX(FRONT_LEFT_DRIVE_MOTOR_ID),
+            FRONT_RIGHT_DRIVE_MOTOR = new TalonFX(FRONT_RIGHT_DRIVE_MOTOR_ID),
+            REAR_LEFT_DRIVE_MOTOR = new TalonFX(REAR_LEFT_DRIVE_MOTOR_ID),
+            REAR_RIGHT_DRIVE_MOTOR = new TalonFX(REAR_RIGHT_DRIVE_MOTOR_ID);
 
     private static final int
             FRONT_LEFT_STEER_MOTOR_ID = FRONT_LEFT_ID + 5,
             FRONT_RIGHT_STEER_MOTOR_ID = FRONT_RIGHT_ID + 5,
             REAR_LEFT_STEER_MOTOR_ID = REAR_LEFT_ID + 5,
             REAR_RIGHT_STEER_MOTOR_ID = REAR_RIGHT_ID + 5;
-    private static final boolean STEER_MOTOR_INVERTED = false;
+    private static final InvertedValue STEER_MOTOR_INVERTED_VALUE = InvertedValue.Clockwise_Positive;
     private static final double
             STEER_MOTOR_P = 0.35,
             STEER_MOTOR_I = 0,
             STEER_MOTOR_D = 0;
-    private static final WPI_TalonFX
-            FRONT_LEFT_STEER_MOTOR = new WPI_TalonFX(FRONT_LEFT_STEER_MOTOR_ID),
-            FRONT_RIGHT_STEER_MOTOR = new WPI_TalonFX(FRONT_RIGHT_STEER_MOTOR_ID),
-            REAR_LEFT_STEER_MOTOR = new WPI_TalonFX(REAR_LEFT_STEER_MOTOR_ID),
-            REAR_RIGHT_STEER_MOTOR = new WPI_TalonFX(REAR_RIGHT_STEER_MOTOR_ID);
+    private static final TalonFX
+            FRONT_LEFT_STEER_MOTOR = new TalonFX(FRONT_LEFT_STEER_MOTOR_ID),
+            FRONT_RIGHT_STEER_MOTOR = new TalonFX(FRONT_RIGHT_STEER_MOTOR_ID),
+            REAR_LEFT_STEER_MOTOR = new TalonFX(REAR_LEFT_STEER_MOTOR_ID),
+            REAR_RIGHT_STEER_MOTOR = new TalonFX(REAR_RIGHT_STEER_MOTOR_ID);
 
     private static final double ENCODER_UPDATE_TIME_SECONDS = 3;
     private static final int ENCODER_CHANNEL_OFFSET = 1;
@@ -116,52 +119,52 @@ public class TrihardSwerveModuleConstants {
                     -TrihardSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
             );
 
-    final WPI_TalonFX driveMotor, steerMotor;
+    final TalonFX driveMotor, steerMotor;
     final DutyCycleEncoder steerEncoder;
     final double encoderOffset;
 
-    public TrihardSwerveModuleConstants(WPI_TalonFX driveMotor, WPI_TalonFX steerMotor, DutyCycleEncoder steerEncoder, double encoderOffset) {
+    public TrihardSwerveModuleConstants(TalonFX driveMotor, TalonFX steerMotor, DutyCycleEncoder steerEncoder, double encoderOffset) {
         this.driveMotor = driveMotor;
         this.steerMotor = steerMotor;
         this.steerEncoder = steerEncoder;
         this.encoderOffset = encoderOffset;
 
-        initialConfig();
+        configureDriveMotor();
+        configureSteerMotor();
     }
 
-    private void initialConfig() {
-        driveMotor.configFactoryDefault();
-        steerMotor.configFactoryDefault();
+    private void configureSteerMotor() {
+        final TalonFXConfiguration steerMotorConfig = new TalonFXConfiguration();
 
-        driveMotor.setInverted(DRIVE_MOTOR_INVERTED);
-        steerMotor.setInverted(STEER_MOTOR_INVERTED);
+//        steerMotor.setStatusFramePeriod(StatusFrame.Status_1_General, 255); // Applied output
+//        steerMotor.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, 10); // Sensor position and velocity
+//        steerMotor.setStatusFramePeriod(StatusFrame.Status_4_AinTempVbat, 255); // Battery and temperature
+//        steerMotor.setStatusFramePeriod(StatusFrame.Status_10_MotionMagic, 255); // Motion magic and profiling
+//        steerMotor.setStatusFramePeriod(StatusFrame.Status_12_Feedback1, 255); // Aux pid feedback
+//        steerMotor.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 255); // Aux pid information
+        steerMotorConfig.MotorOutput.Inverted = STEER_MOTOR_INVERTED_VALUE;
+        steerMotorConfig.Slot0.kP = STEER_MOTOR_P;
+        steerMotorConfig.Slot0.kI = STEER_MOTOR_I;
+        steerMotorConfig.Slot0.kD = STEER_MOTOR_D;
 
-        driveMotor.configVoltageCompSaturation(VOLTAGE_COMP_SATURATION);
-        driveMotor.enableVoltageCompensation(true);
-        steerMotor.configVoltageCompSaturation(VOLTAGE_COMP_SATURATION);
-        steerMotor.enableVoltageCompensation(true);
-
-        driveMotor.configOpenloopRamp(DRIVE_OPEN_LOOP_RAMP_RATE);
-        driveMotor.configClosedloopRamp(DRIVE_CLOSED_LOOP_RAMP_RATE);
-
-        steerMotor.setStatusFramePeriod(StatusFrame.Status_1_General, 255); // Applied output
-        steerMotor.setStatusFramePeriod(StatusFrame.Status_2_Feedback0, 10); // Sensor position and velocity
-        steerMotor.setStatusFramePeriod(StatusFrame.Status_4_AinTempVbat, 255); // Battery and temperature
-        steerMotor.setStatusFramePeriod(StatusFrame.Status_10_MotionMagic, 255); // Motion magic and profiling
-        steerMotor.setStatusFramePeriod(StatusFrame.Status_12_Feedback1, 255); // Aux pid feedback
-        steerMotor.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 255); // Aux pid information
-
-        steerMotor.config_kP(0, STEER_MOTOR_P);
-        steerMotor.config_kI(0, STEER_MOTOR_I);
-        steerMotor.config_kD(0, STEER_MOTOR_D);
-
+        steerMotor.getConfigurator().apply(steerMotorConfig);
         new Notifier(this::setSteerMotorPositionToAbsolute).startSingle(ENCODER_UPDATE_TIME_SECONDS);
+    }
+
+    private void configureDriveMotor() {
+        final TalonFXConfiguration driveMotorConfig = new TalonFXConfiguration();
+
+        driveMotorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = DRIVE_OPEN_LOOP_RAMP_RATE;
+        driveMotorConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = DRIVE_CLOSED_LOOP_RAMP_RATE;
+        driveMotorConfig.MotorOutput.Inverted = DRIVE_MOTOR_INVERTED_VALUE;
+
+        driveMotor.getConfigurator().apply(driveMotorConfig);
     }
 
     private void setSteerMotorPositionToAbsolute() {
         double encoderPosition = Conversions.offsetRead(steerEncoder.getAbsolutePosition(), encoderOffset);
         double motorPosition = Conversions.systemToMotor(encoderPosition, STEER_GEAR_RATIO);
-        steerMotor.setSelectedSensorPosition(Conversions.revolutionsToFalconTicks(motorPosition));
+        steerMotor.setRotorPosition(motorPosition);
     }
 
     enum TrihardSwerveModules {

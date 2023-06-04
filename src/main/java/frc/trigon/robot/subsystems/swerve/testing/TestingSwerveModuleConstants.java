@@ -1,6 +1,9 @@
 package frc.trigon.robot.subsystems.swerve.testing;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
@@ -25,22 +28,24 @@ public class TestingSwerveModuleConstants {
             FRONT_RIGHT_DRIVE_MOTOR_ID = FRONT_RIGHT_ID + 1,
             REAR_LEFT_DRIVE_MOTOR_ID = REAR_LEFT_ID + 1,
             REAR_RIGHT_DRIVE_MOTOR_ID = REAR_RIGHT_ID + 1;
-    private static final boolean DRIVE_MOTOR_INVERTED = true;
+    // TODO: Why is this inverted?
+    private static final InvertedValue DRIVE_MOTOR_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive;
     private static final double
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.2,
             DRIVE_CLOSED_LOOP_RAMP_RATE = 0.4;
     static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.0001, 0.0001, 0.0001);
-    private static final WPI_TalonFX
-            FRONT_LEFT_DRIVE_MOTOR = new WPI_TalonFX(
+    static final boolean DRIVE_MOTOR_FOC = false;
+    private static final TalonFX
+            FRONT_LEFT_DRIVE_MOTOR = new TalonFX(
                     FRONT_LEFT_DRIVE_MOTOR_ID
             ),
-            FRONT_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(
+            FRONT_RIGHT_DRIVE_MOTOR = new TalonFX(
                     FRONT_RIGHT_DRIVE_MOTOR_ID
             ),
-            REAR_LEFT_DRIVE_MOTOR = new WPI_TalonFX(
+            REAR_LEFT_DRIVE_MOTOR = new TalonFX(
                     REAR_LEFT_DRIVE_MOTOR_ID
             ),
-            REAR_RIGHT_DRIVE_MOTOR = new WPI_TalonFX(
+            REAR_RIGHT_DRIVE_MOTOR = new TalonFX(
                     REAR_RIGHT_DRIVE_MOTOR_ID
             );
 
@@ -107,29 +112,21 @@ public class TestingSwerveModuleConstants {
                     -TestingSwerveConstants.DISTANCE_FROM_CENTER_OF_BASE
             );
 
-    final WPI_TalonFX driveMotor;
+    final TalonFX driveMotor;
     final CANSparkMax steerMotor;
 
-    public TestingSwerveModuleConstants(WPI_TalonFX driveMotor, CANSparkMax steerMotor) {
+    public TestingSwerveModuleConstants(TalonFX driveMotor, CANSparkMax steerMotor) {
         this.driveMotor = driveMotor;
         this.steerMotor = steerMotor;
 
-        initialConfig();
+        configureDriveMotor();
+        configureSteerMotor();
     }
 
-    private void initialConfig() {
-        driveMotor.configFactoryDefault();
+    private void configureSteerMotor() {
         steerMotor.restoreFactoryDefaults();
-
         steerMotor.setInverted(STEER_MOTOR_INVERTED);
-        driveMotor.setInverted(DRIVE_MOTOR_INVERTED);
-
-        driveMotor.configVoltageCompSaturation(VOLTAGE_COMP_SATURATION);
-        driveMotor.enableVoltageCompensation(true);
         steerMotor.enableVoltageCompensation(VOLTAGE_COMP_SATURATION);
-
-        driveMotor.configOpenloopRamp(DRIVE_OPEN_LOOP_RAMP_RATE);
-        driveMotor.configClosedloopRamp(DRIVE_CLOSED_LOOP_RAMP_RATE);
 
         steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, 255); // Applied output
         steerMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, 10); // Motor movement
@@ -149,6 +146,17 @@ public class TestingSwerveModuleConstants {
         steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle).setPositionConversionFactor(Conversions.DEGREES_PER_REVOLUTIONS);
 
         steerMotor.burnFlash();
+    }
+
+    private void configureDriveMotor() {
+        final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+
+        motorConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = DRIVE_CLOSED_LOOP_RAMP_RATE;
+        motorConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = DRIVE_OPEN_LOOP_RAMP_RATE;
+        motorConfig.MotorOutput.Inverted = DRIVE_MOTOR_INVERTED_VALUE;
+        motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+        driveMotor.getConfigurator().apply(motorConfig);
     }
 
     enum TestingSwerveModules {
