@@ -1,9 +1,9 @@
 package frc.trigon.robot.subsystems.arm;
 
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,7 +13,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -21,36 +20,22 @@ import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.Conversions;
 import io.github.oblarg.oblog.annotations.Log;
 
-import static frc.trigon.robot.subsystems.arm.ArmConstants.ArmStates;
-
 public class Arm extends LoggableSubsystemBase {
     private static final Arm INSTANCE = new Arm();
-    private final TalonFX
-            firstMotor = ArmConstants.FIRST_JOINT_MASTER_MOTOR,
-            secondMotor = ArmConstants.SECOND_JOINT_MOTOR;
-    private final ArmFeedforward
-            firstMotorFeedforward = ArmConstants.FIRST_JOINT_FEEDFORWARD,
-            secondMotorFeedforward = ArmConstants.SECOND_JOINT_FEEDFORWARD;
-    private TrapezoidProfile firstMotorProfile, secondMotorProfile;
-    private double firstMotorProfileLastSetTime, secondMotorProfileLastSetTime;
-    private String firstArmToMove = "";
-    private double lastFirstMotorSpeedFactor, lastSecondMotorSpeedFactor;
+    private final WPI_TalonFX
+            firstJointMotor = ArmConstants.FIRST_JOINT_MASTER_MOTOR,
+            secondJointMotor = ArmConstants.SECOND_JOINT_MOTOR;
+    private TrapezoidProfile firstJointMotorProfile, secondJointMotorProfile;
+    private double lastFirstJointProfileGenerationTimestamp, lastSecondJointProfileGenerationTimestamp;
+    @Log
+    private double secondJointSetpoint;
+    @Log
+    private boolean firstMotorAtGoal, secondMotorAtGoal, firstMotorVelocityAtGoal, secondMotorVelocityAtGoal;
+    private double lastFirstJointSpeedFactor, lastSecondJointSpeedFactor;
+    private String firstJointToMove = "";
 
     private Arm() {
         setCurrentLimits();
-    }
-
-    public boolean atGoal() {
-        boolean
-                firstMotorAtGoal = Math.abs(getFirstMotorPosition() - getFirstMotorGoal()) < ArmConstants.FIRST_JOINT_TOLERANCE,
-                secondMotorAtGoal = Math.abs(getSecondMotorPosition() - getSecondMotorGoal()) < ArmConstants.SECOND_JOINT_TOLERANCE,
-                firstMotorVelocityAtGoal = Math.abs(getFirstMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE,
-                secondMotorVelocityAtGoal = Math.abs(getSecondMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
-        SmartDashboard.putBoolean("firstMotorAtGoal", firstMotorAtGoal);
-        SmartDashboard.putBoolean("secondMotorAtGoal", secondMotorAtGoal);
-        SmartDashboard.putBoolean("firstMotorVelocityAtGoal", firstMotorVelocityAtGoal);
-        SmartDashboard.putBoolean("secondMotorVelocityAtGoal", secondMotorVelocityAtGoal);
-        return firstMotorAtGoal && secondMotorAtGoal && firstMotorVelocityAtGoal && secondMotorVelocityAtGoal;
     }
 
     public static Arm getInstance() {
@@ -63,6 +48,18 @@ public class Arm extends LoggableSubsystemBase {
     }
 
     /**
+     * @return true if both arm motors had reached their target position
+     */
+    public boolean atGoal() {
+        firstMotorAtGoal = Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE;
+        secondMotorAtGoal = Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE;
+        firstMotorVelocityAtGoal = Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE;
+        secondMotorVelocityAtGoal = Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
+
+        return firstMotorAtGoal && secondMotorAtGoal && firstMotorVelocityAtGoal && secondMotorVelocityAtGoal;
+    }
+
+    /**
      * Constructs a command that sets the target state of the arm.
      *
      * @param state                  the target state
@@ -71,11 +68,10 @@ public class Arm extends LoggableSubsystemBase {
      * @param secondMotorSpeedFactor the speed factor of the second motor
      * @return the command
      */
-    public CommandBase getGoToStateCommand(ArmStates state, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
+    public CommandBase getGoToStateCommand(ArmConstants.ArmStates state, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
         return new StartEndCommand(
                 () -> setTargetState(state, byOrder, firstMotorSpeedFactor, secondMotorSpeedFactor),
-                () -> {
-                },
+                () -> {},
                 this
         );
     }
@@ -103,8 +99,7 @@ public class Arm extends LoggableSubsystemBase {
     public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
         return new StartEndCommand(
                 () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, firstJointSpeedFactor, secondJointSpeedFactor),
-                () -> {
-                },
+                () -> {},
                 this
         );
     }
@@ -126,223 +121,196 @@ public class Arm extends LoggableSubsystemBase {
      * @param brake whether the arm is in brake mode or not
      */
     public void setNeutralMode(boolean brake) {
-        final NeutralModeValue mode = brake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-        final MotorOutputConfigs
-                firstMotorConfig = new MotorOutputConfigs(),
-                secondMotorConfig = new MotorOutputConfigs();
-
-        firstMotor.getConfigurator().refresh(firstMotorConfig);
-        firstMotorConfig.NeutralMode = mode;
-        firstMotor.getConfigurator().apply(firstMotorConfig);
-
-        secondMotor.getConfigurator().refresh(secondMotorConfig);
-        secondMotorConfig.NeutralMode = mode;
-        secondMotor.getConfigurator().apply(secondMotorConfig);
+        NeutralMode mode = brake ? NeutralMode.Brake : NeutralMode.Coast;
+        firstJointMotor.setNeutralMode(mode);
+        secondJointMotor.setNeutralMode(mode);
     }
 
     /**
-     * Sets the mode of operation during neutral throttle output, for the arm motors.
+     * Sets the neutral mode of the arm motors as their default neutral mode.
      */
     public void setNeutralMode() {
-        final MotorOutputConfigs
-                firstMotorConfig = new MotorOutputConfigs(),
-                secondMotorConfig = new MotorOutputConfigs();
-
-        firstMotor.getConfigurator().refresh(firstMotorConfig);
-        firstMotorConfig.NeutralMode = ArmConstants.FIRST_JOINT_NEUTRAL_MODE;
-        firstMotor.getConfigurator().apply(firstMotorConfig);
-
-        secondMotor.getConfigurator().refresh(secondMotorConfig);
-        secondMotorConfig.NeutralMode = ArmConstants.SECOND_JOINT_NEUTRAL_MODE;
-        secondMotor.getConfigurator().apply(secondMotorConfig);
+        firstJointMotor.setNeutralMode(ArmConstants.FIRST_JOINT_NEUTRAL_MODE);
+        secondJointMotor.setNeutralMode(ArmConstants.SECOND_JOINT_NEUTRAL_MODE);
     }
 
-    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
-        lastFirstMotorSpeedFactor = firstJointSpeedFactor;
-        lastSecondMotorSpeedFactor = secondJointSpeedFactor;
-        generateFirstMotorProfile(firstMotorPosition, firstJointSpeedFactor);
-        generateSecondMotorProfile(secondMotorPosition, secondJointSpeedFactor);
-        if (byOrder)
-            firstArmToMove = getFirstMotorDistanceToGoal() > 0 ? "first" : "second";
-        else
-            firstArmToMove = "";
+    private void setTargetState(ArmConstants.ArmStates targetState) {
+        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true, 1, 1);
     }
 
-    private void setTargetState(ArmStates targetState, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
+    private void setTargetState(ArmConstants.ArmStates targetState, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
         setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, byOrder, firstMotorSpeedFactor, secondMotorSpeedFactor);
     }
 
-    private void setTargetState(ArmStates targetState) {
-        setTargetState(targetState.firstMotorPosition, targetState.secondMotorPosition, true, 1, 1);
+    private void setTargetState(double firstMotorPosition, double secondMotorPosition, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
+        lastFirstJointSpeedFactor = firstJointSpeedFactor;
+        lastSecondJointSpeedFactor = secondJointSpeedFactor;
+
+        generateFirstMotorProfile(Rotation2d.fromDegrees(firstMotorPosition), firstJointSpeedFactor);
+        generateSecondMotorProfile(Rotation2d.fromDegrees(secondMotorPosition), secondJointSpeedFactor);
+
+        if (byOrder)
+            firstJointToMove = getFirstJointMotorError() > 0 ? "first" : "second";
+        else
+            firstJointToMove = "";
     }
 
     private void setTargetMotorPositions() {
         if (this.getCurrentCommand() == null) {
-            firstMotor.disable();
-            secondMotor.disable();
+            firstJointMotor.disable();
+            secondJointMotor.disable();
         } else {
-            setFirstMotorPositionFromProfile();
-            setSecondMotorPositionFromProfile();
+            setFirstJointPositionFromProfile();
+            setSecondJointPositionFromProfile();
         }
     }
 
-    private void generateFirstMotorProfile(double position, double speedFactor) {
-        firstMotorProfile = new TrapezoidProfile(
+    private void generateFirstMotorProfile(Rotation2d targetAngle, double speedFactor) {
+        firstJointMotorProfile = new TrapezoidProfile(
                 Conversions.scaleConstraints(ArmConstants.FIRST_JOINT_CONSTRAINTS, speedFactor),
-                new TrapezoidProfile.State(position, 0),
-                new TrapezoidProfile.State(getFirstMotorPosition(), getFirstMotorVelocity())
+                new TrapezoidProfile.State(targetAngle.getDegrees(), 0),
+                new TrapezoidProfile.State(getFirstJointMotorAngle().getDegrees(), getFirstJointMotorVelocity())
         );
-        firstMotorProfileLastSetTime = Timer.getFPGATimestamp();
+
+        lastFirstJointProfileGenerationTimestamp = Timer.getFPGATimestamp();
     }
 
-    private void generateSecondMotorProfile(double position, double speedFactor) {
-        secondMotorProfile = new TrapezoidProfile(
+    private void generateSecondMotorProfile(Rotation2d targetAngle, double speedFactor) {
+        secondJointMotorProfile = new TrapezoidProfile(
                 Conversions.scaleConstraints(ArmConstants.SECOND_JOINT_CONSTRAINTS, speedFactor),
-                new TrapezoidProfile.State(position, 0),
-                new TrapezoidProfile.State(getSecondMotorPosition(), getSecondMotorVelocity())
+                new TrapezoidProfile.State(targetAngle.getDegrees(), 0),
+                new TrapezoidProfile.State(getSecondJointMotorAngle().getDegrees(), getSecondJointMotorVelocity())
         );
-        secondMotorProfileLastSetTime = Timer.getFPGATimestamp();
+
+        lastSecondJointProfileGenerationTimestamp = Timer.getFPGATimestamp();
     }
 
-    private void setFirstMotorPositionFromProfile() {
-        if (firstMotorProfile == null) {
-            firstMotor.stopMotor();
+    private void setFirstJointPositionFromProfile() {
+        if (firstJointMotorProfile == null) {
+            firstJointMotor.stopMotor();
             return;
         }
 
-        double profileTime = getFirstMotorProfileTime();
+        final double profileTime = getFirstMotorProfileTime();
+        final TrapezoidProfile.State targetState = firstJointMotorProfile.calculate(profileTime);
 
-        TrapezoidProfile.State targetState = firstMotorProfile.calculate(profileTime);
-
-        boolean goingToHitTheGround = goingToHitTheGround(targetState);
-        boolean waitingForOtherJoint = isNotFirstToMove("first") && (isSecondJointOnlyStarting() && !isSecondJointRetracted());
-        if (goingToHitTheGround || waitingForOtherJoint) {
-            generateFirstMotorProfile(getFirstMotorGoal(), lastFirstMotorSpeedFactor);
+        if (shouldStopFirstJointMotor(targetState)) {
+            generateFirstMotorProfile(getFirstMotorProfileGoal(), lastFirstJointSpeedFactor);
             return;
         }
 
-        double feedforward = calculateFeedforward(firstMotorFeedforward, targetState.position, targetState.velocity);
-        double targetPosition = Conversions.degreesToMagTicks(targetState.position);
+        final double feedforward = calculateFeedforward(ArmConstants.FIRST_JOINT_FEEDFORWARD, targetState.position, targetState.velocity);
+        final double targetMagPosition = Conversions.degreesToMagTicks(targetState.position);
 
-        setTargetPositionWithFeedforward(firstMotor, targetPosition, feedforward);
+        setTargetMotorPositionWithFeedforward(firstJointMotor, targetMagPosition, feedforward);
     }
 
-    private void setCurrentLimits() {
-        ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CONFIG.setup(
-                () -> {
-                    firstMotorProfile = null;
-                    DriverStation.reportWarning("Arm first motor current draw is too high!\t" + firstMotor.getStatorCurrent(), false);
-                }
-        );
-        ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CONFIG.setup(
-                () -> {
-                    secondMotorProfile = null;
-                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + secondMotor.getStatorCurrent(), false);
-                }
-        );
-    }
-
-    private void setSecondMotorPositionFromProfile() {
-        if (secondMotorProfile == null) {
-            secondMotor.stopMotor();
+    private void setSecondJointPositionFromProfile() {
+        if (secondJointMotorProfile == null) {
+            secondJointMotor.stopMotor();
             return;
         }
 
-        double profileTime = getSecondMotorProfileTime();
-        TrapezoidProfile.State targetState = secondMotorProfile.calculate(profileTime);
+        final double profileTime = getSecondMotorProfileTime();
+        final TrapezoidProfile.State targetState = secondJointMotorProfile.calculate(profileTime);
 
-        boolean goingToHitTheGround = goingToHitTheGround(targetState);
-        boolean waitingForOtherJoint = isNotFirstToMove("second") && (isFirstJointOnlyStarting() && isSecondJointRetracted());
-
-        double targetPosition = Conversions.degreesToMagTicks(targetState.position);
-        if (goingToHitTheGround || waitingForOtherJoint) {
-            generateSecondMotorProfile(getSecondMotorGoal(), lastSecondMotorSpeedFactor);
-            secondMotor.stopMotor();
-//            targetPosition = Conversions.degreesToMagTicks(getSecondMotorPosition());
+        if (shouldStopSecondJointMotor(targetState)) {
+            generateSecondMotorProfile(getSecondMotorProfileGoal(), lastSecondJointSpeedFactor);
+            secondJointMotor.stopMotor();
+            return;
         }
-        double feedforward = calculateFeedforward(
-                secondMotorFeedforward,
-                targetState.position + getFirstMotorPosition(),
+
+        final double feedforward = calculateFeedforward(
+                ArmConstants.SECOND_JOINT_FEEDFORWARD,
+                targetState.position + getSecondJointMotorAngle().getDegrees(),
                 targetState.velocity
         );
+        final double targetMagPosition = Conversions.degreesToMagTicks(targetState.position);
 
-        setTargetPositionWithFeedforward(secondMotor, targetPosition, feedforward);
-        SmartDashboard.putNumber("second motor setpoint", targetState.position);
+        setTargetMotorPositionWithFeedforward(secondJointMotor, targetMagPosition, feedforward);
+        secondJointSetpoint = targetState.position;
     }
 
-    private double getFirstArmPercentage() {
-        if (firstMotorProfile == null)
+    private boolean shouldStopFirstJointMotor(TrapezoidProfile.State targetState) {
+        return isGoingToHitTheGround(targetState) ||
+                (isNotFirstJointToMove("first") && isSecondJointJustStarting() && !isSecondJointRetracted());
+    }
+
+    private boolean shouldStopSecondJointMotor(TrapezoidProfile.State targetState) {
+        return isGoingToHitTheGround(targetState) ||
+                (isNotFirstJointToMove("second") && isFirstJointJustStarting() && isSecondJointRetracted());
+    }
+
+    private boolean isFirstJointJustStarting() {
+        return getFirstJointProfileTimePercentage() < ArmConstants.RISE_PROFILE_COMPLETION_PERCENTAGE;
+    }
+
+    private boolean isSecondJointJustStarting() {
+        return getSecondJointProfileTimePercentage() < ArmConstants.DESCEND_PROFILE_COMPLETION_PERCENTAGE;
+    }
+
+    private double getFirstJointProfileTimePercentage() {
+        if (firstJointMotorProfile == null)
             return 1;
-        return getFirstMotorProfileTime() / firstMotorProfile.totalTime();
+        return getFirstMotorProfileTime() / firstJointMotorProfile.totalTime();
     }
 
-    private double getSecondArmPercentage() {
-        if (secondMotorProfile == null)
+    private double getSecondJointProfileTimePercentage() {
+        if (secondJointMotorProfile == null)
             return 1;
-        return getSecondMotorProfileTime() / secondMotorProfile.totalTime();
-    }
-
-    private boolean isFirstJointOnlyStarting() {
-        return getFirstArmPercentage() < ArmConstants.RISE_PROFILE_COMPLETION_PERCENTAGE;
-    }
-
-    private boolean isSecondJointOnlyStarting() {
-        return getSecondArmPercentage() < ArmConstants.DESCEND_PROFILE_COMPLETION_PERCENTAGE;
+        return getSecondMotorProfileTime() / secondJointMotorProfile.totalTime();
     }
 
     private double getFirstMotorProfileTime() {
-        return Timer.getFPGATimestamp() - firstMotorProfileLastSetTime;
+        return Timer.getFPGATimestamp() - lastFirstJointProfileGenerationTimestamp;
     }
 
     private double getSecondMotorProfileTime() {
-        return Timer.getFPGATimestamp() - secondMotorProfileLastSetTime;
+        return Timer.getFPGATimestamp() - lastSecondJointProfileGenerationTimestamp;
     }
 
-    private double getFirstMotorGoal() {
-        if (firstMotorProfile == null)
-            return getFirstMotorPosition();
-        return firstMotorProfile.calculate(firstMotorProfile.totalTime()).position;
+    private double getFirstJointMotorError() {
+        return getFirstMotorProfileGoal().getDegrees() - getFirstJointMotorAngle().getDegrees();
     }
 
-    private double getSecondMotorGoal() {
-        if (secondMotorProfile == null)
-            return getSecondMotorPosition();
-        return secondMotorProfile.calculate(secondMotorProfile.totalTime()).position;
+    private double getSecondJointMotorError() {
+        return getSecondMotorProfileGoal().getDegrees() - getSecondJointMotorAngle().getDegrees();
     }
 
-    private double getFirstMotorDistanceToGoal() {
-        return getFirstMotorGoal() - getFirstMotorPosition();
+    private Rotation2d getFirstMotorProfileGoal() {
+        if (firstJointMotorProfile == null)
+            return getFirstJointMotorAngle();
+        return Rotation2d.fromDegrees(firstJointMotorProfile.calculate(firstJointMotorProfile.totalTime()).position);
     }
 
-    private double getSecondMotorDistanceToGoal() {
-        return getSecondMotorGoal() - getSecondMotorPosition();
+    private Rotation2d getSecondMotorProfileGoal() {
+        if (secondJointMotorProfile == null)
+            return getSecondJointMotorAngle();
+        return Rotation2d.fromDegrees(secondJointMotorProfile.calculate(secondJointMotorProfile.totalTime()).position);
     }
 
-    private boolean goingToHitTheGround(TrapezoidProfile.State targetState) {
-        return targetState.velocity < 0 && getCurrentEndEffectorLocation().getY() < 20;
+    private boolean isGoingToHitTheGround(TrapezoidProfile.State targetState) {
+        return targetState.velocity < 0 && getCurrentEndEffectorLocation().getY() < ArmConstants.MINIMUM_END_EFFECTOR_HEIGHT;
+    }
+
+    private boolean isNotFirstJointToMove(String arm) {
+        return !firstJointToMove.equals(arm) && !firstJointToMove.isBlank();
     }
 
     private Translation2d getCurrentEndEffectorLocation() {
-        return calculateEndEffectorLocation(getFirstMotorPosition(), getSecondMotorPosition());
+        final Transform2d secondJointAngleTransform = new Transform2d(new Translation2d(), getSecondJointMotorAngle());
+        final Pose2d secondJointLocation = getSecondJointLocationRelativeToGround().plus(secondJointAngleTransform);
+
+        return secondJointLocation.plus(ArmConstants.SECOND_JOINT_TO_END_EFFECTOR).getTranslation();
     }
 
-    private boolean isNotFirstToMove(String arm) {
-        return (!firstArmToMove.equals(arm)) && !firstArmToMove.isBlank();
+    private Pose2d getSecondJointLocationRelativeToGround() {
+        final Pose2d firstJointPose = new Pose2d(new Translation2d(0, ArmConstants.FIRST_JOINT_HEIGHT), getFirstJointMotorAngle());
+        return firstJointPose.plus(ArmConstants.FIRST_JOINT_TO_SECOND_JOINT);
     }
 
-    private Translation2d calculateEndEffectorLocation(double alpha, double beta) {
-        var secondJointLocation =
-                new Pose2d(new Translation2d(0, ArmConstants.FIRST_JOINT_HEIGHT), Rotation2d.fromDegrees(alpha)).plus(new Transform2d(new Translation2d(ArmConstants.FIRST_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0)));
-        return secondJointLocation.plus(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(beta))).plus(new Transform2d(new Translation2d(ArmConstants.SECOND_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0))).getTranslation();
-    }
-
-    private double getSecondMotorAbsError() {
-        return Math.abs(secondMotorProfile.calculate(getSecondMotorProfileTime()).position - getSecondMotorPosition());
-    }
-
-    private void setTargetPositionWithFeedforward(TalonFX motor, double position, double feedforward) {
-        // TODO: check this
-        motor.setControl(new PositionVoltage(position, ArmConstants.USE_FOC, feedforward, 0, false));
+    private void setTargetMotorPositionWithFeedforward(WPI_TalonFX motor, double position, double feedforward) {
+        motor.set(ControlMode.Position, position, DemandType.ArbitraryFeedForward, feedforward / motor.getBusVoltage());
     }
 
     private double calculateFeedforward(ArmFeedforward feedforward, double position, double velocity) {
@@ -350,43 +318,40 @@ public class Arm extends LoggableSubsystemBase {
     }
 
     @Log(name = "First Motor Position")
-    private double getFirstMotorPosition() {
-        return Conversions.revolutionsToDegrees(firstMotor.getPosition().getValue());
+    private Rotation2d getFirstJointMotorAngle() {
+        return Rotation2d.fromDegrees(Conversions.magTicksToDegrees(firstJointMotor.getSelectedSensorPosition()));
     }
 
     @Log(name = "Second Motor Position")
-    private double getSecondMotorPosition() {
-        return Conversions.revolutionsToDegrees(secondMotor.getPosition().getValue());
+    private Rotation2d getSecondJointMotorAngle() {
+        return Rotation2d.fromDegrees(Conversions.magTicksToDegrees(secondJointMotor.getSelectedSensorPosition()));
     }
 
-    private double getFirstMotorVelocity() {
-        return Conversions.revolutionsToDegrees(firstMotor.getVelocity().getValue());
+    private double getFirstJointMotorVelocity() {
+        return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(firstJointMotor.getSelectedSensorVelocity()));
     }
 
-    private double getSecondMotorVelocity() {
-        return Conversions.revolutionsToDegrees(secondMotor.getVelocity().getValue());
+    private double getSecondJointMotorVelocity() {
+        return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(secondJointMotor.getSelectedSensorVelocity()));
     }
 
     private boolean isSecondJointRetracted() {
-        return getSecondMotorPosition() >= ArmConstants.RETRACTED_DEGREES;
+        return getSecondJointMotorAngle().getDegrees() >= ArmConstants.RETRACTED_DEGREES;
     }
 
-    private double getFirstMotorSupplyCurrent() {
-        return firstMotor.getSupplyCurrent().getValue();
-    }
-
-    private double getSecondMotorSupplyCurrent() {
-        return secondMotor.getSupplyCurrent().getValue();
-    }
-
-    @Log(name = "First Motor Stator Current")
-    private double getFirstMotorStatorCurrent() {
-        return firstMotor.getStatorCurrent().getValue();
-    }
-
-    @Log(name = "Second Motor Stator Current")
-    private double getSecondMotorStatorCurrent() {
-        return secondMotor.getStatorCurrent().getValue();
+    private void setCurrentLimits() {
+        ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CONFIG.setup(
+                () -> {
+                    firstJointMotorProfile = null;
+                    DriverStation.reportWarning("Arm first motor current draw is too high!\t" + firstJointMotor.getStatorCurrent(), false);
+                }
+        );
+        ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CONFIG.setup(
+                () -> {
+                    secondJointMotorProfile = null;
+                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + secondJointMotor.getStatorCurrent(), false);
+                }
+        );
     }
 
 }

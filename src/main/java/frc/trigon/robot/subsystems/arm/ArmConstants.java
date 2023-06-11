@@ -12,11 +12,16 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
 public class ArmConstants {
+    static final double MINIMUM_END_EFFECTOR_HEIGHT = 20;
+
     static final double
             FIRST_JOINT_HEIGHT = 101.91482,
             FIRST_JOINT_LENGTH = 85.88525,
@@ -24,18 +29,23 @@ public class ArmConstants {
 
     static final boolean USE_FOC = false;
 
+    static final Transform2d
+            FIRST_JOINT_TO_SECOND_JOINT = new Transform2d(new Translation2d(FIRST_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0)),
+            SECOND_JOINT_TO_END_EFFECTOR = new Transform2d(new Translation2d(SECOND_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0));
+
     static final double RETRACTED_DEGREES = 130;
     private static final int
-            FIRST_JOINT_FIRST_MOTOR_ID = 9,
-            FIRST_JOINT_SECOND_MOTOR_ID = 10,
+            FIRST_JOINT_MASTER_MOTOR_ID = 9,
+            FIRST_JOINT_FOLLOWER_MOTOR_ID = 10,
             SECOND_JOINT_MOTOR_ID = 11;
 
     static final TalonFX
-            FIRST_JOINT_MASTER_MOTOR = new TalonFX(FIRST_JOINT_FIRST_MOTOR_ID),
-            FIRST_JOINT_FOLLOWER_MOTOR = new TalonFX(FIRST_JOINT_SECOND_MOTOR_ID),
+            FIRST_JOINT_MASTER_MOTOR = new TalonFX(FIRST_JOINT_MASTER_MOTOR_ID),
             SECOND_JOINT_MOTOR = new TalonFX(SECOND_JOINT_MOTOR_ID);
+    private static final TalonFX FIRST_JOINT_FOLLOWER_MOTOR = new TalonFX(FIRST_JOINT_FOLLOWER_MOTOR_ID);
     private static final CANcoder
-            FIRST_JOINT_ENCODER = new CANcoder(FIRST_JOINT_FIRST_MOTOR_ID);
+            FIRST_JOINT_ENCODER = new CANcoder(FIRST_JOINT_MASTER_MOTOR_ID);
+
     private static final WPI_TalonSRX
             SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID + 1);
 
@@ -155,8 +165,6 @@ public class ArmConstants {
         firstJointEncoderConfig.MagnetSensor.SensorDirection = FIRST_JOINT_SENSOR_DIRECTION_VALUE;
         firstJointEncoderConfig.MagnetSensor.MagnetOffset = FIRST_JOINT_ENCODER_OFFSET;
         FIRST_JOINT_ENCODER.getConfigurator().apply(firstJointEncoderConfig);
-
-        SECOND_JOINT_ENCODER.configFactoryDefault();
         SECOND_JOINT_ENCODER.setInverted(SECOND_JOINT_SENSOR_PHASE);
 
         SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
@@ -175,7 +183,7 @@ public class ArmConstants {
         secondJointMotorConfig.Slot0.kD = SECOND_JOINT_D;
 
         secondJointMotorConfig.Feedback.FeedbackRemoteSensorID = SECOND_JOINT_ENCODER.getDeviceID();
-        // TODO: Check if this is correct
+        // TODO: Wait for this to be possible with mag
         secondJointMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
 
         secondJointMotorConfig.MotorOutput.Inverted = SECOND_JOINT_MOTOR_INVERTED_VALUE;
