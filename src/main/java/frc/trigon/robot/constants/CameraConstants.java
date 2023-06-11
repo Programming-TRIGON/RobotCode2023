@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import frc.trigon.robot.components.D415;
 import frc.trigon.robot.robotposesources.AprilTagPhotonCamera;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
 
@@ -30,6 +31,7 @@ public class CameraConstants {
             "limelight-forward",
             FORWARD_LIMELIGHT_TO_ROBOT
     );
+    public static final D415 D415 = new D415("D415");
 //    public static final T265 t265 = new T265("908412110743", new Transform3d());
 
 }
