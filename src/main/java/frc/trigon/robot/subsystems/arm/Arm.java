@@ -1,9 +1,9 @@
 package frc.trigon.robot.subsystems.arm;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.DemandType;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,7 +22,7 @@ import io.github.oblarg.oblog.annotations.Log;
 
 public class Arm extends LoggableSubsystemBase {
     private static final Arm INSTANCE = new Arm();
-    private final WPI_TalonFX
+    private final TalonFX
             firstJointMotor = ArmConstants.FIRST_JOINT_MASTER_MOTOR,
             secondJointMotor = ArmConstants.SECOND_JOINT_MOTOR;
     private TrapezoidProfile firstJointMotorProfile, secondJointMotorProfile;
@@ -121,17 +121,35 @@ public class Arm extends LoggableSubsystemBase {
      * @param brake whether the arm is in brake mode or not
      */
     public void setNeutralMode(boolean brake) {
-        NeutralMode mode = brake ? NeutralMode.Brake : NeutralMode.Coast;
-        firstJointMotor.setNeutralMode(mode);
-        secondJointMotor.setNeutralMode(mode);
+        final NeutralModeValue mode = brake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+        final MotorOutputConfigs
+                firstMotorConfig = new MotorOutputConfigs(),
+                secondMotorConfig = new MotorOutputConfigs();
+
+        firstJointMotor.getConfigurator().refresh(firstMotorConfig);
+        firstMotorConfig.NeutralMode = mode;
+        firstJointMotor.getConfigurator().apply(firstMotorConfig);
+
+        secondJointMotor.getConfigurator().refresh(secondMotorConfig);
+        secondMotorConfig.NeutralMode = mode;
+        secondJointMotor.getConfigurator().apply(secondMotorConfig);
     }
 
     /**
      * Sets the neutral mode of the arm motors as their default neutral mode.
      */
     public void setNeutralMode() {
-        firstJointMotor.setNeutralMode(ArmConstants.FIRST_JOINT_NEUTRAL_MODE);
-        secondJointMotor.setNeutralMode(ArmConstants.SECOND_JOINT_NEUTRAL_MODE);
+        final MotorOutputConfigs
+            firstMotorConfig = new MotorOutputConfigs(),
+            secondMotorConfig = new MotorOutputConfigs();
+
+        firstJointMotor.getConfigurator().refresh(firstMotorConfig);
+        firstMotorConfig.NeutralMode = ArmConstants.FIRST_JOINT_NEUTRAL_MODE;
+        firstJointMotor.getConfigurator().apply(firstMotorConfig);
+
+        secondJointMotor.getConfigurator().refresh(secondMotorConfig);
+        secondMotorConfig.NeutralMode = ArmConstants.SECOND_JOINT_NEUTRAL_MODE;
+        secondJointMotor.getConfigurator().apply(secondMotorConfig);
     }
 
     private void setTargetState(ArmConstants.ArmStates targetState) {
@@ -309,8 +327,9 @@ public class Arm extends LoggableSubsystemBase {
         return firstJointPose.plus(ArmConstants.FIRST_JOINT_TO_SECOND_JOINT);
     }
 
-    private void setTargetMotorPositionWithFeedforward(WPI_TalonFX motor, double position, double feedforward) {
-        motor.set(ControlMode.Position, position, DemandType.ArbitraryFeedForward, feedforward / motor.getBusVoltage());
+    private void setTargetMotorPositionWithFeedforward(TalonFX motor, double position, double feedforward) {
+        // TODO: check this
+        motor.setControl(new PositionVoltage(position, ArmConstants.USE_FOC, feedforward, 0, false));
     }
 
     private double calculateFeedforward(ArmFeedforward feedforward, double position, double velocity) {
@@ -319,20 +338,20 @@ public class Arm extends LoggableSubsystemBase {
 
     @Log(name = "First Motor Position")
     private Rotation2d getFirstJointMotorAngle() {
-        return Rotation2d.fromDegrees(Conversions.magTicksToDegrees(firstJointMotor.getSelectedSensorPosition()));
+        return Rotation2d.fromRotations(firstJointMotor.getPosition().getValue());
     }
 
     @Log(name = "Second Motor Position")
     private Rotation2d getSecondJointMotorAngle() {
-        return Rotation2d.fromDegrees(Conversions.magTicksToDegrees(secondJointMotor.getSelectedSensorPosition()));
+        return Rotation2d.fromRotations(secondJointMotor.getPosition().getValue());
     }
 
     private double getFirstJointMotorVelocity() {
-        return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(firstJointMotor.getSelectedSensorVelocity()));
+        return Conversions.revolutionsToDegrees(firstJointMotor.getVelocity().getValue());
     }
 
     private double getSecondJointMotorVelocity() {
-        return Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(secondJointMotor.getSelectedSensorVelocity()));
+        return Conversions.revolutionsToDegrees(secondJointMotor.getVelocity().getValue());
     }
 
     private boolean isSecondJointRetracted() {
