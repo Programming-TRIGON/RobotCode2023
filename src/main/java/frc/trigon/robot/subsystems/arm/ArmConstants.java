@@ -6,32 +6,36 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.CANCoder;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
 public class ArmConstants {
+    static final double MINIMUM_END_EFFECTOR_HEIGHT = 20;
+
     static final double
-    FIRST_JOINT_HEIGHT = 101.91482,
-    FIRST_JOINT_LENGTH = 85.88525,
-    SECOND_JOINT_LENGTH = 55;
+            FIRST_JOINT_HEIGHT = 101.91482,
+            FIRST_JOINT_LENGTH = 85.88525,
+            SECOND_JOINT_LENGTH = 55;
+    static final Transform2d
+            FIRST_JOINT_TO_SECOND_JOINT = new Transform2d(new Translation2d(FIRST_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0)),
+            SECOND_JOINT_TO_END_EFFECTOR = new Transform2d(new Translation2d(SECOND_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0));
 
     static final double RETRACTED_DEGREES = 130;
     private static final int
-            FIRST_JOINT_FIRST_MOTOR_ID = 9,
-            FIRST_JOINT_SECOND_MOTOR_ID = 10,
+            FIRST_JOINT_MASTER_MOTOR_ID = 9,
+            FIRST_JOINT_FOLLOWER_MOTOR_ID = 10,
             SECOND_JOINT_MOTOR_ID = 11;
 
     static final WPI_TalonFX
-            FIRST_JOINT_FIRST_MOTOR = new WPI_TalonFX(FIRST_JOINT_FIRST_MOTOR_ID),
+            FIRST_JOINT_MASTER_MOTOR = new WPI_TalonFX(FIRST_JOINT_MASTER_MOTOR_ID),
+            FIRST_JOINT_FOLLOWER_MOTOR = new WPI_TalonFX(FIRST_JOINT_FOLLOWER_MOTOR_ID),
             SECOND_JOINT_MOTOR = new WPI_TalonFX(SECOND_JOINT_MOTOR_ID);
-    private static final WPI_TalonFX FIRST_JOINT_SECOND_MOTOR = new WPI_TalonFX(FIRST_JOINT_SECOND_MOTOR_ID);
     private static final CANCoder
-            FIRST_JOINT_ENCODER = new CANCoder(FIRST_JOINT_FIRST_MOTOR_ID);
+            FIRST_JOINT_ENCODER = new CANCoder(FIRST_JOINT_MASTER_MOTOR_ID);
     private static final WPI_TalonSRX
             SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID + 1);
 
@@ -53,7 +57,7 @@ public class ArmConstants {
 
     static final CurrentWatcher.CurrentWatcherConfig
             FIRST_JOINT_CURRENT_LIMIT_CONFIG = new CurrentWatcher.CurrentWatcherConfig(
-            FIRST_JOINT_FIRST_MOTOR::getStatorCurrent,
+            FIRST_JOINT_MASTER_MOTOR::getStatorCurrent,
             FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD,
             FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD
     ),
@@ -137,20 +141,20 @@ public class ArmConstants {
     private static final double FIRST_JOINT_CLOSED = -79, SECOND_JOINT_CLOSED = 156;
 
     static {
-        FIRST_JOINT_FIRST_MOTOR.configFactoryDefault();
-        FIRST_JOINT_SECOND_MOTOR.configFactoryDefault();
+        FIRST_JOINT_MASTER_MOTOR.configFactoryDefault();
+        FIRST_JOINT_FOLLOWER_MOTOR.configFactoryDefault();
         SECOND_JOINT_MOTOR.configFactoryDefault();
 
         FIRST_JOINT_ENCODER.configFactoryDefault();
         SECOND_JOINT_ENCODER.configFactoryDefault();
 
-        FIRST_JOINT_FIRST_MOTOR.setInverted(FIRST_JOINT_MOTOR_INVERTED);
-        FIRST_JOINT_SECOND_MOTOR.setInverted(FIRST_JOINT_SECOND_MOTOR_INVERTED);
+        FIRST_JOINT_MASTER_MOTOR.setInverted(FIRST_JOINT_MOTOR_INVERTED);
+        FIRST_JOINT_FOLLOWER_MOTOR.setInverted(FIRST_JOINT_SECOND_MOTOR_INVERTED);
         SECOND_JOINT_MOTOR.setInverted(SECOND_JOINT_MOTOR_INVERTED);
 
-        FIRST_JOINT_SECOND_MOTOR.follow(FIRST_JOINT_FIRST_MOTOR);
+        FIRST_JOINT_FOLLOWER_MOTOR.follow(FIRST_JOINT_MASTER_MOTOR);
 
-        FIRST_JOINT_FIRST_MOTOR.setSensorPhase(FIRST_JOINT_SENSOR_PHASE);
+        FIRST_JOINT_MASTER_MOTOR.setSensorPhase(FIRST_JOINT_SENSOR_PHASE);
         SECOND_JOINT_ENCODER.setInverted(SECOND_JOINT_SENSOR_PHASE);
 
 
@@ -166,26 +170,26 @@ public class ArmConstants {
             rawFirstPos -= 360;
         FIRST_JOINT_ENCODER.setPosition(rawFirstPos);
 
-        FIRST_JOINT_FIRST_MOTOR.configRemoteFeedbackFilter(FIRST_JOINT_ENCODER, 0);
+        FIRST_JOINT_MASTER_MOTOR.configRemoteFeedbackFilter(FIRST_JOINT_ENCODER, 0);
         SECOND_JOINT_MOTOR.configRemoteFeedbackFilter(SECOND_JOINT_ENCODER, 0);
 
-        FIRST_JOINT_FIRST_MOTOR.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
+        FIRST_JOINT_MASTER_MOTOR.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
         SECOND_JOINT_MOTOR.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
 
-        FIRST_JOINT_FIRST_MOTOR.config_kP(0, FIRST_JOINT_P);
-        FIRST_JOINT_FIRST_MOTOR.config_kI(0, FIRST_JOINT_I);
-        FIRST_JOINT_FIRST_MOTOR.config_kD(0, FIRST_JOINT_D);
-        FIRST_JOINT_FIRST_MOTOR.configAllowableClosedloopError(0, Conversions.degreesToMagTicks(1));
+        FIRST_JOINT_MASTER_MOTOR.config_kP(0, FIRST_JOINT_P);
+        FIRST_JOINT_MASTER_MOTOR.config_kI(0, FIRST_JOINT_I);
+        FIRST_JOINT_MASTER_MOTOR.config_kD(0, FIRST_JOINT_D);
+        FIRST_JOINT_MASTER_MOTOR.configAllowableClosedloopError(0, Conversions.degreesToMagTicks(1));
 
         SECOND_JOINT_MOTOR.config_kP(0, SECOND_JOINT_P);
         SECOND_JOINT_MOTOR.config_kI(0, SECOND_JOINT_I);
         SECOND_JOINT_MOTOR.config_kD(0, SECOND_JOINT_D);
         SECOND_JOINT_MOTOR.configClosedLoopPeakOutput(0, SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT);
 
-        FIRST_JOINT_FIRST_MOTOR.setNeutralMode(FIRST_JOINT_NEUTRAL_MODE);
+        FIRST_JOINT_MASTER_MOTOR.setNeutralMode(FIRST_JOINT_NEUTRAL_MODE);
         SECOND_JOINT_MOTOR.setNeutralMode(SECOND_JOINT_NEUTRAL_MODE);
 
-        FIRST_JOINT_FIRST_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
+        FIRST_JOINT_MASTER_MOTOR.configNeutralDeadband(FIRST_JOINT_NEUTRAL_DEADBAND);
         SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
     }
 
