@@ -160,8 +160,8 @@ public class Arm extends LoggableSubsystemBase {
             firstJointMotor.disable();
             secondJointMotor.disable();
         } else {
-            setFirstMotorPositionFromProfile();
-            setSecondMotorPositionFromProfile();
+            setFirstJointPositionFromProfile();
+            setSecondJointPositionFromProfile();
         }
     }
 
@@ -185,7 +185,7 @@ public class Arm extends LoggableSubsystemBase {
         lastSecondJointProfileGenerationTimestamp = Timer.getFPGATimestamp();
     }
 
-    private void setFirstMotorPositionFromProfile() {
+    private void setFirstJointPositionFromProfile() {
         if (firstJointMotorProfile == null) {
             firstJointMotor.stopMotor();
             return;
@@ -205,7 +205,7 @@ public class Arm extends LoggableSubsystemBase {
         setTargetMotorPositionWithFeedforward(firstJointMotor, targetMagPosition, feedforward);
     }
 
-    private void setSecondMotorPositionFromProfile() {
+    private void setSecondJointPositionFromProfile() {
         if (secondJointMotorProfile == null) {
             secondJointMotor.stopMotor();
             return;
@@ -270,11 +270,11 @@ public class Arm extends LoggableSubsystemBase {
     }
 
     private double getFirstJointMotorError() {
-        return getFirstJointMotorAngle().getDegrees() - getFirstMotorProfileGoal().getDegrees();
+        return getFirstMotorProfileGoal().getDegrees() - getFirstJointMotorAngle().getDegrees();
     }
 
     private double getSecondJointMotorError() {
-        return getSecondJointMotorAngle().getDegrees() - getSecondMotorProfileGoal().getDegrees();
+        return getSecondMotorProfileGoal().getDegrees() - getSecondJointMotorAngle().getDegrees();
     }
 
     private Rotation2d getFirstMotorProfileGoal() {
