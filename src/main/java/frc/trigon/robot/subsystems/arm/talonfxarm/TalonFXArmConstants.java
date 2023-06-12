@@ -12,6 +12,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TalonFXArmConstants {
@@ -127,17 +128,18 @@ public class TalonFXArmConstants {
         secondJointMotorConfig.Slot0.kI = SECOND_JOINT_I;
         secondJointMotorConfig.Slot0.kD = SECOND_JOINT_D;
 
-        secondJointMotorConfig.Feedback.FeedbackRemoteSensorID = SECOND_JOINT_ENCODER.getDeviceID();
-        // TODO: Check if this is correct
-        secondJointMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
-
         secondJointMotorConfig.MotorOutput.Inverted = SECOND_JOINT_MOTOR_INVERTED_VALUE;
         secondJointMotorConfig.MotorOutput.NeutralMode = SECOND_JOINT_NEUTRAL_MODE;
+        // TODO: check this (voltage)
         secondJointMotorConfig.MotorOutput.DutyCycleNeutralDeadband = SECOND_JOINT_NEUTRAL_DEADBAND;
         secondJointMotorConfig.MotorOutput.PeakForwardDutyCycle = SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
         secondJointMotorConfig.MotorOutput.PeakReverseDutyCycle = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
 
         SECOND_JOINT_MOTOR.getConfigurator().apply(secondJointMotorConfig);
+
+        final double absoluteMotorMagTicks = Conversions.systemToMotor(SECOND_JOINT_ENCODER.getSelectedSensorPosition(), ArmConstants.SECOND_JOINT_GEAR_RATIO);
+        final double absoluteMotorDegrees = Conversions.magTicksToDegrees(absoluteMotorMagTicks);
+        SECOND_JOINT_MOTOR.setRotorPosition(absoluteMotorDegrees);
     }
 
 
@@ -163,6 +165,7 @@ public class TalonFXArmConstants {
 
         firstJointMasterMotorConfig.MotorOutput.Inverted = FIRST_JOINT_MASTER_INVERTED_VALUE;
         firstJointMasterMotorConfig.MotorOutput.NeutralMode = FIRST_JOINT_NEUTRAL_MODE;
+        // TODO: check this (voltage)
         firstJointMasterMotorConfig.MotorOutput.DutyCycleNeutralDeadband = FIRST_JOINT_NEUTRAL_DEADBAND;
 
         FIRST_JOINT_MASTER_MOTOR.getConfigurator().apply(firstJointMasterMotorConfig);

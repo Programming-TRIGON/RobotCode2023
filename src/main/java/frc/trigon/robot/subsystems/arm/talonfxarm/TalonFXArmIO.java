@@ -5,6 +5,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
+import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.arm.ArmIO;
 import frc.trigon.robot.subsystems.arm.ArmInputsAutoLogged;
 import frc.trigon.robot.utilities.Conversions;
@@ -23,8 +24,8 @@ public class TalonFXArmIO implements ArmIO {
         inputs.firstJointStatorCurrent = firstJointMotor.getStatorCurrent().getValue();
         inputs.firstJointSupplyCurrent = firstJointMotor.getSupplyCurrent().getValue();
 
-        inputs.secondJointPositionDegrees = Conversions.magTicksToDegrees(secondJointMotor.getPosition().getValue());
-        inputs.secondJointVelocityDegreesPerSecond = Conversions.magTicksToDegrees(Conversions.perHundredMsToPerSecond(secondJointMotor.getVelocity().getValue()));
+        inputs.secondJointPositionDegrees = secondJointValueToSystemDegrees(secondJointMotor.getPosition().getValue());
+        inputs.secondJointVelocityDegreesPerSecond = secondJointValueToSystemDegrees(secondJointMotor.getVelocity().getValue());
         inputs.secondJointStatorCurrent = secondJointMotor.getStatorCurrent().getValue();
         inputs.secondJointSupplyCurrent = secondJointMotor.getSupplyCurrent().getValue();
 
@@ -37,7 +38,6 @@ public class TalonFXArmIO implements ArmIO {
                 Units.degreesToRadians(position),
                 Units.degreesToRadians(velocity)
         );
-
         final PositionVoltage positionVoltage = new PositionVoltage(
                 Conversions.degreesToRevolutions(position),
                 TalonFXArmConstants.USE_FOC,
@@ -108,5 +108,11 @@ public class TalonFXArmIO implements ArmIO {
     @Override
     public void stopSecondJoint() {
         secondJointMotor.stopMotor();
+    }
+
+    private double secondJointValueToSystemDegrees(double value) {
+        final double systemRevolutions = Conversions.systemToMotor(value, ArmConstants.SECOND_JOINT_GEAR_RATIO);
+
+        return Conversions.revolutionsToDegrees(systemRevolutions);
     }
 }

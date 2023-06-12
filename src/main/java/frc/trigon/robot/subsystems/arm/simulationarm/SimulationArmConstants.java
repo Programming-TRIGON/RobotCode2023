@@ -10,9 +10,7 @@ public class SimulationArmConstants {
     private static final DCMotor
             FIRST_JOINT_MOTOR = DCMotor.getFalcon500(2),
             SECOND_JOINT_MOTOR = DCMotor.getFalcon500(1);
-    private static final double
-            FIRST_JOINT_GEAR_RATIO = 200,
-            SECOND_JOINT_GEAR_RATIO = 200;
+    private static final double FIRST_JOINT_GEAR_RATIO = 200;
     private static final double
             FIRST_JOINT_MASS = 8,
             SECOND_JOINT_MASS = 8;
@@ -30,7 +28,7 @@ public class SimulationArmConstants {
                     FIRST_JOINT_MAXIMUM_ANGLE, true
             ),
             SECOND_JOINT_SIMULATION = new SingleJointedArmSim(
-                    SECOND_JOINT_MOTOR, SECOND_JOINT_GEAR_RATIO,
+                    SECOND_JOINT_MOTOR, ArmConstants.SECOND_JOINT_GEAR_RATIO,
                     SingleJointedArmSim.estimateMOI(ArmConstants.FIRST_JOINT_LENGTH / 100, SECOND_JOINT_MASS),
                     ArmConstants.FIRST_JOINT_LENGTH, SECOND_JOINT_MINIMUM_ANGLE,
                     SECOND_JOINT_MAXIMUM_ANGLE, true
