@@ -2,9 +2,13 @@ package frc.trigon.robot.constants;
 
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.components.XboxController;
+import frc.trigon.robot.utilities.FilesHandler;
 import frc.trigon.robot.utilities.KeyboardController;
 
 public class OperatorConstants {
+    public static String
+            REAL_MODE_LOG_DIRECTORY = FilesHandler.DEPLOY_PATH + "logs/",
+            SIMULATION_MODE_LOG_DIRECTORY = FilesHandler.DEPLOY_PATH + "logs/";
     private static final int DRIVE_CONTROLLER_PORT = 0;
     private static final int DRIVE_CONTROLLER_EXPONENT = 2;
     public static final double DRIVE_CONTROLLER_DEADBAND = 0.1;

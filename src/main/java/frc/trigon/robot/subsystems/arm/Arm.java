@@ -1,40 +1,31 @@
 package frc.trigon.robot.subsystems.arm;
 
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import frc.trigon.robot.subsystems.LoggableSubsystemBase;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.trigon.robot.constants.ConfigurationConstants;
+import frc.trigon.robot.subsystems.arm.simulationarm.SimulationArmIO;
+import frc.trigon.robot.subsystems.arm.talonfxarm.TalonFXArmIO;
 import frc.trigon.robot.utilities.Conversions;
-import io.github.oblarg.oblog.annotations.Log;
+import org.littletonrobotics.junction.Logger;
 
-public class Arm extends LoggableSubsystemBase {
+public class Arm extends SubsystemBase {
     private static final Arm INSTANCE = new Arm();
-    private final TalonFX
-            firstJointMotor = ArmConstants.FIRST_JOINT_MASTER_MOTOR,
-            secondJointMotor = ArmConstants.SECOND_JOINT_MOTOR;
+
+    private final ArmIO armIO;
+    private final ArmInputsAutoLogged armInputs = new ArmInputsAutoLogged();
     private TrapezoidProfile firstJointMotorProfile, secondJointMotorProfile;
     private double lastFirstJointProfileGenerationTimestamp, lastSecondJointProfileGenerationTimestamp;
-    @Log
-    private double secondJointSetpoint;
-    @Log
-    private boolean firstMotorAtGoal, secondMotorAtGoal, firstMotorVelocityAtGoal, secondMotorVelocityAtGoal;
     private double lastFirstJointSpeedFactor, lastSecondJointSpeedFactor;
     private String firstJointToMove = "";
 
     private Arm() {
+        armIO = generateIO();
         setCurrentLimits();
     }
 
@@ -45,18 +36,18 @@ public class Arm extends LoggableSubsystemBase {
     @Override
     public void periodic() {
         setTargetMotorPositions();
+        refreshInputs();
+        updateNetworkTables();
     }
 
     /**
      * @return true if both arm motors had reached their target position
      */
     public boolean atGoal() {
-        firstMotorAtGoal = Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE;
-        secondMotorAtGoal = Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE;
-        firstMotorVelocityAtGoal = Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE;
-        secondMotorVelocityAtGoal = Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
-
-        return firstMotorAtGoal && secondMotorAtGoal && firstMotorVelocityAtGoal && secondMotorVelocityAtGoal;
+        return Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE &&
+                Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE &&
+                Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE &&
+                Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE;
     }
 
     /**
@@ -121,35 +112,38 @@ public class Arm extends LoggableSubsystemBase {
      * @param brake whether the arm is in brake mode or not
      */
     public void setNeutralMode(boolean brake) {
-        final NeutralModeValue mode = brake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-        final MotorOutputConfigs
-                firstMotorConfig = new MotorOutputConfigs(),
-                secondMotorConfig = new MotorOutputConfigs();
-
-        firstJointMotor.getConfigurator().refresh(firstMotorConfig);
-        firstMotorConfig.NeutralMode = mode;
-        firstJointMotor.getConfigurator().apply(firstMotorConfig);
-
-        secondJointMotor.getConfigurator().refresh(secondMotorConfig);
-        secondMotorConfig.NeutralMode = mode;
-        secondJointMotor.getConfigurator().apply(secondMotorConfig);
+        armIO.setNeutralMode(brake);
     }
 
     /**
      * Sets the neutral mode of the arm motors as their default neutral mode.
      */
     public void setNeutralMode() {
-        final MotorOutputConfigs
-            firstMotorConfig = new MotorOutputConfigs(),
-            secondMotorConfig = new MotorOutputConfigs();
+        armIO.setNeutralMode(ArmConstants.DEFAULT_NEUTRAL_MODE);
+    }
 
-        firstJointMotor.getConfigurator().refresh(firstMotorConfig);
-        firstMotorConfig.NeutralMode = ArmConstants.FIRST_JOINT_NEUTRAL_MODE;
-        firstJointMotor.getConfigurator().apply(firstMotorConfig);
+    private void refreshInputs() {
+        armIO.updateInputs(armInputs);
+        Logger.getInstance().processInputs("Arm", armInputs);
+    }
 
-        secondJointMotor.getConfigurator().refresh(secondMotorConfig);
-        secondMotorConfig.NeutralMode = ArmConstants.SECOND_JOINT_NEUTRAL_MODE;
-        secondJointMotor.getConfigurator().apply(secondMotorConfig);
+    private void updateNetworkTables() {
+        Logger.getInstance().recordOutput("firstMotorAtGoal", Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE);
+        Logger.getInstance().recordOutput("secondMotorAtGoal", Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE);
+        Logger.getInstance().recordOutput("firstMotorVelocityAtGoal", Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE);
+        Logger.getInstance().recordOutput("secondMotorVelocityAtGoal", Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE);
+
+        Logger.getInstance().recordOutput("firstJointPose", getFirstJointComponentPose());
+        Logger.getInstance().recordOutput("secondJointPose", getSecondJointComponentPose());
+
+        updateMechanism();
+    }
+
+    private void updateMechanism() {
+        ArmConstants.FIRST_JOINT_LIGAMENT.setAngle(getFirstJointMotorAngle().getDegrees());
+        ArmConstants.SECOND_JOINT_LIGAMENT.setAngle(getSecondJointMotorAngle().getDegrees());
+
+        Logger.getInstance().recordOutput("ArmMechanism", ArmConstants.ARM_MECHANISM);
     }
 
     private void setTargetState(ArmConstants.ArmStates targetState) {
@@ -175,8 +169,7 @@ public class Arm extends LoggableSubsystemBase {
 
     private void setTargetMotorPositions() {
         if (this.getCurrentCommand() == null) {
-            firstJointMotor.disable();
-            secondJointMotor.disable();
+            armIO.stop();
         } else {
             setFirstJointPositionFromProfile();
             setSecondJointPositionFromProfile();
@@ -205,7 +198,7 @@ public class Arm extends LoggableSubsystemBase {
 
     private void setFirstJointPositionFromProfile() {
         if (firstJointMotorProfile == null) {
-            firstJointMotor.stopMotor();
+            armIO.stopFirstJoint();
             return;
         }
 
@@ -217,15 +210,13 @@ public class Arm extends LoggableSubsystemBase {
             return;
         }
 
-        final double feedforward = calculateFeedforward(ArmConstants.FIRST_JOINT_FEEDFORWARD, targetState.position, targetState.velocity);
-        final double targetRevolutions = Conversions.degreesToRevolutions(targetState.position);
-
-        setTargetMotorPositionWithFeedforward(firstJointMotor, targetRevolutions, feedforward);
+        armIO.setFirstJointPosition(targetState.position, targetState.velocity);
+        Logger.getInstance().recordOutput("firstJointSetpoint", targetState.position);
     }
 
     private void setSecondJointPositionFromProfile() {
         if (secondJointMotorProfile == null) {
-            secondJointMotor.stopMotor();
+            armIO.stopSecondJoint();
             return;
         }
 
@@ -234,20 +225,12 @@ public class Arm extends LoggableSubsystemBase {
 
         if (shouldStopSecondJointMotor(targetState)) {
             generateSecondMotorProfile(getSecondMotorProfileGoal(), lastSecondJointSpeedFactor);
-            secondJointMotor.stopMotor();
+            armIO.stopSecondJoint();
             return;
         }
 
-        final double feedforward = calculateFeedforward(
-                ArmConstants.SECOND_JOINT_FEEDFORWARD,
-                targetState.position + getSecondJointMotorAngle().getDegrees(),
-                targetState.velocity
-        );
-        final double targetSystemRevolutions = Conversions.degreesToRevolutions(targetState.position);
-        final double targetWheelRevolutions = Conversions.systemToMotor(targetSystemRevolutions, ArmConstants.SECOND_JOINT_GEAR_RATIO);
-
-        setTargetMotorPositionWithFeedforward(secondJointMotor, targetWheelRevolutions, feedforward);
-        secondJointSetpoint = targetState.position;
+        armIO.setSecondJointPosition(targetState.position, targetState.velocity);
+        Logger.getInstance().recordOutput("secondJointSetpoint", targetState.position);
     }
 
     private boolean shouldStopFirstJointMotor(TrapezoidProfile.State targetState) {
@@ -293,7 +276,21 @@ public class Arm extends LoggableSubsystemBase {
     }
 
     private double getSecondJointMotorError() {
-        return getSecondMotorProfileGoal().getDegrees() - getSecondJointMotorAngle().getDegrees();
+        return getSecondJointMotorAngle().getDegrees() - getSecondMotorProfileGoal().getDegrees();
+    }
+
+    private Pose3d getFirstJointComponentPose() {
+        return new Pose3d(
+                new Translation3d(0, 0, ArmConstants.FIRST_JOINT_HEIGHT),
+                new Rotation3d(0, getFirstJointMotorAngle().getRadians(), 0)
+        );
+    }
+
+    private Pose3d getSecondJointComponentPose() {
+        return new Pose3d(
+                new Translation3d(getSecondJointLocationRelativeToGround().getX(), 0, getSecondJointLocationRelativeToGround().getY()),
+                new Rotation3d(0, 0, getSecondJointLocationRelativeToGround().getRotation().getRadians())
+        );
     }
 
     private Rotation2d getFirstMotorProfileGoal() {
@@ -312,8 +309,8 @@ public class Arm extends LoggableSubsystemBase {
         return targetState.velocity < 0 && getCurrentEndEffectorLocation().getY() < ArmConstants.MINIMUM_END_EFFECTOR_HEIGHT;
     }
 
-    private boolean isNotFirstJointToMove(String arm) {
-        return !firstJointToMove.equals(arm) && !firstJointToMove.isBlank();
+    private boolean isNotFirstJointToMove(String joint) {
+        return !firstJointToMove.equals(joint) && !firstJointToMove.isBlank();
     }
 
     private Translation2d getCurrentEndEffectorLocation() {
@@ -328,35 +325,20 @@ public class Arm extends LoggableSubsystemBase {
         return firstJointPose.plus(ArmConstants.FIRST_JOINT_TO_SECOND_JOINT);
     }
 
-    private void setTargetMotorPositionWithFeedforward(TalonFX motor, double position, double feedforward) {
-        // TODO: check this
-        motor.setControl(new PositionVoltage(position, ArmConstants.USE_FOC, feedforward, 0, false));
-    }
-
-    private double calculateFeedforward(ArmFeedforward feedforward, double position, double velocity) {
-        return feedforward.calculate(Units.degreesToRadians(position), Units.degreesToRadians(velocity));
-    }
-
-    @Log(name = "First Motor Position")
     private Rotation2d getFirstJointMotorAngle() {
-        return Rotation2d.fromRotations(firstJointMotor.getPosition().getValue());
+        return Rotation2d.fromDegrees(armInputs.firstJointPositionDegrees);
     }
 
-    @Log(name = "Second Motor Position")
     private Rotation2d getSecondJointMotorAngle() {
-        final double systemPosition = Conversions.motorToSystem(secondJointMotor.getPosition().getValue(), ArmConstants.SECOND_JOINT_GEAR_RATIO);
-
-        return Rotation2d.fromRotations(systemPosition);
+        return Rotation2d.fromDegrees(armInputs.secondJointPositionDegrees);
     }
 
     private double getFirstJointMotorVelocity() {
-        return Conversions.revolutionsToDegrees(firstJointMotor.getVelocity().getValue());
+        return armInputs.firstJointVelocityDegreesPerSecond;
     }
 
     private double getSecondJointMotorVelocity() {
-        final double systemRevolutionsPerSecond = Conversions.motorToSystem(secondJointMotor.getVelocity().getValue(), ArmConstants.SECOND_JOINT_GEAR_RATIO);
-
-        return Conversions.revolutionsToDegrees(systemRevolutionsPerSecond);
+        return armInputs.secondJointVelocityDegreesPerSecond;
     }
 
     private boolean isSecondJointRetracted() {
@@ -364,18 +346,26 @@ public class Arm extends LoggableSubsystemBase {
     }
 
     private void setCurrentLimits() {
-        ArmConstants.FIRST_JOINT_CURRENT_LIMIT_CONFIG.setup(
+        armIO.setupLimits(
                 () -> {
                     firstJointMotorProfile = null;
-                    DriverStation.reportWarning("Arm first motor current draw is too high!\t" + firstJointMotor.getStatorCurrent(), false);
-                }
-        );
-        ArmConstants.SECOND_JOINT_CURRENT_LIMIT_CONFIG.setup(
+                    DriverStation.reportWarning("Arm first motor current draw is too high!\t" + armInputs.firstJointStatorCurrent, false);
+                },
                 () -> {
                     secondJointMotorProfile = null;
-                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + secondJointMotor.getStatorCurrent(), false);
+                    DriverStation.reportWarning("Arm second motor current draw is too high!\t" + armInputs.secondJointStatorCurrent, false);
                 }
         );
     }
 
+    private ArmIO generateIO() {
+        switch (ConfigurationConstants.CURRENT_MODE) {
+            case REAL:
+                return new TalonFXArmIO();
+            case SIM:
+                return new SimulationArmIO();
+            default:
+                return new ArmIO() {};
+        }
+    }
 }
