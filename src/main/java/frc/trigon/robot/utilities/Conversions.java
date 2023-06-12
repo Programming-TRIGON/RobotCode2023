@@ -222,6 +222,10 @@ public class Conversions {
         return revolutions * wheelDiameter * Math.PI;
     }
 
+    public static double distanceToRevolutions(double distance, double wheelDiameter) {
+        return distance / (wheelDiameter * Math.PI);
+    }
+
     /**
      * Converts a target output voltage to a percentage output when voltage compensation is enabled.
      * The voltage compensation saturation determines what voltage represents 100% output.

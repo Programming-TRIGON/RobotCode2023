@@ -72,7 +72,7 @@ public abstract class SwerveModule implements Loggable {
     }
 
     /**
-     * Sets the target velocity for the module.
+     * Sets the target velocity for the module. In meters per second.
      *
      * @param velocity the target velocity
      */
@@ -133,14 +133,14 @@ public abstract class SwerveModule implements Loggable {
     protected abstract SwerveModuleState optimizeState(SwerveModuleState state);
 
     /**
-     * Sets the module's target velocity in closed loop control.
+     * Sets the module's target velocity in closed loop control. In meters per second.
      *
      * @param velocity the target velocity
      */
     protected abstract void setTargetClosedLoopVelocity(double velocity);
 
     /**
-     * Sets the module's target velocity in open loop control.
+     * Sets the module's target velocity open loop control. In meters per second.
      *
      * @param velocity the target velocity
      */

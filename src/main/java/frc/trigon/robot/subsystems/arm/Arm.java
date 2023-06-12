@@ -218,9 +218,9 @@ public class Arm extends LoggableSubsystemBase {
         }
 
         final double feedforward = calculateFeedforward(ArmConstants.FIRST_JOINT_FEEDFORWARD, targetState.position, targetState.velocity);
-        final double targetMagPosition = Conversions.degreesToMagTicks(targetState.position);
+        final double targetRevolutions = Conversions.degreesToRevolutions(targetState.position);
 
-        setTargetMotorPositionWithFeedforward(firstJointMotor, targetMagPosition, feedforward);
+        setTargetMotorPositionWithFeedforward(firstJointMotor, targetRevolutions, feedforward);
     }
 
     private void setSecondJointPositionFromProfile() {
@@ -243,9 +243,10 @@ public class Arm extends LoggableSubsystemBase {
                 targetState.position + getSecondJointMotorAngle().getDegrees(),
                 targetState.velocity
         );
-        final double targetMagPosition = Conversions.degreesToMagTicks(targetState.position);
+        final double targetSystemRevolutions = Conversions.degreesToRevolutions(targetState.position);
+        final double targetWheelRevolutions = Conversions.systemToMotor(targetSystemRevolutions, ArmConstants.SECOND_JOINT_GEAR_RATIO);
 
-        setTargetMotorPositionWithFeedforward(secondJointMotor, targetMagPosition, feedforward);
+        setTargetMotorPositionWithFeedforward(secondJointMotor, targetWheelRevolutions, feedforward);
         secondJointSetpoint = targetState.position;
     }
 
@@ -343,7 +344,9 @@ public class Arm extends LoggableSubsystemBase {
 
     @Log(name = "Second Motor Position")
     private Rotation2d getSecondJointMotorAngle() {
-        return Rotation2d.fromRotations(secondJointMotor.getPosition().getValue());
+        final double systemPosition = Conversions.motorToSystem(secondJointMotor.getPosition().getValue(), ArmConstants.SECOND_JOINT_GEAR_RATIO);
+
+        return Rotation2d.fromRotations(systemPosition);
     }
 
     private double getFirstJointMotorVelocity() {
@@ -351,7 +354,9 @@ public class Arm extends LoggableSubsystemBase {
     }
 
     private double getSecondJointMotorVelocity() {
-        return Conversions.revolutionsToDegrees(secondJointMotor.getVelocity().getValue());
+        final double systemRevolutionsPerSecond = Conversions.motorToSystem(secondJointMotor.getVelocity().getValue(), ArmConstants.SECOND_JOINT_GEAR_RATIO);
+
+        return Conversions.revolutionsToDegrees(systemRevolutionsPerSecond);
     }
 
     private boolean isSecondJointRetracted() {

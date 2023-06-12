@@ -50,20 +50,20 @@ public class TestingSwerveModule extends SwerveModule {
 
     @Override
     protected void setTargetClosedLoopVelocity(double velocity) {
-        final double driveMotorVelocity = Conversions.systemToMotor(velocity, TestingSwerveModuleConstants.DRIVE_GEAR_RATIO);
-        final double feedForward = TestingSwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(driveMotorVelocity);
+        final double driveMotorVelocityMeters = Conversions.systemToMotor(velocity, TestingSwerveModuleConstants.DRIVE_GEAR_RATIO);
+        final double driverMotorVelocityRevolutions = Conversions.distanceToRevolutions(driveMotorVelocityMeters, TestingSwerveModuleConstants.WHEEL_DIAMETER_METERS);
+        final double feedForward = TestingSwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(velocity);
 
         driveMotor.setControl(
                 // TODO: check this
-                new VelocityVoltage(driveMotorVelocity, TestingSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward, 0, false)
+                new VelocityVoltage(driverMotorVelocityRevolutions, TestingSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward, 0, false)
         );
     }
 
     @Override
     protected void setTargetOpenLoopVelocity(double velocity) {
-//        double power = velocity / TestingSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
-//        driveMotor.set(power);
-        driveMotor.setControl(new VelocityVoltage(velocity));
+        double power = velocity / TestingSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
+        driveMotor.set(power);
     }
 
     @Override

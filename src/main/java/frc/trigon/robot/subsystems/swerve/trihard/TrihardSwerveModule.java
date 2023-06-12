@@ -97,10 +97,11 @@ public class TrihardSwerveModule extends SwerveModule {
     @Override
     protected void setTargetClosedLoopVelocity(double velocity) {
         final double driveMotorVelocity = Conversions.systemToMotor(velocity, TrihardSwerveModuleConstants.DRIVE_GEAR_RATIO);
+        final double driveMotorVelocityRevolutions = Conversions.distanceToRevolutions(driveMotorVelocity, TrihardSwerveModuleConstants.WHEEL_DIAMETER_METERS);
         final double feedForward = TrihardSwerveModuleConstants.DRIVE_FEEDFORWARD.calculate(velocity);
 
         driveMotor.setControl(
-                new VelocityVoltage(driveMotorVelocity, TrihardSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward, 0, false)
+                new VelocityVoltage(driveMotorVelocityRevolutions, TrihardSwerveModuleConstants.DRIVE_MOTOR_FOC, feedForward, 0, false)
         );
     }
 

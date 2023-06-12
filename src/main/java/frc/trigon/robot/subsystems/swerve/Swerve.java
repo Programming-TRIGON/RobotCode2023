@@ -22,7 +22,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected abstract Pigeon2 getGyro();
 
     /**
-     * @return the pitch of the swerve
+     * @return the pitch of the swerve, in degrees
      */
     @Log
     public double getPitch() {

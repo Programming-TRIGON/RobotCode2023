@@ -20,6 +20,7 @@ import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
 public class ArmConstants {
+    static final double SECOND_JOINT_GEAR_RATIO = 100;
     static final double MINIMUM_END_EFFECTOR_HEIGHT = 20;
 
     static final double
@@ -182,10 +183,6 @@ public class ArmConstants {
         secondJointMotorConfig.Slot0.kI = SECOND_JOINT_I;
         secondJointMotorConfig.Slot0.kD = SECOND_JOINT_D;
 
-        secondJointMotorConfig.Feedback.FeedbackRemoteSensorID = SECOND_JOINT_ENCODER.getDeviceID();
-        // TODO: Wait for this to be possible with mag
-        secondJointMotorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
-
         secondJointMotorConfig.MotorOutput.Inverted = SECOND_JOINT_MOTOR_INVERTED_VALUE;
         secondJointMotorConfig.MotorOutput.NeutralMode = SECOND_JOINT_NEUTRAL_MODE;
         secondJointMotorConfig.MotorOutput.DutyCycleNeutralDeadband = SECOND_JOINT_NEUTRAL_DEADBAND;
@@ -193,6 +190,9 @@ public class ArmConstants {
         secondJointMotorConfig.MotorOutput.PeakReverseDutyCycle = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
 
         SECOND_JOINT_MOTOR.getConfigurator().apply(secondJointMotorConfig);
+        final double motorAbsoluteMagTicks = Conversions.systemToMotor(SECOND_JOINT_ENCODER.getSelectedSensorPosition(), SECOND_JOINT_GEAR_RATIO);
+        final double motorAbsoluteRevolutions = Conversions.magTicksToRevolutions(motorAbsoluteMagTicks);
+        SECOND_JOINT_MOTOR.setRotorPosition(motorAbsoluteRevolutions);
     }
 
     private static void configureFirstJointFollowerMotor() {
