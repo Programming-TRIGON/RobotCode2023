@@ -11,6 +11,7 @@ import frc.trigon.robot.utilities.Conversions;
 public class SimulationSwerveModuleIO extends SwerveModuleIO {
     private final DCMotorSim driveMotor, steerMotor;
     private final String name;
+    private boolean brake = true;
     private double driveAppliedVoltage, steerAppliedVoltage;
     private SwerveModuleInputsAutoLogged lastInputs = new SwerveModuleInputsAutoLogged();
 
@@ -71,10 +72,21 @@ public class SimulationSwerveModuleIO extends SwerveModuleIO {
 
     @Override
     protected void stop() {
+        if (brake) {
+            driveAppliedVoltage = -lastInputs.driveVelocityMetersPerSecond / SimulationSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND * SimulationSwerveModuleConstants.MAX_MOTOR_VOLTAGE;
+            driveMotor.setInputVoltage(driveAppliedVoltage);
+        } else {
+            driveAppliedVoltage = 0;
+            driveMotor.setInputVoltage(0);
+        }
+
         steerAppliedVoltage = 0;
         steerMotor.setInputVoltage(0);
-        driveAppliedVoltage = 0;
-        driveMotor.setInputVoltage(0);
+    }
+
+    @Override
+    protected void setBrake(boolean brake) {
+        this.brake = brake;
     }
 
     private double voltageToMaxedVoltage(double voltage) {

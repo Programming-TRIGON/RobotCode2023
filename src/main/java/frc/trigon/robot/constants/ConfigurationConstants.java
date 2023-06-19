@@ -1,6 +1,6 @@
 package frc.trigon.robot.constants;
 
-public final class ConfigurationConstants {
+public class ConfigurationConstants {
   public static final RobotType ROBOT_TYPE = RobotType.SIMULATION;
   public static final boolean IS_REPLAY = false;
 
