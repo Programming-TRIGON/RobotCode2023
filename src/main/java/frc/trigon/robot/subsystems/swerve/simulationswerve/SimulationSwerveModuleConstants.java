@@ -81,8 +81,6 @@ public class SimulationSwerveModuleConstants {
     public SimulationSwerveModuleConstants(DCMotorSim driveMotor, DCMotorSim steerMotor) {
         this.driveMotor = driveMotor;
         this.steerMotor = steerMotor;
-
-        driveMotor.
     }
 
     enum SimulationSwerveModules {

@@ -26,10 +26,12 @@ public class CameraConstants {
                     )
             )
     );
-    public static final RobotPoseSource FORWARD_LIMELIGHT = new AprilTagPhotonCamera(
-            "limelight-forward",
-            FORWARD_LIMELIGHT_TO_ROBOT
-    );
+    public static final RobotPoseSource FORWARD_LIMELIGHT = ConfigurationConstants.IS_REPLAY ?
+            new RobotPoseSource(FORWARD_LIMELIGHT_TO_ROBOT) :
+            new AprilTagPhotonCamera(
+                    "limelight-forward",
+                    FORWARD_LIMELIGHT_TO_ROBOT
+            );
 //    public static final T265 t265 = new T265("908412110743", new Transform3d());
 
 }

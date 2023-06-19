@@ -1,16 +1,15 @@
 package frc.trigon.robot.robotposesources;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 
 /**
  * A pose source that provides the robot's pose, relative to a given pose.
  */
-public abstract class RelativeRobotPoseSource extends RobotPoseSource {
+public class RelativeRobotPoseSource extends RobotPoseSource {
     private Pose2d relativePose = new Pose2d();
 
-    protected RelativeRobotPoseSource(Transform3d cameraToRobotCenter) {
+    public RelativeRobotPoseSource(Transform3d cameraToRobotCenter) {
         super(cameraToRobotCenter);
     }
 
@@ -34,13 +33,5 @@ public abstract class RelativeRobotPoseSource extends RobotPoseSource {
                 pose.getTranslation().minus(toSubtract.getTranslation()),
                 pose.getRotation().minus(toSubtract.getRotation())
         );
-    }
-
-    private Transform2d pose2dToTransform2d(Pose2d pose) {
-        return new Transform2d(pose.getTranslation(), pose.getRotation());
-    }
-
-    private Pose2d transform2dToPose2d(Transform2d transform) {
-        return new Pose2d(transform.getTranslation(), transform.getRotation());
     }
 }

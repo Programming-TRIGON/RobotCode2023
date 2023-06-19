@@ -394,4 +394,4 @@ simgui.json
 # End entries from WPI Lib team
 networktables.json
 /*.wpilog
-src/main/java/frc/robot/BuildConstants.java
+src/main/java/frc/trigon/robot/BuildConstants.java

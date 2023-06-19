@@ -28,7 +28,7 @@ public class TestingSwerveModuleIO extends SwerveModuleIO {
 
     @Override
     protected void updateInputs(SwerveModuleInputsAutoLogged inputs) {
-        if (!inputs.name.equals(name))
+        if (inputs.name.equals(""))
             inputs.name = name;
 
         inputs.steerAngleDegrees = steerEncoder.getPosition();

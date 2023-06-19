@@ -20,29 +20,23 @@ public class T265 extends RelativeRobotPoseSource {
     }
 
     @Override
-    public Pose3d getCameraPose() {
+    protected void updateInputs(RobotPoseSourceInputsAutoLogged inputs) {
+        if (inputs.name.equals(""))
+            inputs.name = name;
+
+        inputs.hasResult = canUseJsonDump();
+        inputs.cameraPose = getCameraPose();
+        inputs.lastResultTimestamp = jsonDump.getLastChange();
+    }
+
+    private Pose3d getCameraPose() {
         if(!canUseJsonDump())
             return new Pose3d();
 
         return getRobotPoseFromJsonDump();
     }
 
-    @Override
-    protected boolean hasResult() {
-        return canUseJsonDump();
-    }
-
-    @Override
-    public double getLastResultTimestamp() {
-        return jsonDump.getLastChange();
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public Pose3d getRobotPoseFromJsonDump() {
+    private Pose3d getRobotPoseFromJsonDump() {
         final T265JsonDump jsonDump = getJsonDump();
         final Translation3d translation = getTranslationFromDoubleArray(jsonDump.translation);
         final Rotation3d rotation = getRotationFromDoubleArray(jsonDump.rotation);

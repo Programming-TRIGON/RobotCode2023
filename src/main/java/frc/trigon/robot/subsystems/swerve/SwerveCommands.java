@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.utilities.AllianceUtilities;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 
 import java.util.HashMap;
 import java.util.List;

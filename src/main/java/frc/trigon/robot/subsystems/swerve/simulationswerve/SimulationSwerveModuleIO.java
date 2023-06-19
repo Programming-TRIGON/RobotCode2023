@@ -27,7 +27,7 @@ public class SimulationSwerveModuleIO extends SwerveModuleIO {
         steerMotor.update(0.02);
         driveMotor.update(0.02);
 
-        if (!inputs.name.equals(name))
+        if (inputs.name.equals(""))
             inputs.name = name;
 
         inputs.steerAngleDegrees = Conversions.revolutionsToDegrees(steerMotor.getAngularPositionRotations());

@@ -1,6 +1,5 @@
 package frc.trigon.robot.robotposesources;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import frc.trigon.robot.components.FiducialLimelight;
 
@@ -14,22 +13,12 @@ public class AprilTagLimelight extends RobotPoseSource {
     }
 
     @Override
-    public double getLastResultTimestamp() {
-        return fiducialLimelight.getLastResultTimestamp();
-    }
+    protected void updateInputs(RobotPoseSourceInputsAutoLogged inputs) {
+        if (inputs.name.equals(""))
+            inputs.name = fiducialLimelight.getName();
 
-    @Override
-    public String getName() {
-        return fiducialLimelight.getName();
-    }
-
-    @Override
-    protected Pose3d getCameraPose() {
-        return fiducialLimelight.getRobotPoseFromJsonDump();
-    }
-
-    @Override
-    protected boolean hasResult() {
-        return fiducialLimelight.hasResults();
+        inputs.hasResult = fiducialLimelight.hasResults();
+        inputs.cameraPose = fiducialLimelight.getRobotPoseFromJsonDump();
+        inputs.lastResultTimestamp = fiducialLimelight.getLastResultTimestamp();
     }
 }
