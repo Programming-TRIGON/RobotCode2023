@@ -1,16 +1,16 @@
 package frc.trigon.robot.subsystems.gripper;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
-import frc.trigon.robot.subsystems.LoggableSubsystemBase;
-import io.github.oblarg.oblog.annotations.Log;
+import edu.wpi.first.wpilibj2.command.*;
+import frc.trigon.robot.constants.ConfigurationConstants;
+import frc.trigon.robot.subsystems.gripper.simulationgripper.SimulationGripperIO;
+import frc.trigon.robot.subsystems.gripper.talonfxgripper.TalonFXGripperIO;
+import org.littletonrobotics.junction.Logger;
 
-public class Gripper extends LoggableSubsystemBase {
+public class Gripper extends SubsystemBase {
     private static final Gripper INSTANCE = new Gripper();
-    private final TalonFX motor = GripperConstants.MOTOR;
+
+    private final GripperIO gripperIO;
+    private final GripperInputsAutoLogged gripperInputsAutoLogged = new GripperInputsAutoLogged();
 
     public static Gripper getInstance() {
         return INSTANCE;
@@ -19,6 +19,7 @@ public class Gripper extends LoggableSubsystemBase {
     private GripperConstants.GripperState state = GripperConstants.GripperState.STOP;
 
     private Gripper() {
+        gripperIO = generateIO();
         setPowerDistributionPortRequirements();
         setDefaultCommand(
                 new StartEndCommand(
@@ -27,6 +28,12 @@ public class Gripper extends LoggableSubsystemBase {
                         this
                 )
         );
+    }
+
+    @Override
+    public void periodic() {
+        gripperIO.updateInputs(gripperInputsAutoLogged);
+        Logger.getInstance().processInputs(getLoggingPath(), gripperInputsAutoLogged);
     }
 
     /**
@@ -107,21 +114,30 @@ public class Gripper extends LoggableSubsystemBase {
     }
 
     private void setPowerDistributionPortRequirements() {
-            GripperConstants.HOLD_TRIGGER_CONFIG.setup(
-                    () -> {
-                        if(state.power < 0)
-                            setState(GripperConstants.GripperState.HOLD);
-                    }
-            );
-    }
-
-    @Log
-    private double getStatorCurrent() {
-        return motor.getStatorCurrent().getValue();
+        gripperIO.configHoldTrigger(
+                () -> {
+                    if(state.power < 0)
+                        setState(GripperConstants.GripperState.HOLD);
+                }
+        );
     }
 
     private void setState(GripperConstants.GripperState state) {
         this.state = state;
-        motor.set(state.power);
+        gripperIO.setTargetPower(state.power);
+    }
+
+    private String getLoggingPath() {
+        return "Gripper";
+    }
+
+    private GripperIO generateIO() {
+        if (ConfigurationConstants.IS_REPLAY)
+            return new GripperIO() {};
+
+        if (ConfigurationConstants.ROBOT_TYPE == ConfigurationConstants.RobotType.TRIHARD)
+            return new TalonFXGripperIO();
+
+        return new SimulationGripperIO();
     }
 }

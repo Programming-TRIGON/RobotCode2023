@@ -2,9 +2,9 @@ package frc.trigon.robot.subsystems.arm;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface ArmIO {
+public class ArmIO {
     @AutoLog
-    class ArmInputs {
+    protected static class ArmInputs {
         public double firstJointPositionDegrees = 0;
         public double firstJointVelocityDegreesPerSecond = 0;
         public double firstJointStatorCurrent = 0;
@@ -23,7 +23,7 @@ public interface ArmIO {
      *
      * @param inputs the inputs class to update
      */
-    default void updateInputs(ArmInputsAutoLogged inputs) {
+    protected void updateInputs(ArmInputsAutoLogged inputs) {
     }
 
     /**
@@ -32,7 +32,7 @@ public interface ArmIO {
      * @param position the position in degrees
      * @param velocity the velocity in degrees per second
      */
-    default void setFirstJointPosition(double position, double velocity) {
+    protected void setTargetFirstJointPosition(double position, double velocity) {
     }
 
     /**
@@ -41,10 +41,16 @@ public interface ArmIO {
      * @param position the position in degrees
      * @param velocity the velocity in degrees per second
      */
-    default void setSecondJointPosition(double position, double velocity) {
+    protected void setTargetSecondJointPosition(double position, double velocity) {
     }
 
-    default void setupLimits(Runnable firstJointCallback, Runnable secondJointCallback) {
+    /**
+     * Sets up the arm limits.
+     *
+     * @param firstJointCallback  the callback to run when the first arm limit is reached
+     * @param secondJointCallback the callback to run when the second arm limit is reached
+     */
+    protected void setupLimits(Runnable firstJointCallback, Runnable secondJointCallback) {
     }
 
     /**
@@ -52,25 +58,25 @@ public interface ArmIO {
      *
      * @param brake whether the arm is in brake mode or not
      */
-    default void setNeutralMode(boolean brake) {
+    protected void setNeutralMode(boolean brake) {
     }
 
     /**
      * Stops the first joint.
      */
-    default void stopFirstJoint() {
+    protected void stopFirstJoint() {
     }
 
     /**
      * Stops the second joint.
      */
-    default void stopSecondJoint() {
+    protected void stopSecondJoint() {
     }
 
     /**
      * Stops the arm.
      */
-    default void stop() {
+    void stop() {
         stopFirstJoint();
         stopSecondJoint();
     }

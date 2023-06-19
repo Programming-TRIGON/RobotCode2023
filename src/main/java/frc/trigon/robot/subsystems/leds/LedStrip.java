@@ -2,15 +2,13 @@ package frc.trigon.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.Robot;
-import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-public class LedStrip extends LoggableSubsystemBase {
+public class LedStrip extends SubsystemBase {
     private final boolean inverted;
     private final int length;
     private final AddressableLED led = LedsConstants.LED;

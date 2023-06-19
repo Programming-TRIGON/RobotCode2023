@@ -1,16 +1,12 @@
 package frc.trigon.robot.constants;
 
 public final class ConfigurationConstants {
-  public static final Mode CURRENT_MODE = Mode.SIM;
+  public static final RobotType ROBOT_TYPE = RobotType.SIMULATION;
+  public static final boolean IS_REPLAY = false;
 
-  public enum Mode {
-    /** Running on a real robot. */
-    REAL,
-
-    /** Running a physics simulator. */
-    SIM,
-
-    /** Replaying from a log file. */
-    REPLAY
+  public enum RobotType {
+    TRIHARD,
+    TESTING,
+    SIMULATION
   }
 }

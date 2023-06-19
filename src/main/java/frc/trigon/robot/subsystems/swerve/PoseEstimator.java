@@ -5,15 +5,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import frc.trigon.robot.RobotContainer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RelativeRobotPoseSource;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
-import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
-import io.github.oblarg.oblog.annotations.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,20 +23,18 @@ import java.util.List;
  *
  * @author Shriqui - Captain, Omer - Programing Captain
  */
-public class PoseEstimator extends LoggableSubsystemBase {
+public class PoseEstimator extends SubsystemBase {
     private final static PoseEstimator INSTANCE = new PoseEstimator();
 
-    @Log.Exclude
-    private final Swerve swerve = RobotContainer.SWERVE;
+    private final Swerve swerve = Swerve.getInstance();
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
-    @Log
     private final Field2d field = new Field2d();
     private final List<RobotPoseSource> robotPoseSources = new ArrayList<>();
     private DriverStation.Alliance lastAlliance = DriverStation.getAlliance();
 
     private PoseEstimator() {
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
-                swerve.getKinematics(),
+                swerve.getConstants().getKinematics(),
                 swerve.getHeading(),
                 swerve.getModulePositions(),
                 new Pose2d(0, 0, getSwerveAllianceHeading()),
@@ -58,6 +54,9 @@ public class PoseEstimator extends LoggableSubsystemBase {
         updatePoseEstimator();
         if (didAllianceChange())
             updateFieldWidget();
+
+        // TODO: find the akit replacement for this
+        SmartDashboard.putData("field", field);
     }
 
     /**
@@ -76,8 +75,8 @@ public class PoseEstimator extends LoggableSubsystemBase {
         final Pose2d currentBluePose = AllianceUtilities.toAlliancePose(currentPose);
         swerve.setHeading(currentBluePose.getRotation());
 
-//        resetPoseEstimator(currentBluePose);
-        new Notifier(() -> resetPoseEstimator(currentBluePose)).startSingle(PoseEstimatorConstants.GYRO_UPDATE_TIME_SECONDS);
+        resetPoseEstimator(currentBluePose);
+//        new Notifier(() -> resetPoseEstimator(currentBluePose)).startSingle(PoseEstimatorConstants.GYRO_UPDATE_TIME_SECONDS);
     }
 
     /**
@@ -114,8 +113,8 @@ public class PoseEstimator extends LoggableSubsystemBase {
 
     private void resetPoseEstimator(Pose2d currentPose) {
         swerveDrivePoseEstimator.resetPosition(
-                swerve.getHeading(),
-//                currentPose.getRotation(),
+//                swerve.getHeading(),
+                currentPose.getRotation(),
                 swerve.getModulePositions(),
                 currentPose
         );

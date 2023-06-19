@@ -20,9 +20,9 @@ import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
 import frc.trigon.robot.subsystems.leds.commands.MovingColorsLedCommand;
+import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
-import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.utilities.AllianceUtilities;
 
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CommandsConstants {
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
     private static final CollectionCamera COLLECTION_CAMERA = RobotContainer.COLLECTION_CAMERA;
-    private static final Swerve SWERVE = RobotContainer.SWERVE;
+    private static final Swerve SWERVE = Swerve.getInstance();
     private static final Arm ARM = Arm.getInstance();
     private static final Gripper GRIPPER = Gripper.getInstance();
     private static final LedStrip LEDS = RobotContainer.LEDS;
@@ -140,7 +140,7 @@ public class CommandsConstants {
             ).deadlineWith(Commands.fakeStaticColor(Color.kLightPink)).ignoringDisable(true);
 
     private static void preloadCurrentAuto() {
-        final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.getSelected(), AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
+        final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.get(), AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
         final Pose2d initialPose = pathGroup.get(0).getInitialHolonomicPose();
         final Pose2d initialAlliancePose = new Pose2d(
                 initialPose.getX(),
@@ -149,7 +149,7 @@ public class CommandsConstants {
             );
 
         POSE_ESTIMATOR.resetPose(initialAlliancePose);
-        AutonomousConstants.PRELOADED_PATHS.put(RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.getSelected(), pathGroup);
+        AutonomousConstants.PRELOADED_PATHS.put(RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.get(), pathGroup);
     }
 
     private static Pose2d setRotation(Pose2d pose, Rotation2d rotation) {

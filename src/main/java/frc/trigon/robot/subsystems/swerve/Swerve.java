@@ -1,165 +1,97 @@
 package frc.trigon.robot.subsystems.swerve;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
-import com.pathplanner.lib.auto.PIDConstants;
+
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import frc.trigon.robot.subsystems.LoggableSubsystemBase;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.trigon.robot.constants.ConfigurationConstants;
+import frc.trigon.robot.subsystems.swerve.simulationswerve.SimulationSwerveConstants;
+import frc.trigon.robot.subsystems.swerve.simulationswerve.SimulationSwerveIO;
+import frc.trigon.robot.subsystems.swerve.testingswerve.TestingSwerveConstants;
+import frc.trigon.robot.subsystems.swerve.testingswerve.TestingSwerveIO;
+import frc.trigon.robot.subsystems.swerve.trihardswerve.TrihardSwerveConstants;
+import frc.trigon.robot.subsystems.swerve.trihardswerve.TrihardSwerveIO;
 import frc.trigon.robot.utilities.AllianceUtilities;
-import io.github.oblarg.oblog.annotations.Log;
+import org.littletonrobotics.junction.Logger;
 
-public abstract class Swerve extends LoggableSubsystemBase {
-    /**
-     * @return the swerve's gyro
-     */
-    protected abstract Pigeon2 getGyro();
+import java.util.Arrays;
 
-    /**
-     * @return the pitch of the swerve, in degrees
-     */
-    @Log
-    public double getPitch() {
-        return getGyro().getPitch().getValue();
+public class Swerve extends SubsystemBase {
+    private final static Swerve INSTANCE = new Swerve();
+
+    private final SwerveInputsAutoLogged swerveInputs = new SwerveInputsAutoLogged();
+    private final SwerveIO swerveIO;
+    private final SwerveModuleIO[] modulesIO;
+    private final SwerveConstants constants;
+
+    public static Swerve getInstance() {
+        return INSTANCE;
+    }
+
+    private Swerve() {
+        swerveIO = generateIO();
+        constants = generateConstants();
+        modulesIO = getModulesIO();
+    }
+
+    @Override
+    public void periodic() {
+        swerveIO.updateInputs(swerveInputs);
+        Logger.getInstance().processInputs("Swerve", swerveInputs);
+
+        for (SwerveModuleIO currentModule : modulesIO)
+            currentModule.periodic();
+
+        updateNetworkTables();
     }
 
     /**
-     * @return the swerve's modules
+     * @return the swerve constants
      */
-    protected abstract SwerveModule[] getModules();
-
-    /**
-     * @return the swerve's kinematics
-     */
-    protected abstract SwerveDriveKinematics getKinematics();
-
-    /**
-     * @return the swerve's drive neutral deadband
-     */
-    protected abstract double getDriveNeutralDeadband();
-
-    /**
-     * @return the swerve's rotation neutral deadband
-     */
-    protected abstract double getRotationNeutralDeadband();
-
-    /**
-     * @return the swerve's translation PID constants
-     */
-    public abstract PIDConstants getTranslationPIDConstants();
-
-    /**
-     * @return the swerve's rotation PID constants
-     */
-    protected abstract PIDConstants getRotationPIDConstants();
-
-    /**
-     * @return the swerve's rotation PID constants for auto
-     */
-    protected abstract PIDConstants getAutoRotationPIDConstants();
-
-    /**
-     * @return the swerve's max speed in meters per second
-     */
-    protected abstract double getMaxSpeedMetersPerSecond();
-
-    /**
-     * @return the swerve's max rotational speed in radians per second
-     */
-    protected abstract double getMaxRotationalSpeedRadiansPerSecond();
-
-    /**
-     * @return the swerve's brake time in seconds
-     */
-    protected abstract double getBrakeTimeSeconds();
-
-    /**
-     * @return the swerve's profiled pid controller for rotation
-     */
-    public abstract ProfiledPIDController getRotationController();
-
-    /**
-     * Locks the swerve, so it'll be hard to move it.
-     */
-    protected abstract void lockSwerve();
-
-    /**
-     * @return the tolerance for translation in meters
-     */
-    protected abstract double getTranslationTolerance();
-
-    /**
-     * @return the tolerance for rotation in degrees
-     */
-    protected abstract double getRotationTolerance();
-
-    /**
-     * @return the tolerance for translation velocity in meters per second
-     */
-    protected abstract double getTranslationVelocityTolerance();
-
-    /**
-     * @return the tolerance for rotation velocity in radians per second
-     */
-    protected abstract double getRotationVelocityTolerance();
-
-    /**
-     * @return a slew rate limiter for the x-axis
-     */
-    protected abstract SlewRateLimiter getXSlewRateLimiter();
-
-    /**
-     * @return a slew rate limiter for the y-axis
-     */
-    protected abstract SlewRateLimiter getYSlewRateLimiter();
+    public SwerveConstants getConstants() {
+        return constants;
+    }
 
     /**
      * @return the acceleration of the gyro in the z-axis
      */
     public double getGyroZAcceleration() {
-        return getGyro().getAccelerationZ().getValue();
+        return swerveInputs.accelerationZ;
     }
 
     /**
      * @return the acceleration of the gyro in the y-axis
      */
-    @Log(name="yAccel")
     public double getGyroYAcceleration() {
-        return getGyro().getAccelerationY().getValue();
+        return swerveInputs.accelerationY;
     }
 
     /**
      * @return the acceleration of the gyro in the x-axis
      */
     public double getGyroXAcceleration() {
-        return getGyro().getAccelerationX().getValue();
+        return swerveInputs.accelerationX;
     }
 
     /**
      * @return the heading of the robot
      */
-    @Log(name = "heading", methodName = "getDegrees")
     public Rotation2d getHeading() {
-        return Rotation2d.fromDegrees(MathUtil.inputModulus(getGyro().getYaw().getValue(), -180, 180));
+        final double heading = swerveInputs.gyroAngleDegrees;
+        final double inputtedHeading = MathUtil.inputModulus(heading, -180, 180);
+
+        return Rotation2d.fromDegrees(inputtedHeading);
     }
 
     /**
      * @return the robot's current velocity
      */
-    @Log(methodName = "toString")
     public ChassisSpeeds getCurrentVelocity() {
-        final SwerveModuleState[] states = new SwerveModuleState[getModules().length];
-
-        for (int i = 0; i < getModules().length; i++)
-            states[i] = getModules()[i].getCurrentState();
-
-        return getKinematics().toChassisSpeeds(states);
+        return constants.getKinematics().toChassisSpeeds(getModuleStates());
     }
 
     /**
@@ -168,7 +100,29 @@ public abstract class Swerve extends LoggableSubsystemBase {
      * @param heading the new heading
      */
     public void setHeading(Rotation2d heading) {
-        getGyro().setYaw(heading.getDegrees());
+        swerveIO.setHeading(heading);
+    }
+
+    /**
+     * @return the pitch of the swerve, in degrees
+     */
+    public double getPitch() {
+        return swerveInputs.gyroPitchDegrees;
+    }
+
+    /**
+     * Locks the swerve, so it'll be hard to move it.
+     */
+    void lockSwerve() {
+        setBrake(true);
+        final SwerveModuleState
+                right = new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+                left = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
+
+        modulesIO[0].setTargetState(right);
+        modulesIO[1].setTargetState(left);
+        modulesIO[2].setTargetState(left);
+        modulesIO[3].setTargetState(right);
     }
 
     /**
@@ -177,7 +131,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
      * @param translation the target x and y velocities in m/s
      * @param rotation    the target theta velocity in radians per second
      */
-    protected void selfRelativeDrive(Translation2d translation, Rotation2d rotation) {
+    void selfRelativeDrive(Translation2d translation, Rotation2d rotation) {
         ChassisSpeeds chassisSpeeds = new ChassisSpeeds(
                 translation.getX(),
                 translation.getY(),
@@ -192,11 +146,11 @@ public abstract class Swerve extends LoggableSubsystemBase {
      * @param translation the target x and y velocities in m/s
      * @param rotation    the target theta velocity in radians per second
      */
-    protected void fieldRelativeDrive(Translation2d translation, Rotation2d rotation) {
+    void fieldRelativeDrive(Translation2d translation, Rotation2d rotation) {
         final Rotation2d heading = AllianceUtilities.isBlueAlliance() ? getHeading() : getHeading().plus(Rotation2d.fromRotations(0.5));
 
         ChassisSpeeds chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                getXSlewRateLimiter().calculate(translation.getX()),
+                translation.getX(),
                 translation.getY(),
                 rotation.getRadians(),
                 heading
@@ -207,14 +161,13 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the swerve's module's positions
      */
-    protected SwerveModulePosition[] getModulePositions() {
-        final SwerveModulePosition[] swerveModuleStates = new SwerveModulePosition[4];
-        final SwerveModule[] swerveModules = getModules();
+    SwerveModulePosition[] getModulePositions() {
+        final SwerveModulePosition[] swerveModulePositions = new SwerveModulePosition[modulesIO.length];
 
-        for (int i = 0; i < swerveModules.length; i++)
-            swerveModuleStates[i] = swerveModules[i].getCurrentPosition();
+        for (int i = 0; i < modulesIO.length; i++)
+            swerveModulePositions[i] = modulesIO[i].getCurrentPosition();
 
-        return swerveModuleStates;
+        return swerveModulePositions;
     }
 
     /**
@@ -222,17 +175,17 @@ public abstract class Swerve extends LoggableSubsystemBase {
      *
      * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
      */
-    protected void setClosedLoop(boolean closedLoop) {
-        for (SwerveModule module : getModules())
-            module.setDriveMotorClosedLoop(closedLoop);
+    void setClosedLoop(boolean closedLoop) {
+        for (SwerveModuleIO currentModule : modulesIO)
+            currentModule.setDriveMotorClosedLoop(closedLoop);
     }
 
     /**
      * Stops the swerve's motors.
      */
-    protected void stop() {
-        for (SwerveModule module : getModules())
-            module.stop();
+    void stop() {
+        for (SwerveModuleIO currentModule : modulesIO)
+            currentModule.stop();
     }
 
     /**
@@ -240,9 +193,9 @@ public abstract class Swerve extends LoggableSubsystemBase {
      *
      * @param brake whether the drive motors should brake or coast
      */
-    protected void setBrake(boolean brake) {
-        for (SwerveModule module : getModules())
-            module.setBrake(brake);
+    void setBrake(boolean brake) {
+        for (SwerveModuleIO currentModule : modulesIO)
+            currentModule.setBrake(brake);
     }
 
     /**
@@ -250,19 +203,15 @@ public abstract class Swerve extends LoggableSubsystemBase {
      *
      * @param swerveModuleStates the target module states
      */
-    protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
-        for (int i = 0; i < getModules().length; i++)
-            getModules()[i].setTargetState(swerveModuleStates[i]);
+    void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
+        for (int i = 0; i < modulesIO.length; i++)
+            modulesIO[i].setTargetState(swerveModuleStates[i]);
     }
 
-    @Log(name = "rotationController/error")
-    private double getRotationControllerError() {
-        return getRotationController().getPositionError();
-    }
-
-    @Log(name = "rotationController/setpoint")
-    private double getRotationControllerSetpoint() {
-        return getRotationController().getSetpoint().position;
+    private void updateNetworkTables() {
+        Logger.getInstance().recordOutput("Swerve/Velocity/rot", getCurrentVelocity().omegaRadiansPerSecond);
+        Logger.getInstance().recordOutput("Swerve/Velocity/x", getCurrentVelocity().vxMetersPerSecond);
+        Logger.getInstance().recordOutput("Swerve/Velocity/y", getCurrentVelocity().vyMetersPerSecond);
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
@@ -271,8 +220,17 @@ public abstract class Swerve extends LoggableSubsystemBase {
             return;
         }
 
-        SwerveModuleState[] swerveModuleStates = getKinematics().toSwerveModuleStates(chassisSpeeds);
+        final SwerveModuleState[] swerveModuleStates = constants.getKinematics().toSwerveModuleStates(chassisSpeeds);
         setTargetModuleStates(swerveModuleStates);
+    }
+
+    private SwerveModuleState[] getModuleStates() {
+        final SwerveModuleState[] states = new SwerveModuleState[modulesIO.length];
+
+        for (int i = 0; i < modulesIO.length; i++)
+            states[i] = modulesIO[i].getCurrentState();
+
+        return states;
     }
 
     /**
@@ -283,8 +241,44 @@ public abstract class Swerve extends LoggableSubsystemBase {
      */
     private boolean isStill(ChassisSpeeds chassisSpeeds) {
         return
-                Math.abs(chassisSpeeds.vxMetersPerSecond) <= getDriveNeutralDeadband() &&
-                        Math.abs(chassisSpeeds.vyMetersPerSecond) <= getDriveNeutralDeadband() &&
-                        Math.abs(chassisSpeeds.omegaRadiansPerSecond) <= getRotationNeutralDeadband();
+                Math.abs(chassisSpeeds.vxMetersPerSecond) <= constants.getDriveNeutralDeadband() &&
+                        Math.abs(chassisSpeeds.vyMetersPerSecond) <= constants.getDriveNeutralDeadband() &&
+                        Math.abs(chassisSpeeds.omegaRadiansPerSecond) <= constants.getRotationNeutralDeadband();
+    }
+
+    private SwerveConstants generateConstants() {
+        switch (ConfigurationConstants.ROBOT_TYPE) {
+            case TRIHARD:
+                return new TrihardSwerveConstants();
+            case TESTING:
+                return new TestingSwerveConstants();
+            default:
+                return new SimulationSwerveConstants();
+        }
+    }
+
+    private SwerveModuleIO[] getModulesIO() {
+        if (ConfigurationConstants.IS_REPLAY) {
+            final SwerveModuleIO[] modulesIO = new SwerveModuleIO[4];
+            Arrays.fill(modulesIO, new SwerveModuleIO());
+            return modulesIO;
+        }
+
+        return constants.getModulesIO();
+    }
+
+    private SwerveIO generateIO() {
+        if (ConfigurationConstants.IS_REPLAY)
+            return new SwerveIO();
+
+        switch (ConfigurationConstants.ROBOT_TYPE) {
+            case TRIHARD:
+                return new TrihardSwerveIO();
+            case TESTING:
+                return new TestingSwerveIO();
+            default:
+                return new SimulationSwerveIO();
+        }
     }
 }
+

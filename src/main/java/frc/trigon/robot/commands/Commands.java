@@ -392,6 +392,6 @@ public class Commands {
     }
 
     private static CommandBase getWaitForContinueCommand() {
-        return new WaitUntilCommand(OperatorConstants.CONTINUE_PLACEMENT_TRIGGER);//.deadlineWith(new ProxyCommand(() -> withoutRequirements(RobotContainer.SWERVE.getDefaultCommand())));
+        return new WaitUntilCommand(OperatorConstants.CONTINUE_PLACEMENT_TRIGGER);//.deadlineWith(new ProxyCommand(() -> withoutRequirements(Swerve.getInstance().getDefaultCommand())));
     }
 }

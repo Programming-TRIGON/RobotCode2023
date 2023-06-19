@@ -32,7 +32,7 @@ public class CollectionCamera extends PhotonCamera implements Loggable, Sendable
      */
     public CollectionCamera(String hostname) {
         super(hostname);
-        this.setVersionCheckEnabled(false);
+        setVersionCheckEnabled(false);
 
         new Notifier(this::updatePipelines).startPeriodic(PIPELINES_SWITCHING_RATE);
     }

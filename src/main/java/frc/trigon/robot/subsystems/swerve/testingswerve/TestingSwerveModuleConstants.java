@@ -1,4 +1,4 @@
-package frc.trigon.robot.subsystems.swerve.testing;
+package frc.trigon.robot.subsystems.swerve.testingswerve;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -37,8 +37,8 @@ public class TestingSwerveModuleConstants {
     static final boolean DRIVE_MOTOR_FOC = false;
     private static final TalonFX
             FRONT_LEFT_DRIVE_MOTOR = new TalonFX(
-                    FRONT_LEFT_DRIVE_MOTOR_ID
-            ),
+            FRONT_LEFT_DRIVE_MOTOR_ID
+    ),
             FRONT_RIGHT_DRIVE_MOTOR = new TalonFX(
                     FRONT_RIGHT_DRIVE_MOTOR_ID
             ),
@@ -61,9 +61,9 @@ public class TestingSwerveModuleConstants {
             STEER_MOTOR_D = 0;
     private static final CANSparkMax
             FRONT_LEFT_STEER_MOTOR = new CANSparkMax(
-                    FRONT_LEFT_STEER_MOTOR_ID,
-                    CANSparkMaxLowLevel.MotorType.kBrushless
-            ),
+            FRONT_LEFT_STEER_MOTOR_ID,
+            CANSparkMaxLowLevel.MotorType.kBrushless
+    ),
             FRONT_RIGHT_STEER_MOTOR = new CANSparkMax(
                     FRONT_RIGHT_STEER_MOTOR_ID,
                     CANSparkMaxLowLevel.MotorType.kBrushless

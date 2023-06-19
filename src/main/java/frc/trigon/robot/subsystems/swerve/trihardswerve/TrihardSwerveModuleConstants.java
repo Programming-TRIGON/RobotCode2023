@@ -1,4 +1,4 @@
-package frc.trigon.robot.subsystems.swerve.trihard;
+package frc.trigon.robot.subsystems.swerve.trihardswerve;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -15,7 +15,6 @@ public class TrihardSwerveModuleConstants {
             STEER_GEAR_RATIO = 12.8;
     static final double WHEEL_DIAMETER_METERS = 0.1016;
     static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
-    private static final double VOLTAGE_COMP_SATURATION = 12;
 
     static final int
             FRONT_LEFT_ID = 0,

@@ -5,7 +5,6 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -26,24 +25,21 @@ import frc.trigon.robot.subsystems.leds.LedStrip;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
-import frc.trigon.robot.subsystems.swerve.trihard.TrihardSwerve;
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Log;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.photonvision.PhotonCamera;
 
-public class RobotContainer implements Loggable {
+public class RobotContainer {
     public static final ReflectionLimelight REFLECTION_LIMELIGHT = new ReflectionLimelight("limelight");
     public static final CollectionCamera COLLECTION_CAMERA = new CollectionCamera("limelight-collection");
 
     // Subsystems TODO: make them not singletons
-    public static final Swerve SWERVE = TrihardSwerve.getInstance();
+    public static final Swerve SWERVE = Swerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
     public static final Gripper GRIPPER = Gripper.getInstance();
     public static final LedStrip LEDS = new LedStrip(63, false);
     private final PoseEstimator poseEstimator = PoseEstimator.getInstance();
 
-    @Log(name = "autoChooser")
-    public static final SendableChooser<String> AUTONOMOUS_PATH_NAME_CHOOSER = new SendableChooser<>();
+    public static final LoggedDashboardChooser<String> AUTONOMOUS_PATH_NAME_CHOOSER = new LoggedDashboardChooser<>("autoChooser");
     private final Trigger userButton = new Trigger(() -> RobotController.getUserButton() || OperatorConstants.USER_BUTTON_TRIGGER.getAsBoolean());
 
     public RobotContainer() {
@@ -67,10 +63,10 @@ public class RobotContainer implements Loggable {
      * @return the command to run in autonomous mode
      */
     CommandBase getAutonomousCommand() {
-        if (AUTONOMOUS_PATH_NAME_CHOOSER.getSelected() == null)
+        if (AUTONOMOUS_PATH_NAME_CHOOSER.get() == null)
             return new InstantCommand();
 
-        return Commands.getAutonomousCommand(AUTONOMOUS_PATH_NAME_CHOOSER.getSelected());
+        return Commands.getAutonomousCommand(AUTONOMOUS_PATH_NAME_CHOOSER.get());
     }
 
     private void bindCommands() {
@@ -146,7 +142,7 @@ public class RobotContainer implements Loggable {
     }
 
     private void configureAutonomousChooser() {
-        AUTONOMOUS_PATH_NAME_CHOOSER.setDefaultOption("None", null);
+        AUTONOMOUS_PATH_NAME_CHOOSER.addDefaultOption("None", null);
 
         for (String currentPathName : AutonomousConstants.AUTONOMOUS_PATHS_NAMES)
             AUTONOMOUS_PATH_NAME_CHOOSER.addOption(currentPathName, currentPathName);

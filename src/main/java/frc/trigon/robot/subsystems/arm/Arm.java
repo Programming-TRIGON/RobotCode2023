@@ -124,17 +124,17 @@ public class Arm extends SubsystemBase {
 
     private void refreshInputs() {
         armIO.updateInputs(armInputs);
-        Logger.getInstance().processInputs("Arm", armInputs);
+        Logger.getInstance().processInputs(getLoggingPath(), armInputs);
     }
 
     private void updateNetworkTables() {
-        Logger.getInstance().recordOutput("firstMotorAtGoal", Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE);
-        Logger.getInstance().recordOutput("secondMotorAtGoal", Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE);
-        Logger.getInstance().recordOutput("firstMotorVelocityAtGoal", Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE);
-        Logger.getInstance().recordOutput("secondMotorVelocityAtGoal", Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "/firstMotorAtGoal", Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "secondMotorAtGoal", Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "firstMotorVelocityAtGoal", Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "secondMotorVelocityAtGoal", Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE);
 
-        Logger.getInstance().recordOutput("firstJointPose", getFirstJointComponentPose());
-        Logger.getInstance().recordOutput("secondJointPose", getSecondJointComponentPose());
+        Logger.getInstance().recordOutput(getLoggingPath() + "firstJointPose", getFirstJointComponentPose());
+        Logger.getInstance().recordOutput(getLoggingPath() + "secondJointPose", getSecondJointComponentPose());
 
         updateMechanism();
     }
@@ -210,7 +210,7 @@ public class Arm extends SubsystemBase {
             return;
         }
 
-        armIO.setFirstJointPosition(targetState.position, targetState.velocity);
+        armIO.setTargetFirstJointPosition(targetState.position, targetState.velocity);
         Logger.getInstance().recordOutput("firstJointSetpoint", targetState.position);
     }
 
@@ -229,7 +229,7 @@ public class Arm extends SubsystemBase {
             return;
         }
 
-        armIO.setSecondJointPosition(targetState.position, targetState.velocity);
+        armIO.setTargetSecondJointPosition(targetState.position, targetState.velocity);
         Logger.getInstance().recordOutput("secondJointSetpoint", targetState.position);
     }
 
@@ -357,15 +357,19 @@ public class Arm extends SubsystemBase {
                 }
         );
     }
+    
+    private String getLoggingPath() {
+        return "Arm";
+    }
 
     private ArmIO generateIO() {
-        switch (ConfigurationConstants.CURRENT_MODE) {
-            case REAL:
-                return new TalonFXArmIO();
-            case SIM:
-                return new SimulationArmIO();
-            default:
-                return new ArmIO() {};
+        if (ConfigurationConstants.IS_REPLAY)
+            return new ArmIO();
+
+        if (ConfigurationConstants.ROBOT_TYPE == ConfigurationConstants.RobotType.TRIHARD) {
+            return new TalonFXArmIO();
         }
+
+        return new SimulationArmIO();
     }
 }

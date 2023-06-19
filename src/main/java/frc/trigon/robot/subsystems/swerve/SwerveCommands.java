@@ -11,9 +11,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
-import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.commands.Commands;
 import frc.trigon.robot.utilities.AllianceUtilities;
+import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class SwerveCommands {
-    private static final Swerve SWERVE = RobotContainer.SWERVE;
+    private static final Swerve SWERVE = Swerve.getInstance();
     private static final PoseEstimator POSE_ESTIMATOR = PoseEstimator.getInstance();
 
     /**
@@ -32,7 +32,7 @@ public class SwerveCommands {
      * @return the command
      */
     public static FunctionalCommand turnToAngleCommand(Rotation2d angle) {
-        final ProfiledPIDController rotationController = SWERVE.getRotationController();
+        final ProfiledPIDController rotationController = SWERVE.getConstants().getRotationController();
 
         return new FunctionalCommand(
                 () -> {
@@ -60,7 +60,7 @@ public class SwerveCommands {
      */
     public static WrapperCommand getBrakeAndCoastCommand() {
         return getSetSwerveBrakeCommand(true)
-                .andThen(new WaitCommand(SWERVE.getBrakeTimeSeconds()))
+                .andThen(new WaitCommand(SWERVE.getConstants().getBrakeTimeSeconds()))
                 .andThen(getSetSwerveBrakeCommand(false))
                 .ignoringDisable(true);
     }
@@ -81,9 +81,9 @@ public class SwerveCommands {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose) -> {},
-                SWERVE.getKinematics(),
-                SWERVE.getTranslationPIDConstants(),
-                SWERVE.getAutoRotationPIDConstants(),
+                SWERVE.getConstants().getKinematics(),
+                SWERVE.getConstants().getTranslationPIDConstants(),
+                SWERVE.getConstants().getAutoRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
                 eventMap,
                 true,
@@ -108,9 +108,9 @@ public class SwerveCommands {
         final SwerveAutoBuilder swerveAutoBuilder = new SwerveAutoBuilder(
                 POSE_ESTIMATOR::getCurrentPose,
                 (pose2d) -> {},
-                SWERVE.getKinematics(),
-                SWERVE.getTranslationPIDConstants(),
-                SWERVE.getRotationPIDConstants(),
+                SWERVE.getConstants().getKinematics(),
+                SWERVE.getConstants().getTranslationPIDConstants(),
+                SWERVE.getConstants().getRotationPIDConstants(),
                 SWERVE::setTargetModuleStates,
                 new HashMap<>(),
                 false,
@@ -184,7 +184,7 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 () -> {
                     initializeDrive(false);
-                    SWERVE.getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
+                    SWERVE.getConstants().getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
                 },
                 () -> fieldRelativeDrive(x.getAsDouble(), y.getAsDouble(), angle.get()),
                 (interrupted) -> stopDrive(),
@@ -206,7 +206,7 @@ public class SwerveCommands {
         return new FunctionalCommand(
                 () -> {
                     initializeDrive(false);
-                    SWERVE.getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
+                    SWERVE.getConstants().getRotationController().reset(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees());
                 },
                 () -> fieldRelativeDrive(x.getAsDouble(), y.getAsDouble(), angle.get()),
                 (interrupted) -> stopDrive(),
@@ -223,9 +223,9 @@ public class SwerveCommands {
      */
     public static FunctionalCommand getDriveToPoseWithPIDCommand(Pose2d targetPose) {
         final PIDController
-                xPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants()),
-                yPIDController = pidConstantsToController(SWERVE.getTranslationPIDConstants()),
-                thetaPIDController = pidConstantsToController(SWERVE.getRotationPIDConstants());
+                xPIDController = pidConstantsToController(SWERVE.getConstants().getTranslationPIDConstants()),
+                yPIDController = pidConstantsToController(SWERVE.getConstants().getTranslationPIDConstants()),
+                thetaPIDController = pidConstantsToController(SWERVE.getConstants().getRotationPIDConstants());
 
         thetaPIDController.enableContinuousInput(-180, 180);
 
@@ -282,7 +282,7 @@ public class SwerveCommands {
     }
 
     private static boolean atAngle(Rotation2d targetAngle) {
-        return Math.abs(POSE_ESTIMATOR.getCurrentPose().getRotation().minus(targetAngle).getDegrees()) < SWERVE.getRotationTolerance();
+        return Math.abs(POSE_ESTIMATOR.getCurrentPose().getRotation().minus(targetAngle).getDegrees()) < SWERVE.getConstants().getRotationTolerance();
     }
 
     private static Pose2d getHolonomicPose(PathPlannerTrajectory.PathPlannerState state) {
@@ -348,15 +348,15 @@ public class SwerveCommands {
                 currentRotation = currentPose.getRotation(),
                 targetRotation = pose.getRotation();
 
-        return (currentX - targetX <= SWERVE.getTranslationTolerance() &&
-                currentY - targetY <= SWERVE.getTranslationTolerance() &&
-                currentRotation.minus(targetRotation).getDegrees() <= SWERVE.getRotationTolerance());
+        return (currentX - targetX <= SWERVE.getConstants().getTranslationTolerance() &&
+                currentY - targetY <= SWERVE.getConstants().getTranslationTolerance() &&
+                currentRotation.minus(targetRotation).getDegrees() <= SWERVE.getConstants().getRotationTolerance());
     }
 
     private static boolean isSwerveStill() {
-        return SWERVE.getCurrentVelocity().vxMetersPerSecond < SWERVE.getTranslationVelocityTolerance() &&
-                SWERVE.getCurrentVelocity().vyMetersPerSecond < SWERVE.getTranslationVelocityTolerance() &&
-                SWERVE.getCurrentVelocity().omegaRadiansPerSecond < SWERVE.getRotationVelocityTolerance();
+        return SWERVE.getCurrentVelocity().vxMetersPerSecond < SWERVE.getConstants().getTranslationVelocityTolerance() &&
+                SWERVE.getCurrentVelocity().vyMetersPerSecond < SWERVE.getConstants().getTranslationVelocityTolerance() &&
+                SWERVE.getCurrentVelocity().omegaRadiansPerSecond < SWERVE.getConstants().getRotationVelocityTolerance();
     }
 
     private static PIDController pidConstantsToController(PIDConstants pidConstants) {
@@ -369,11 +369,11 @@ public class SwerveCommands {
     }
 
     private static void fieldRelativeDrive(double x, double y, Rotation2d angle) {
-        SWERVE.getRotationController().setGoal(angle.getDegrees());
+        SWERVE.getConstants().getRotationController().setGoal(angle.getDegrees());
         SWERVE.fieldRelativeDrive(
                 getDriveTranslation(x, y),
                 Rotation2d.fromDegrees(
-                        SWERVE.getRotationController().calculate(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees())
+                        SWERVE.getConstants().getRotationController().calculate(POSE_ESTIMATOR.getCurrentPose().getRotation().getDegrees())
                 )
         );
     }
@@ -393,17 +393,14 @@ public class SwerveCommands {
     }
 
     private static Rotation2d getDriveRotation(double rotPower) {
-        return new Rotation2d(rotPower * SWERVE.getMaxRotationalSpeedRadiansPerSecond());
+        return new Rotation2d(rotPower * SWERVE.getConstants().getMaxRotationalSpeedRadiansPerSecond());
     }
 
     private static Translation2d getDriveTranslation(double x, double y) {
-        final double xMeterPerSecond = x * SWERVE.getMaxSpeedMetersPerSecond();
-        final double yMeterPerSecond = y * SWERVE.getMaxSpeedMetersPerSecond();
+        final double xMeterPerSecond = x * SWERVE.getConstants().getMaxSpeedMetersPerSecond();
+        final double yMeterPerSecond = y * SWERVE.getConstants().getMaxSpeedMetersPerSecond();
 
-        return new Translation2d(
-                SWERVE.getXSlewRateLimiter().calculate(xMeterPerSecond),
-                SWERVE.getYSlewRateLimiter().calculate(yMeterPerSecond)
-        );
+        return new Translation2d(xMeterPerSecond, yMeterPerSecond);
     }
 
     public static CommandBase getBalanceCommand() {

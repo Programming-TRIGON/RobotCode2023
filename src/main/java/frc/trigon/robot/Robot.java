@@ -27,6 +27,7 @@ public class Robot extends LoggedRobot {
     public void robotInit() {
         robotContainer = new RobotContainer();
         configLogger();
+        recordBuild();
 
         PathPlannerServer.startServer(5811);
         Logger.configureLoggingAndConfig(robotContainer, false);
@@ -84,22 +85,26 @@ public class Robot extends LoggedRobot {
     }
 
     private void configLogger() {
-        switch (ConfigurationConstants.CURRENT_MODE) {
-            case REAL:
+        if (ConfigurationConstants.IS_REPLAY) {
+            setUseTiming(false);
+            final String logPath = LogFileUtil.findReplayLog();
+            logger.setReplaySource(new WPILOGReader(logPath));
+            logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_replay")));
+            return;
+        }
+
+        switch (ConfigurationConstants.ROBOT_TYPE) {
+            case TRIHARD:
+            case TESTING:
                 logger.addDataReceiver(new WPILOGWriter(OperatorConstants.REAL_MODE_LOG_DIRECTORY));
                 logger.addDataReceiver(new NT4Publisher());
                 break;
-            case SIM:
+            case SIMULATION:
                 logger.addDataReceiver(new WPILOGWriter(OperatorConstants.SIMULATION_MODE_LOG_DIRECTORY));
                 logger.addDataReceiver(new NT4Publisher());
-                break;
-            case REPLAY:
-                setUseTiming(false);
-                final String logPath = LogFileUtil.findReplayLog();
-                logger.setReplaySource(new WPILOGReader(logPath));
-                logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_replay")));
-                break;
         }
+
+        logger.start();
     }
 
     private void recordBuild() {

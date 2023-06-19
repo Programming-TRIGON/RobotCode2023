@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.trigon.robot.RobotContainer;
 import frc.trigon.robot.components.ReflectionLimelight;
 import frc.trigon.robot.subsystems.swerve.PoseEstimator;
+import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 
 public class AlignToReflectorCommand extends SequentialCommandGroup {
@@ -21,7 +22,7 @@ public class AlignToReflectorCommand extends SequentialCommandGroup {
 
     public AlignToReflectorCommand() {
         translationPIDController.setTolerance(0.5, 0.4);
-        rotationController = RobotContainer.SWERVE.getRotationController();
+        rotationController = Swerve.getInstance().getConstants().getRotationController();
         final InstantCommand initializePIDControllerCommand = new InstantCommand(() -> {
             translationPIDController.reset();
             translationPIDController.setSetpoint(-2.5);
@@ -60,7 +61,7 @@ public class AlignToReflectorCommand extends SequentialCommandGroup {
     }
 
     private boolean isRobotStopping() {
-        return RobotContainer.SWERVE.getGyroYAcceleration() > 4500;
+        return Swerve.getInstance().getGyroYAcceleration() > 4500;
     }
 
     private PIDController pidConstantsToController(PIDConstants pidConstants) {

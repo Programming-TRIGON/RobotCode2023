@@ -1,45 +1,42 @@
-package frc.trigon.robot.subsystems.swerve.trihard;
+package frc.trigon.robot.subsystems.swerve.trihardswerve;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import frc.trigon.robot.subsystems.swerve.SwerveConstants;
+import frc.trigon.robot.subsystems.swerve.SwerveModuleIO;
 
-public class TrihardSwerveConstants {
-    static final double BRAKE_TIME_SECONDS = 4;
-    static final double
+public class TrihardSwerveConstants extends SwerveConstants {
+    private static final double BRAKE_TIME_SECONDS = 4;
+    private static final double
             MAX_SPEED_METERS_PER_SECOND = 4.25,
             MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND = 12.03;
-    static final double
+    private static final double
             DRIVE_NEUTRAL_DEADBAND = 0.1,
             ROTATION_NEUTRAL_DEADBAND = 0;
     static final double
             SIDE_LENGTH_METERS = 0.7,
             DISTANCE_FROM_CENTER_OF_BASE = SIDE_LENGTH_METERS / 2;
-    private static final double RATE_LIMIT = 5.5;
-    static final SlewRateLimiter
-            X_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT),
-            Y_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT);
     private static final Translation2d[] LOCATIONS = {
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0).location,
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1).location,
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(2).location,
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3).location
     };
-    static final TrihardSwerveModule[] SWERVE_MODULES = {
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0)),
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1)),
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(2)),
-            new TrihardSwerveModule(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3))
+    private static final TrihardSwerveModuleIO[] MODULES_IO = {
+            new TrihardSwerveModuleIO(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0)),
+            new TrihardSwerveModuleIO(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1)),
+            new TrihardSwerveModuleIO(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(2)),
+            new TrihardSwerveModuleIO(TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(3))
     };
-    static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
-    static final PIDConstants
+    private static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
+    private static final PIDConstants
             TRANSLATION_PID_CONSTANTS = new PIDConstants(3, 0, 0),
             ROTATION_PID_CONSTANTS = new PIDConstants(3, 22, 0),
             AUTO_ROTATION_PID_CONSTANTS = new PIDConstants(3, 0.0008, 0.5);
@@ -54,13 +51,13 @@ public class TrihardSwerveConstants {
             720,
             1200
     );
-    static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
+    private static final ProfiledPIDController ROTATION_CONTROLLER = new ProfiledPIDController(
             ROTATION_PID_CONSTANTS.kP,
             ROTATION_PID_CONSTANTS.kI,
             ROTATION_PID_CONSTANTS.kD,
             ROTATION_CONSTRAINTS
     );
-    static final double
+    private static final double
             TRANSLATION_TOLERANCE = 0.03,
             ROTATION_TOLERANCE = 2,
             TRANSLATION_VELOCITY_TOLERANCE = 0.05,
@@ -88,5 +85,85 @@ public class TrihardSwerveConstants {
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_4_Mag, 1000);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_6_Accel, 30);
 
+    }
+
+    @Override
+    protected SwerveModuleIO[] getModulesIO() {
+        return MODULES_IO;
+    }
+
+    @Override
+    protected SwerveDriveKinematics getKinematics() {
+        return KINEMATICS;
+    }
+
+    @Override
+    protected double getDriveNeutralDeadband() {
+        return DRIVE_NEUTRAL_DEADBAND;
+    }
+
+    @Override
+    protected double getRotationNeutralDeadband() {
+        return ROTATION_NEUTRAL_DEADBAND;
+    }
+
+    @Override
+    public PIDConstants getTranslationPIDConstants() {
+        return TRANSLATION_PID_CONSTANTS;
+    }
+
+    @Override
+    protected PIDConstants getRotationPIDConstants() {
+        return ROTATION_PID_CONSTANTS;
+    }
+
+    @Override
+    protected PIDConstants getAutoRotationPIDConstants() {
+        return AUTO_ROTATION_PID_CONSTANTS;
+    }
+
+    @Override
+    protected double getMaxSpeedMetersPerSecond() {
+        return MAX_SPEED_METERS_PER_SECOND;
+    }
+
+    @Override
+    protected double getMaxRotationalSpeedRadiansPerSecond() {
+        return MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND;
+    }
+
+    @Override
+    protected double getBrakeTimeSeconds() {
+        return BRAKE_TIME_SECONDS;
+    }
+
+    @Override
+    public ProfiledPIDController getRotationController() {
+        return ROTATION_CONTROLLER;
+    }
+
+    @Override
+    protected double getTranslationTolerance() {
+        return TRANSLATION_TOLERANCE;
+    }
+
+    @Override
+    protected double getRotationTolerance() {
+        return ROTATION_TOLERANCE;
+    }
+
+    @Override
+    protected double getTranslationVelocityTolerance() {
+        return TRANSLATION_VELOCITY_TOLERANCE;
+    }
+
+    @Override
+    protected double getRotationVelocityTolerance() {
+        return ROTATION_VELOCITY_TOLERANCE;
+    }
+
+    @Override
+    protected Translation2d[] getModuleLocations() {
+        return LOCATIONS;
     }
 }

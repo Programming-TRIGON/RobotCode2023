@@ -10,7 +10,7 @@ import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.arm.ArmIO;
 import frc.trigon.robot.subsystems.arm.ArmInputsAutoLogged;
 
-public class SimulationArmIO implements ArmIO {
+public class SimulationArmIO extends ArmIO {
     private final SingleJointedArmSim
             firstJointSimulation = SimulationArmConstants.FIRST_JOINT_SIMULATION,
             secondJointSimulation = SimulationArmConstants.SECOND_JOINT_SIMULATION;
@@ -43,7 +43,7 @@ public class SimulationArmIO implements ArmIO {
     }
 
     @Override
-    public void setFirstJointPosition(double position, double velocity) {
+    public void setTargetFirstJointPosition(double position, double velocity) {
         final double scopedPosition = MathUtil.inputModulus(position, 0, 360);
         final double pidCalculation = SimulationArmConstants.FIRST_JOINT_CONTROLLER.calculate(
                 lastInputs.firstJointPositionDegrees,
@@ -54,7 +54,7 @@ public class SimulationArmIO implements ArmIO {
     }
 
     @Override
-    public void setSecondJointPosition(double position, double velocity) {
+    public void setTargetSecondJointPosition(double position, double velocity) {
         final double scopedPosition = MathUtil.inputModulus(position, 0, 360);
         final double pidCalculation = SimulationArmConstants.SECOND_JOINT_CONTROLLER.calculate(
                 lastInputs.secondJointPositionDegrees,

@@ -11,7 +11,7 @@ import frc.trigon.robot.subsystems.arm.ArmInputsAutoLogged;
 import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
-public class TalonFXArmIO implements ArmIO {
+public class TalonFXArmIO extends ArmIO {
     private final TalonFX
             firstJointMotor = TalonFXArmConstants.FIRST_JOINT_MASTER_MOTOR,
             secondJointMotor = TalonFXArmConstants.SECOND_JOINT_MOTOR;
@@ -33,7 +33,7 @@ public class TalonFXArmIO implements ArmIO {
     }
 
     @Override
-    public void setFirstJointPosition(double position, double velocity) {
+    public void setTargetFirstJointPosition(double position, double velocity) {
         final double feedforward = TalonFXArmConstants.FIRST_JOINT_FEEDFORWARD.calculate(
                 Units.degreesToRadians(position),
                 Units.degreesToRadians(velocity)
@@ -50,7 +50,7 @@ public class TalonFXArmIO implements ArmIO {
     }
 
     @Override
-    public void setSecondJointPosition(double position, double velocity) {
+    public void setTargetSecondJointPosition(double position, double velocity) {
         final double feedforward = TalonFXArmConstants.SECOND_JOINT_FEEDFORWARD.calculate(
                 Units.degreesToRadians(position),
                 Units.degreesToRadians(velocity)
