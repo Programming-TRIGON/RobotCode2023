@@ -60,7 +60,7 @@ public class CommandsConstants {
                     () -> Rotation2d.fromDegrees(DriverStation.getAlliance().equals(DriverStation.Alliance.Blue) ? 90 : -90)
             ),
             COLLECT_FROM_FEEDER_WITH_MANUAL_DRIVE_COMMAND = new ParallelCommandGroup(
-                    TURN_TO_FEEDER_WITH_MANUAL_DRIVE_COMMAND,
+//                    TURN_TO_FEEDER_WITH_MANUAL_DRIVE_COMMAND,
                     GRIPPER.getSlowCollectCommand(),
                     ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_FEEDER, true, 0.5, 0.5)
             ),
@@ -129,8 +129,8 @@ public class CommandsConstants {
             SET_TO_GRID_3_COMMAND = new InstantCommand(() -> GRID.set(AllianceUtilities.isBlueAlliance() ? 3 : 1)).ignoringDisable(true),
             SET_TO_LEFT_RAMP_COMMAND = new InstantCommand(() -> IS_LEFT_RAMP.set(AllianceUtilities.isBlueAlliance())).ignoringDisable(true),
             SET_TO_RIGHT_RAMP_COMMAND = new InstantCommand(() -> IS_LEFT_RAMP.set(!AllianceUtilities.isBlueAlliance())).ignoringDisable(true),
-            GO_TO_TARGET_DASHBOARD_POSITION_COMMAND =new ProxyCommand(() ->
-                    Arm.getInstance().getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0)
+            GO_TO_TARGET_DASHBOARD_POSITION_COMMAND = new ProxyCommand(() ->
+                    ARM.getGoToPositionCommand(SmartDashboard.getNumber("target1", 0), SmartDashboard.getNumber("target2", 0)
             ).ignoringDisable(true)),
             ARM_COAST_COMMAND = new InstantCommand(() -> ARM.setNeutralMode(false)).ignoringDisable(true),
             ARM_BRAKE_COMMAND = new InstantCommand(() -> ARM.setNeutralMode(true)).ignoringDisable(true),
@@ -140,13 +140,16 @@ public class CommandsConstants {
             ).deadlineWith(Commands.fakeStaticColor(Color.kLightPink)).ignoringDisable(true);
 
     private static void preloadCurrentAuto() {
-        final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.get(), AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
+        final String pathName = RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.get();
+        if (pathName == null)
+            return;
+        final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(pathName, AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
         final Pose2d initialPose = pathGroup.get(0).getInitialHolonomicPose();
         final Pose2d initialAlliancePose = new Pose2d(
                 initialPose.getX(),
                 AllianceUtilities.isBlueAlliance() ? initialPose.getY() : FieldConstants.FIELD_WIDTH_METERS - initialPose.getY(),
                 initialPose.getRotation()
-            );
+        );
 
         POSE_ESTIMATOR.resetPose(initialAlliancePose);
         AutonomousConstants.PRELOADED_PATHS.put(RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.get(), pathGroup);

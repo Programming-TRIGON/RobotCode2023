@@ -47,7 +47,7 @@ public class TrihardSwerveModuleConstants {
             REAR_RIGHT_STEER_MOTOR_ID = REAR_RIGHT_ID + 5;
     private static final InvertedValue STEER_MOTOR_INVERTED_VALUE = InvertedValue.Clockwise_Positive;
     private static final double
-            STEER_MOTOR_P = 0.35,
+            STEER_MOTOR_P = 8.408,
             STEER_MOTOR_I = 0,
             STEER_MOTOR_D = 0;
     private static final TalonFX
@@ -64,10 +64,10 @@ public class TrihardSwerveModuleConstants {
             REAR_LEFT_ENCODER_CHANNEL = REAR_LEFT_ID + ENCODER_CHANNEL_OFFSET,
             REAR_RIGHT_ENCODER_CHANNEL = REAR_RIGHT_ID + ENCODER_CHANNEL_OFFSET;
     private static final double
-            FRONT_LEFT_ENCODER_OFFSET = 0.869906,
-            FRONT_RIGHT_ENCODER_OFFSET = 0.819552,
-            REAR_LEFT_ENCODER_OFFSET = 0.415410,
-            REAR_RIGHT_ENCODER_OFFSET = 0.918484;
+            FRONT_LEFT_ENCODER_OFFSET = Conversions.degreesToRevolutions(313.810730),
+            FRONT_RIGHT_ENCODER_OFFSET = Conversions.degreesToRevolutions(298.368073),
+            REAR_LEFT_ENCODER_OFFSET = Conversions.degreesToRevolutions(144.229889),
+            REAR_RIGHT_ENCODER_OFFSET = Conversions.degreesToRevolutions(147.196198);
     private static final DutyCycleEncoder
             FRONT_LEFT_ENCODER = new DutyCycleEncoder(FRONT_LEFT_ENCODER_CHANNEL),
             FRONT_RIGHT_ENCODER = new DutyCycleEncoder(FRONT_RIGHT_ENCODER_CHANNEL),

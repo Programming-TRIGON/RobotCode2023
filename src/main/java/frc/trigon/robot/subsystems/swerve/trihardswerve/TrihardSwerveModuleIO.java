@@ -57,7 +57,10 @@ public class TrihardSwerveModuleIO extends SwerveModuleIO {
 
     @Override
     protected void setTargetAngle(Rotation2d angle) {
-        final PositionVoltage positionVoltage = new PositionVoltage(scope(angle));
+        final double scopedAngle = scope(angle);
+        final double motorAngle = Conversions.systemToMotor(scopedAngle, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
+        final double motorRevolutions = Conversions.degreesToRevolutions(motorAngle);
+        final PositionVoltage positionVoltage = new PositionVoltage(motorRevolutions);
         driveMotor.setControl(positionVoltage);
     }
 

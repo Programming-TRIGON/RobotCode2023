@@ -16,21 +16,18 @@ public class FilesHandler {
     public static final String DEPLOY_PATH = Filesystem.getDeployDirectory().getPath() + "/";
 
     /**
-     * Sets the permissions of the deploy folder.
+     * Sets the permissions of a file.
      *
-     * @param isReadable   whether the deploy folder should be readable
-     * @param isWriteable  whether the deploy folder should be writeable
-     * @param isExecutable whether the deploy folder should be executable
+     * @param file         the file to set the permissions of
+     * @param isReadable   whether the file should be readable
+     * @param isWriteable  whether the file should be writeable
+     * @param isExecutable whether the file should be executable
      */
-    public static void setDeployFolderPermissions(boolean isReadable, boolean isWriteable, boolean isExecutable) throws IOException {
-        final File deployFolder = Filesystem.getDeployDirectory();
-
-        if (!deployFolder.canRead() && !deployFolder.setReadable(isReadable))
-            throw new IOException("Failed to set the deploy folder's readable permission to " + isReadable + ".");
-        if (!deployFolder.canWrite() && !deployFolder.setWritable(isWriteable))
-            throw new IOException("Failed to set the deploy folder's writeable permission to " + isWriteable + ".");
-        if (!deployFolder.canExecute() && !deployFolder.setExecutable(isExecutable))
-            throw new IOException("Failed to set the deploy folder's executable permission to " + isExecutable + ".");
+    public static void setPermissions(File file, boolean isReadable, boolean isWriteable, boolean isExecutable) throws IOException, InterruptedException {
+        final Process process = Runtime.getRuntime().exec(
+                "chmod -R " + getChmodValue(isReadable, isWriteable, isExecutable) + " " + file.getAbsoluteFile()
+        );
+        process.waitFor();
     }
 
     /**
@@ -118,6 +115,19 @@ public class FilesHandler {
             lastSlashIndex = absolutePath.lastIndexOf("/", lastSlashIndex - 1);
 
         return absolutePath.substring(0, lastSlashIndex + 1);
+    }
+
+    private static int getChmodValue(boolean isReadable, boolean isWriteable, boolean isExecutable) {
+        int chmodValue = 0;
+
+        if (isReadable)
+            chmodValue += 4;
+        if (isWriteable)
+            chmodValue += 2;
+        if (isExecutable)
+            chmodValue += 1;
+
+        return chmodValue * 111;
     }
 
     private static String extractFileNameFromAbsolutePath(String absolutePath) {

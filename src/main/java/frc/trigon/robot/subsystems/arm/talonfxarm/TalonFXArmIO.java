@@ -10,6 +10,7 @@ import frc.trigon.robot.subsystems.arm.ArmIO;
 import frc.trigon.robot.subsystems.arm.ArmInputsAutoLogged;
 import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
+import org.littletonrobotics.junction.Logger;
 
 public class TalonFXArmIO extends ArmIO {
     private final TalonFX
@@ -23,11 +24,17 @@ public class TalonFXArmIO extends ArmIO {
         inputs.firstJointVelocityDegreesPerSecond = Conversions.revolutionsToDegrees(firstJointMotor.getVelocity().getValue());
         inputs.firstJointStatorCurrent = firstJointMotor.getStatorCurrent().getValue();
         inputs.firstJointSupplyCurrent = firstJointMotor.getSupplyCurrent().getValue();
+        inputs.firstJointAppliedVoltage = firstJointMotor.getSupplyVoltage().getValue();
 
+        Logger.getInstance().recordOutput(
+                "Arm/secondJointEncoderDegrees",
+                Conversions.magTicksToDegrees(TalonFXArmConstants.SECOND_JOINT_ENCODER.getSelectedSensorPosition())
+        );
         inputs.secondJointPositionDegrees = secondJointValueToSystemDegrees(secondJointMotor.getPosition().getValue());
         inputs.secondJointVelocityDegreesPerSecond = secondJointValueToSystemDegrees(secondJointMotor.getVelocity().getValue());
         inputs.secondJointStatorCurrent = secondJointMotor.getStatorCurrent().getValue();
         inputs.secondJointSupplyCurrent = secondJointMotor.getSupplyCurrent().getValue();
+        inputs.secondJointAppliedVoltage = secondJointMotor.getSupplyVoltage().getValue();
 
         lastInputs = inputs;
     }
@@ -38,6 +45,9 @@ public class TalonFXArmIO extends ArmIO {
                 Units.degreesToRadians(position),
                 Units.degreesToRadians(velocity)
         );
+
+        Logger.getInstance().recordOutput("Arm/firstff", feedforward);
+
         final PositionVoltage positionVoltage = new PositionVoltage(
                 Conversions.degreesToRevolutions(position),
                 TalonFXArmConstants.USE_FOC,
@@ -55,6 +65,9 @@ public class TalonFXArmIO extends ArmIO {
                 Units.degreesToRadians(position),
                 Units.degreesToRadians(velocity)
         );
+
+        Logger.getInstance().recordOutput("Arm/secondff", feedforward);
+        position = Conversions.systemToMotor(position, ArmConstants.SECOND_JOINT_GEAR_RATIO);
 
         final PositionVoltage positionVoltage = new PositionVoltage(
                 Conversions.degreesToRevolutions(position),
@@ -111,7 +124,7 @@ public class TalonFXArmIO extends ArmIO {
     }
 
     private double secondJointValueToSystemDegrees(double value) {
-        final double systemRevolutions = Conversions.systemToMotor(value, ArmConstants.SECOND_JOINT_GEAR_RATIO);
+        final double systemRevolutions = Conversions.motorToSystem(value, ArmConstants.SECOND_JOINT_GEAR_RATIO);
 
         return Conversions.revolutionsToDegrees(systemRevolutions);
     }

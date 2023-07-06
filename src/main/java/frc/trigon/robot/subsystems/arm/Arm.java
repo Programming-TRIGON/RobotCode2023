@@ -128,7 +128,7 @@ public class Arm extends SubsystemBase {
     }
 
     private void updateNetworkTables() {
-        Logger.getInstance().recordOutput(getLoggingPath() + "/firstMotorAtGoal", Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "firstMotorAtGoal", Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE);
         Logger.getInstance().recordOutput(getLoggingPath() + "secondMotorAtGoal", Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE);
         Logger.getInstance().recordOutput(getLoggingPath() + "firstMotorVelocityAtGoal", Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE);
         Logger.getInstance().recordOutput(getLoggingPath() + "secondMotorVelocityAtGoal", Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE);
@@ -264,11 +264,11 @@ public class Arm extends SubsystemBase {
     }
 
     private double getFirstMotorProfileTime() {
-        return Timer.getFPGATimestamp() - lastFirstJointProfileGenerationTimestamp;
+        return Logger.getInstance().getRealTimestamp() - lastFirstJointProfileGenerationTimestamp;
     }
 
     private double getSecondMotorProfileTime() {
-        return Timer.getFPGATimestamp() - lastSecondJointProfileGenerationTimestamp;
+        return Logger.getInstance().getRealTimestamp() - lastSecondJointProfileGenerationTimestamp;
     }
 
     private double getFirstJointMotorError() {
@@ -359,7 +359,7 @@ public class Arm extends SubsystemBase {
     }
     
     private String getLoggingPath() {
-        return "Arm";
+        return "Arm/";
     }
 
     private ArmIO generateIO() {

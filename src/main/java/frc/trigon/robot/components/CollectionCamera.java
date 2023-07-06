@@ -42,9 +42,9 @@ public class CollectionCamera extends PhotonCamera implements Loggable, Sendable
      */
     @Log(name = "Game Piece Position")
     public double getGamePiecePosition() {
-        final PhotonTrackedTarget targetGamePiece = getTargetGamePiece();
-        if(targetGamePiece == null)
+        if (!getLatestResult().hasTargets())
             return 0;
+        final PhotonTrackedTarget targetGamePiece = getTargetGamePiece();
 
         return calculateGamePiecePosition(targetGamePiece.getYaw());
     }
@@ -68,14 +68,21 @@ public class CollectionCamera extends PhotonCamera implements Loggable, Sendable
 
     private void updatePipelines() {
         if (getPipelineIndex() == CONES_DETECTION_PIPELINE_INDEX) {
-            lastBestCone = getTargetGamePiece();
-            if(lastBestCone != null)
+            if (getLatestResult().hasTargets()) {
+                lastBestCone = getTargetGamePiece();
                 lastBestCube = null;
+            } else {
+                lastBestCone = null;
+            }
+
             setPipelineIndex(CUBES_DETECTION_PIPELINE_INDEX);
         } else {
-            lastBestCube = getTargetGamePiece();
-            if(lastBestCube != null)
+            if (getLatestResult().hasTargets()) {
+                lastBestCube = getTargetGamePiece();
                 lastBestCone = null;
+            } else {
+                lastBestCube = null;
+            }
             setPipelineIndex(CONES_DETECTION_PIPELINE_INDEX);
         }
     }

@@ -1,6 +1,7 @@
 package frc.trigon.robot;
 
 import com.pathplanner.lib.server.PathPlannerServer;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.trigon.robot.constants.BuildConstants;
@@ -25,6 +26,8 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
+//        if (IS_REAL)
+//            setDeployFolderToMaxPermissions();
         robotContainer = new RobotContainer();
         configLogger();
         recordBuild();
@@ -36,6 +39,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
         Logger.updateEntries();
     }
 
@@ -78,8 +82,8 @@ public class Robot extends LoggedRobot {
 
     private void setDeployFolderToMaxPermissions() {
         try {
-            FilesHandler.setDeployFolderPermissions(true, true, true);
-        } catch (IOException e) {
+            FilesHandler.setPermissions(Filesystem.getDeployDirectory(), true, true, true);
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }

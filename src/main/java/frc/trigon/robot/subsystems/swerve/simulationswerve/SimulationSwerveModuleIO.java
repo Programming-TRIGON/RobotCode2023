@@ -52,7 +52,6 @@ public class SimulationSwerveModuleIO extends SwerveModuleIO {
 
     @Override
     protected void setTargetClosedLoopVelocity(double velocity) {
-        // TODO: Make this actually do closed loop control
         setTargetOpenLoopVelocity(velocity);
     }
 
