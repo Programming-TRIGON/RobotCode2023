@@ -266,11 +266,11 @@ public class Arm extends SubsystemBase {
     }
 
     private double getFirstMotorProfileTime() {
-        return Logger.getInstance().getRealTimestamp() - lastFirstJointProfileGenerationTimestamp;
+        return Timer.getFPGATimestamp() - lastFirstJointProfileGenerationTimestamp;
     }
 
     private double getSecondMotorProfileTime() {
-        return Logger.getInstance().getRealTimestamp() - lastSecondJointProfileGenerationTimestamp;
+        return Timer.getFPGATimestamp() - lastSecondJointProfileGenerationTimestamp;
     }
 
     private double getFirstJointMotorError() {

@@ -7,7 +7,6 @@ import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.trigon.robot.RobotContainer;
@@ -22,6 +21,7 @@ import frc.trigon.robot.subsystems.swerve.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.utilities.AllianceUtilities;
 import frc.trigon.robot.utilities.Maths;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -78,7 +78,7 @@ public class Commands {
                         Gripper.getInstance().getSlowEjectCommand(),
                         SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0)
                 ).withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -91,7 +91,7 @@ public class Commands {
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         ).alongWith(
                 SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1)
         );
@@ -107,7 +107,7 @@ public class Commands {
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 getWaitForContinueCommand(),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         ).alongWith(
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1))
         );
@@ -122,7 +122,7 @@ public class Commands {
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -136,7 +136,7 @@ public class Commands {
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE, false, 1.5, 1.5).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 getWaitForContinueCommand(),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -149,7 +149,7 @@ public class Commands {
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -162,7 +162,7 @@ public class Commands {
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HYBRID).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -175,7 +175,7 @@ public class Commands {
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
                 Gripper.getInstance().getEjectCommand().withTimeout(0.3).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -192,7 +192,7 @@ public class Commands {
                 SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.1, () -> 0, () -> 0).withTimeout(0.4),
                 new WaitCommand(0.2),
                 Gripper.getInstance().getEjectCommand().withTimeout(1.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -209,7 +209,7 @@ public class Commands {
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.07, () -> 0, () -> 0)).withTimeout(0.23),
                 getWaitForContinueCommand(),
                 Gripper.getInstance().getEjectCommand().withTimeout(1.5).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 
@@ -278,7 +278,7 @@ public class Commands {
                         Gripper.getInstance().getSlowEjectCommand(),
                         new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.2, () -> 0, () -> 0))
                 ).withTimeout(0.2).deadlineWith(fakeStaticColor(Color.kDarkBlue)),
-                runOnce(() -> SmartDashboard.putNumber("time", Timer.getFPGATimestamp() - startTime.get()))
+                runOnce(() -> Logger.getInstance().recordOutput("time", Timer.getFPGATimestamp() - startTime.get()))
         );
     }
 

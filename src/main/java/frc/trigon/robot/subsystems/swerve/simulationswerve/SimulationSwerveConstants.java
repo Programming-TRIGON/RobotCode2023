@@ -10,7 +10,6 @@ import frc.trigon.robot.subsystems.swerve.SwerveModuleIO;
 
 public class SimulationSwerveConstants extends SwerveConstants {
     private static final double BRAKE_TIME_SECONDS = 4;
-    static final double ROTATIONAL_VELOCITY_MULTIPLIER = 0.02;
     private static final double
             MAX_SPEED_METERS_PER_SECOND = 4.25,
             MAX_ROTATIONAL_SPEED_RADIANS_PER_SECOND = 12.03;

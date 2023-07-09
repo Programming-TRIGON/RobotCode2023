@@ -2,6 +2,7 @@ package frc.trigon.robot.utilities;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import frc.trigon.robot.constants.OperatorConstants;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class CurrentWatcher implements Closeable {
         this.timeThreshold = timeThreshold;
         this.callback = callback;
         this.notifier = new Notifier(this::checkCurrent);
-        this.notifier.startPeriodic(0.02);
+        this.notifier.startPeriodic(OperatorConstants.PERIODIC_TIME_SECONDS);
     }
 
     private void checkCurrent() {

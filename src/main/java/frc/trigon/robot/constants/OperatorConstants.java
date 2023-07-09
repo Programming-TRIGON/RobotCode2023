@@ -6,6 +6,7 @@ import frc.trigon.robot.utilities.FilesHandler;
 import frc.trigon.robot.utilities.KeyboardController;
 
 public class OperatorConstants {
+    public static double PERIODIC_TIME_SECONDS = 0.02;
     public static String
             REAL_MODE_LOG_DIRECTORY = FilesHandler.DEPLOY_PATH + "logs/",
             SIMULATION_MODE_LOG_DIRECTORY = FilesHandler.DEPLOY_PATH + "logs/";

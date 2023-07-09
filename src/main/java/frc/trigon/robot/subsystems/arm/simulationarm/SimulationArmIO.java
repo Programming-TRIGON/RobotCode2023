@@ -6,6 +6,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.arm.ArmIO;
 import frc.trigon.robot.subsystems.arm.ArmInputsAutoLogged;
@@ -26,8 +27,8 @@ public class SimulationArmIO extends ArmIO {
 
     @Override
     public void updateInputs(ArmInputsAutoLogged inputs) {
-        firstJointSimulation.update(0.02);
-        secondJointSimulation.update(0.02);
+        firstJointSimulation.update(OperatorConstants.PERIODIC_TIME_SECONDS);
+        secondJointSimulation.update(OperatorConstants.PERIODIC_TIME_SECONDS);
 
         inputs.firstJointAppliedVoltage = lastFirstJointVoltage;
         inputs.firstJointPositionDegrees = Units.radiansToDegrees(firstJointSimulation.getAngleRads());

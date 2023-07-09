@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.gripper.simulationgripper;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.gripper.GripperIO;
 import frc.trigon.robot.subsystems.gripper.GripperInputsAutoLogged;
 
@@ -11,7 +12,7 @@ public class SimulationGripperIO extends GripperIO {
 
     @Override
     public void updateInputs(GripperInputsAutoLogged inputs) {
-        motorSimulation.update(0.02);
+        motorSimulation.update(OperatorConstants.PERIODIC_TIME_SECONDS);
 
         inputs.velocityRevolutionsPerSecond = Units.radiansToRotations(motorSimulation.getAngularVelocityRadPerSec());
         inputs.statorCurrent = motorSimulation.getCurrentDrawAmps();

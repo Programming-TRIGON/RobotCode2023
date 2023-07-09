@@ -30,10 +30,10 @@ public class TalonFXArmConstants {
             SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID + 1);
 
     static final double
-            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 60,
-            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.4,
-            SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 50,
-            SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.4;
+            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 40,
+            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.5,
+            SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 30,
+            SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2;
 
     private static final InvertedValue
             FIRST_JOINT_MASTER_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive,
@@ -47,11 +47,19 @@ public class TalonFXArmConstants {
     private static final boolean SECOND_JOINT_SENSOR_PHASE = false;
 
     private static final double
+            //Old ks = 1.0169
+            //New ks = -2.5756
+            //Old kv = 0.53077
+            //New kv = 6.6399
+            //Old ka = 0.2618
+            //New ka = 0.74055
+            //Old kg = 0.71665
+            //New kg = 1.0697
             // TODO: Check if these values need conversion
-            FIRST_JOINT_KS = -2.5756,
-            FIRST_JOINT_KV = 6.6399,
-            FIRST_JOINT_KA = 0.74055,
-            FIRST_JOINT_KG = 1.0697;
+            FIRST_JOINT_KS = 1.0169,
+            FIRST_JOINT_KV = 0.53077,
+            FIRST_JOINT_KA = 0.2618,
+            FIRST_JOINT_KG = 0.71665;
 
     private static final double
             SECOND_JOINT_KS = 0.059771,
@@ -78,7 +86,7 @@ public class TalonFXArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_P = 31, // 0.26025415444770283
+            FIRST_JOINT_P = 31,
             FIRST_JOINT_I = 0,
             FIRST_JOINT_D = 0;
 
