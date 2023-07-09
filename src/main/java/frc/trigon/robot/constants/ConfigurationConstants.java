@@ -7,7 +7,6 @@ public class ConfigurationConstants {
   public enum RobotType {
     TRIHARD,
     TESTING,
-    // TODO: none of this bruh
     SIMULATION
   }
 }

@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.utilities.Conversions;
@@ -29,10 +30,10 @@ public class TalonFXArmConstants {
             SECOND_JOINT_ENCODER = new WPI_TalonSRX(SECOND_JOINT_MOTOR_ID + 1);
 
     static final double
-            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 40,
-            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2,
-            SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 30,
-            SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.2;
+            FIRST_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 60,
+            FIRST_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.4,
+            SECOND_JOINT_CURRENT_LIMIT_CURRENT_THRESHOLD = 50,
+            SECOND_JOINT_CURRENT_LIMIT_TIME_THRESHOLD = 0.4;
 
     private static final InvertedValue
             FIRST_JOINT_MASTER_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive,
@@ -56,7 +57,7 @@ public class TalonFXArmConstants {
             SECOND_JOINT_KS = 0.059771,
             SECOND_JOINT_KV = 2.7961,
             SECOND_JOINT_KA = 0.040677,
-            SECOND_JOINT_KG = 0.33849;
+            SECOND_JOINT_KG = 0.34408;
 
     static final ArmFeedforward
             FIRST_JOINT_FEEDFORWARD = new ArmFeedforward(
@@ -77,13 +78,13 @@ public class TalonFXArmConstants {
             SECOND_JOINT_NEUTRAL_DEADBAND = 0.01;
 
     private static final double
-            FIRST_JOINT_P = 18, // 0.26025415444770283
+            FIRST_JOINT_P = 31, // 0.26025415444770283
             FIRST_JOINT_I = 0,
             FIRST_JOINT_D = 0;
 
     private static final double
-            SECOND_JOINT_P = 0.2,
-            SECOND_JOINT_I = 0.2 * 0.0006666666667,
+            SECOND_JOINT_P = 0.4,
+            SECOND_JOINT_I = 0.4 * 0.0006666666667,
             SECOND_JOINT_D = 0,
             SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.5;
 
@@ -120,7 +121,8 @@ public class TalonFXArmConstants {
             exception.printStackTrace();
         }
         final double offsettedPosition = Conversions.offsetRead(SECOND_JOINT_ENCODER.getSensorCollection().getPulseWidthPosition(), SECOND_JOINT_ENCODER_OFFSET);
-        SECOND_JOINT_ENCODER.setSelectedSensorPosition(offsettedPosition);
+        final double inputtedPosition = MathUtil.inputModulus(offsettedPosition, -Conversions.MAG_TICKS / 2, Conversions.MAG_TICKS /2);
+        SECOND_JOINT_ENCODER.setSelectedSensorPosition(inputtedPosition);
     }
 
     private static void configureSecondJointMotor() {
@@ -136,6 +138,7 @@ public class TalonFXArmConstants {
         secondJointMotorConfig.MotorOutput.DutyCycleNeutralDeadband = SECOND_JOINT_NEUTRAL_DEADBAND;
         secondJointMotorConfig.Voltage.PeakForwardVoltage = SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT * 12;
         secondJointMotorConfig.Voltage.PeakReverseVoltage = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT * 12;
+        secondJointMotorConfig.Audio.BeepOnBoot = false;
 
         SECOND_JOINT_MOTOR.getConfigurator().apply(secondJointMotorConfig);
 
@@ -148,6 +151,7 @@ public class TalonFXArmConstants {
         final TalonFXConfiguration firstJointFollowerMotorConfig = new TalonFXConfiguration();
 
         firstJointFollowerMotorConfig.MotorOutput.Inverted = FIRST_JOINT_FOLLOWER_INVERTED_VALUE;
+        firstJointFollowerMotorConfig.Audio.BeepOnBoot = false;
 
         FIRST_JOINT_FOLLOWER_MOTOR.getConfigurator().apply(firstJointFollowerMotorConfig);
 //        FIRST_JOINT_FOLLOWER_MOTOR.setControl(new StrictFollower(FIRST_JOINT_MASTER_MOTOR.getDeviceID()));

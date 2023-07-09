@@ -94,6 +94,8 @@ public class Robot extends LoggedRobot {
             final String logPath = LogFileUtil.findReplayLog();
             logger.setReplaySource(new WPILOGReader(logPath));
             logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_replay")));
+
+            logger.start();
             return;
         }
 

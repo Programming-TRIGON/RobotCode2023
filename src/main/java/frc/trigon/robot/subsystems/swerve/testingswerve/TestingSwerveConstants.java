@@ -7,6 +7,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import frc.trigon.robot.constants.ConfigurationConstants;
 import frc.trigon.robot.subsystems.swerve.SwerveConstants;
 import frc.trigon.robot.subsystems.swerve.SwerveModuleIO;
 
@@ -58,9 +59,10 @@ public class TestingSwerveConstants extends SwerveConstants {
 
     static {
         ROTATION_CONTROLLER.enableContinuousInput(-180, 180);
-        GYRO.getConfigurator().apply(new Pigeon2Configuration());
+        if (!ConfigurationConstants.IS_REPLAY) {
+            GYRO.getConfigurator().apply(new Pigeon2Configuration());
 
-        // TODO: Status signals
+            // TODO: Status signals
 //        GYRO.get(PigeonIMU_StatusFrame.CondStatus_1_General, 200);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_2_GeneralCompass, 1000);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_3_GeneralAccel, 1000);
@@ -70,6 +72,7 @@ public class TestingSwerveConstants extends SwerveConstants {
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_2_Gyro, 1000);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_4_Mag, 1000);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_6_Accel, 1000);
+        }
     }
 
     @Override

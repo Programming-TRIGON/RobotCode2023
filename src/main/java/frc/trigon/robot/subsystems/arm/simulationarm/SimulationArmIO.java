@@ -21,6 +21,8 @@ public class SimulationArmIO extends ArmIO {
         firstJointSimulation.setState(VecBuilder.fill(Units.degreesToRadians(ArmConstants.FIRST_JOINT_CLOSED), 0.0));
         secondJointSimulation.setState(VecBuilder.fill(Units.degreesToRadians(ArmConstants.SECOND_JOINT_CLOSED), 0.0));
     }
+    
+    private double firstJointPIDOutput, secondJointPIDOutput;
 
     @Override
     public void updateInputs(ArmInputsAutoLogged inputs) {
@@ -32,12 +34,14 @@ public class SimulationArmIO extends ArmIO {
         inputs.firstJointVelocityDegreesPerSecond = Units.radiansToDegrees(firstJointSimulation.getVelocityRadPerSec());
         inputs.firstJointStatorCurrent = firstJointSimulation.getCurrentDrawAmps();
         inputs.firstJointSupplyCurrent = inputs.firstJointStatorCurrent;
+        inputs.firstJointClosedLoopOutput = firstJointPIDOutput;
 
         inputs.secondJointAppliedVoltage = lastSecondJointVoltage;
         inputs.secondJointPositionDegrees = Units.radiansToDegrees(secondJointSimulation.getAngleRads());
         inputs.secondJointVelocityDegreesPerSecond = Units.radiansToDegrees(secondJointSimulation.getVelocityRadPerSec());
         inputs.secondJointStatorCurrent = secondJointSimulation.getCurrentDrawAmps();
         inputs.secondJointSupplyCurrent = inputs.secondJointStatorCurrent;
+        inputs.secondJointClosedLoopOutput = secondJointPIDOutput;
 
         lastInputs = inputs;
     }
@@ -45,23 +49,23 @@ public class SimulationArmIO extends ArmIO {
     @Override
     public void setTargetFirstJointPosition(double position, double velocity) {
         final double scopedPosition = MathUtil.inputModulus(position, 0, 360);
-        final double pidCalculation = SimulationArmConstants.FIRST_JOINT_CONTROLLER.calculate(
+        firstJointPIDOutput = SimulationArmConstants.FIRST_JOINT_CONTROLLER.calculate(
                 lastInputs.firstJointPositionDegrees,
                 scopedPosition
         );
 
-        setFirstJointVoltage(pidCalculation);
+        setFirstJointVoltage(firstJointPIDOutput);
     }
 
     @Override
     public void setTargetSecondJointPosition(double position, double velocity) {
         final double scopedPosition = MathUtil.inputModulus(position, 0, 360);
-        final double pidCalculation = SimulationArmConstants.SECOND_JOINT_CONTROLLER.calculate(
+        secondJointPIDOutput = SimulationArmConstants.SECOND_JOINT_CONTROLLER.calculate(
                 lastInputs.secondJointPositionDegrees,
                 scopedPosition
         );
 
-        setSecondJointVoltage(pidCalculation);
+        setSecondJointVoltage(secondJointPIDOutput);
     }
 
     @Override

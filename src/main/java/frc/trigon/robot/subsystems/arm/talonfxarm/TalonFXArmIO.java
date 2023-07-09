@@ -25,6 +25,7 @@ public class TalonFXArmIO extends ArmIO {
         inputs.firstJointStatorCurrent = firstJointMotor.getStatorCurrent().getValue();
         inputs.firstJointSupplyCurrent = firstJointMotor.getSupplyCurrent().getValue();
         inputs.firstJointAppliedVoltage = firstJointMotor.getSupplyVoltage().getValue();
+        inputs.firstJointClosedLoopOutput = firstJointMotor.getClosedLoopOutput().getValue();
 
         Logger.getInstance().recordOutput(
                 "Arm/secondJointEncoderDegrees",
@@ -35,6 +36,7 @@ public class TalonFXArmIO extends ArmIO {
         inputs.secondJointStatorCurrent = secondJointMotor.getStatorCurrent().getValue();
         inputs.secondJointSupplyCurrent = secondJointMotor.getSupplyCurrent().getValue();
         inputs.secondJointAppliedVoltage = secondJointMotor.getSupplyVoltage().getValue();
+        inputs.secondJointClosedLoopOutput = secondJointMotor.getClosedLoopOutput().getValue();
 
         lastInputs = inputs;
     }

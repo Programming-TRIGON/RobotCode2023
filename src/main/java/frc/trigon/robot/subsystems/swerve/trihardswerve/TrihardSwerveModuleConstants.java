@@ -7,6 +7,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Notifier;
+import frc.trigon.robot.constants.ConfigurationConstants;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModuleConstants {
@@ -128,8 +129,10 @@ public class TrihardSwerveModuleConstants {
         this.steerEncoder = steerEncoder;
         this.encoderOffset = encoderOffset;
 
-        configureDriveMotor();
-        configureSteerMotor();
+        if (!ConfigurationConstants.IS_REPLAY) {
+            configureDriveMotor();
+            configureSteerMotor();
+        }
     }
 
     private void configureSteerMotor() {

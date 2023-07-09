@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import frc.trigon.robot.constants.ConfigurationConstants;
 import frc.trigon.robot.subsystems.swerve.SwerveConstants;
 import frc.trigon.robot.subsystems.swerve.SwerveModuleIO;
 
@@ -66,15 +67,15 @@ public class TrihardSwerveConstants extends SwerveConstants {
     static {
         ROTATION_CONTROLLER.enableContinuousInput(-180, 180);
         ROTATION_CONTROLLER.setIntegratorRange(-30, 30);
-        final Pigeon2Configuration gyroConfig = new Pigeon2Configuration();
+        if (!ConfigurationConstants.IS_REPLAY) {
+            final Pigeon2Configuration gyroConfig = new Pigeon2Configuration();
 
-        gyroConfig.MountPose.MountPoseRoll = Units.radiansToDegrees(GYRO_MOUNT_POSITION.getX());
-        gyroConfig.MountPose.MountPosePitch = Units.radiansToDegrees(GYRO_MOUNT_POSITION.getY());
-        gyroConfig.MountPose.MountPoseYaw = Units.radiansToDegrees(GYRO_MOUNT_POSITION.getZ());
+            gyroConfig.MountPose.MountPoseRoll = Units.radiansToDegrees(GYRO_MOUNT_POSITION.getX());
+            gyroConfig.MountPose.MountPosePitch = Units.radiansToDegrees(GYRO_MOUNT_POSITION.getY());
+            gyroConfig.MountPose.MountPoseYaw = Units.radiansToDegrees(GYRO_MOUNT_POSITION.getZ());
 
-        GYRO.getConfigurator().apply(gyroConfig);
-
-        // TODO: Status signals
+            GYRO.getConfigurator().apply(gyroConfig);
+            // TODO: Status signals
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_1_General, 200);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_2_GeneralCompass, 1000);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_3_GeneralAccel, 1000);
@@ -84,7 +85,7 @@ public class TrihardSwerveConstants extends SwerveConstants {
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_2_Gyro, 1000);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_4_Mag, 1000);
 //        GYRO.setStatusFramePeriod(PigeonIMU_StatusFrame.BiasedStatus_6_Accel, 30);
-
+        }
     }
 
     @Override

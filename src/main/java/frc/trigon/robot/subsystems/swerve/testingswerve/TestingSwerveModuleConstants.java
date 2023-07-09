@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.trigon.robot.constants.ConfigurationConstants;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TestingSwerveModuleConstants {
@@ -61,9 +62,9 @@ public class TestingSwerveModuleConstants {
             STEER_MOTOR_D = 0;
     private static final CANSparkMax
             FRONT_LEFT_STEER_MOTOR = new CANSparkMax(
-            FRONT_LEFT_STEER_MOTOR_ID,
-            CANSparkMaxLowLevel.MotorType.kBrushless
-    ),
+                    FRONT_LEFT_STEER_MOTOR_ID,
+                    CANSparkMaxLowLevel.MotorType.kBrushless
+            ),
             FRONT_RIGHT_STEER_MOTOR = new CANSparkMax(
                     FRONT_RIGHT_STEER_MOTOR_ID,
                     CANSparkMaxLowLevel.MotorType.kBrushless
@@ -119,8 +120,10 @@ public class TestingSwerveModuleConstants {
         this.driveMotor = driveMotor;
         this.steerMotor = steerMotor;
 
-        configureDriveMotor();
-        configureSteerMotor();
+        if (!ConfigurationConstants.IS_REPLAY) {
+            configureDriveMotor();
+            configureSteerMotor();
+        }
     }
 
     private void configureSteerMotor() {

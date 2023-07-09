@@ -10,12 +10,14 @@ public class ArmIO {
         public double firstJointStatorCurrent = 0;
         public double firstJointSupplyCurrent = 0;
         public double firstJointAppliedVoltage = 0;
+        public double firstJointClosedLoopOutput = 0;
 
         public double secondJointPositionDegrees = 0;
         public double secondJointVelocityDegreesPerSecond = 0;
         public double secondJointStatorCurrent = 0;
         public double secondJointSupplyCurrent = 0;
         public double secondJointAppliedVoltage = 0;
+        public double secondJointClosedLoopOutput = 0;
     }
 
     /**

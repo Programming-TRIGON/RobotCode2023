@@ -128,10 +128,10 @@ public class Arm extends SubsystemBase {
     }
 
     private void updateNetworkTables() {
-        Logger.getInstance().recordOutput(getLoggingPath() + "firstMotorAtGoal", Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE);
-        Logger.getInstance().recordOutput(getLoggingPath() + "secondMotorAtGoal", Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE);
-        Logger.getInstance().recordOutput(getLoggingPath() + "firstMotorVelocityAtGoal", Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE);
-        Logger.getInstance().recordOutput(getLoggingPath() + "secondMotorVelocityAtGoal", Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "firstJointAtGoal", Math.abs(getFirstJointMotorError()) < ArmConstants.FIRST_JOINT_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "secondJointAtGoal", Math.abs(getSecondJointMotorError()) < ArmConstants.SECOND_JOINT_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "firstJointVelocityAtGoal", Math.abs(getFirstJointMotorVelocity()) < ArmConstants.FIRST_JOINT_VELOCITY_TOLERANCE);
+        Logger.getInstance().recordOutput(getLoggingPath() + "secondJointVelocityAtGoal", Math.abs(getSecondJointMotorVelocity()) < ArmConstants.SECOND_JOINT_VELOCITY_TOLERANCE);
 
         Logger.getInstance().recordOutput(getLoggingPath() + "firstJointPose", getFirstJointComponentPose());
         Logger.getInstance().recordOutput(getLoggingPath() + "secondJointPose", getSecondJointComponentPose());
@@ -143,7 +143,7 @@ public class Arm extends SubsystemBase {
         ArmConstants.FIRST_JOINT_LIGAMENT.setAngle(getFirstJointMotorAngle().getDegrees());
         ArmConstants.SECOND_JOINT_LIGAMENT.setAngle(getSecondJointMotorAngle().getDegrees());
 
-        Logger.getInstance().recordOutput("ArmMechanism", ArmConstants.ARM_MECHANISM);
+        Logger.getInstance().recordOutput(getLoggingPath() + "ArmMechanism", ArmConstants.ARM_MECHANISM);
     }
 
     private void setTargetState(ArmConstants.ArmStates targetState) {
@@ -211,7 +211,8 @@ public class Arm extends SubsystemBase {
         }
 
         armIO.setTargetFirstJointPosition(targetState.position, targetState.velocity);
-        Logger.getInstance().recordOutput("firstJointSetpoint", targetState.position);
+        Logger.getInstance().recordOutput(getLoggingPath() + "firstJointPositionSetpoint", targetState.position);
+        Logger.getInstance().recordOutput(getLoggingPath() + "firstJointVelocitySetpoint", targetState.velocity);
     }
 
     private void setSecondJointPositionFromProfile() {
@@ -230,7 +231,8 @@ public class Arm extends SubsystemBase {
         }
 
         armIO.setTargetSecondJointPosition(targetState.position, targetState.velocity);
-        Logger.getInstance().recordOutput("secondJointSetpoint", targetState.position);
+        Logger.getInstance().recordOutput(getLoggingPath() + "secondJointPositionSetpoint", targetState.position);
+        Logger.getInstance().recordOutput(getLoggingPath() + "secondJointVelocitySetpoint", targetState.velocity);
     }
 
     private boolean shouldStopFirstJointMotor(TrapezoidProfile.State targetState) {
