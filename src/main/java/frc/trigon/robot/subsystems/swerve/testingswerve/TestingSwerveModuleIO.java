@@ -15,22 +15,18 @@ public class TestingSwerveModuleIO extends SwerveModuleIO {
     private final TalonFX driveMotor;
     private final CANSparkMax steerMotor;
     private final SparkMaxAbsoluteEncoder steerEncoder;
-    private final String name;
 
     public TestingSwerveModuleIO(TestingSwerveModuleConstants.TestingSwerveModules module) {
+        super(module.name());
         final TestingSwerveModuleConstants moduleConstants = module.swerveModuleConstants;
 
         this.steerMotor = moduleConstants.steerMotor;
         this.driveMotor = moduleConstants.driveMotor;
         steerEncoder = steerMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-        this.name = module.name();
     }
 
     @Override
     protected void updateInputs(SwerveModuleInputsAutoLogged inputs) {
-        if (inputs.name.equals(""))
-            inputs.name = name;
-
         inputs.steerAngleDegrees = steerEncoder.getPosition();
         inputs.steerAppliedVoltage = steerMotor.getBusVoltage();
         inputs.drivePositionRevolutions = driveMotor.getPosition().getValue();

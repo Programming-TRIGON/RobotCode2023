@@ -11,26 +11,22 @@ import frc.trigon.robot.utilities.Conversions;
 
 public class SimulationSwerveModuleIO extends SwerveModuleIO {
     private final DCMotorSim driveMotor, steerMotor;
-    private final String name;
     private boolean brake = true;
     private double driveAppliedVoltage, steerAppliedVoltage;
     private SwerveModuleInputsAutoLogged lastInputs = new SwerveModuleInputsAutoLogged();
 
     public SimulationSwerveModuleIO(SimulationSwerveModuleConstants.SimulationSwerveModules module) {
+        super(module.name());
         final SimulationSwerveModuleConstants moduleConstants = module.swerveModuleConstants;
 
         driveMotor = moduleConstants.driveMotor;
         steerMotor = moduleConstants.steerMotor;
-        name = module.name();
     }
 
     @Override
     protected void updateInputs(SwerveModuleInputsAutoLogged inputs) {
         steerMotor.update(OperatorConstants.PERIODIC_TIME_SECONDS);
         driveMotor.update(OperatorConstants.PERIODIC_TIME_SECONDS);
-
-        if (inputs.name.equals(""))
-            inputs.name = name;
 
         inputs.steerAngleDegrees = Conversions.revolutionsToDegrees(steerMotor.getAngularPositionRotations());
         inputs.steerAppliedVoltage = steerAppliedVoltage;

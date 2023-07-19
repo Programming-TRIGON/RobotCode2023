@@ -8,8 +8,13 @@ import org.littletonrobotics.junction.Logger;
 
 public class SwerveModuleIO {
     private final SwerveModuleInputsAutoLogged swerveModuleInputs = new SwerveModuleInputsAutoLogged();
+    private final String name;
     private boolean driveMotorClosedLoop = false;
     private double targetVelocity, targetAngle;
+
+    public SwerveModuleIO(String name) {
+        this.name = name;
+    }
 
     /**
      * Sets whether the drive motor should be in closed loop control, or in open loop control.
@@ -85,8 +90,8 @@ public class SwerveModuleIO {
         return Rotation2d.fromDegrees(swerveModuleInputs.steerAngleDegrees);
     }
 
-    String getLoggingPath() {
-        return "Swerve/" + swerveModuleInputs.name;
+    private String getLoggingPath() {
+        return "Swerve/" + name;
     }
 
     /**
@@ -137,7 +142,6 @@ public class SwerveModuleIO {
 
     @AutoLog
     public static class SwerveModuleInputs {
-        public String name = "";
         public double steerAngleDegrees = 0;
         public double steerAppliedVoltage = 0;
         public double driveVelocityRevolutionsPerSecond = 0;

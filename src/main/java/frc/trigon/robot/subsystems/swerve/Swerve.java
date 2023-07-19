@@ -18,8 +18,6 @@ import frc.trigon.robot.subsystems.swerve.trihardswerve.TrihardSwerveIO;
 import frc.trigon.robot.utilities.AllianceUtilities;
 import org.littletonrobotics.junction.Logger;
 
-import java.util.Arrays;
-
 public class Swerve extends SubsystemBase {
     private final static Swerve INSTANCE = new Swerve();
 
@@ -212,6 +210,7 @@ public class Swerve extends SubsystemBase {
         Logger.getInstance().recordOutput("Swerve/Velocity/rot", getCurrentVelocity().omegaRadiansPerSecond);
         Logger.getInstance().recordOutput("Swerve/Velocity/x", getCurrentVelocity().vxMetersPerSecond);
         Logger.getInstance().recordOutput("Swerve/Velocity/y", getCurrentVelocity().vyMetersPerSecond);
+        Logger.getInstance().recordOutput("RobotPosition", PoseEstimator.getInstance().getCurrentPose());
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
@@ -260,7 +259,10 @@ public class Swerve extends SubsystemBase {
     private SwerveModuleIO[] getModulesIO() {
         if (ConfigurationConstants.IS_REPLAY) {
             final SwerveModuleIO[] modulesIO = new SwerveModuleIO[4];
-            Arrays.fill(modulesIO, new SwerveModuleIO());
+            modulesIO[0] = new SwerveModuleIO("FRONT_LEFT");
+            modulesIO[1] = new SwerveModuleIO("FRONT_RIGHT");
+            modulesIO[2] = new SwerveModuleIO("REAR_LEFT");
+            modulesIO[3] = new SwerveModuleIO("REAR_RIGHT");
             return modulesIO;
         }
 

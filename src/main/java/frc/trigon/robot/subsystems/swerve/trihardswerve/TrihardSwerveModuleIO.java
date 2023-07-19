@@ -12,21 +12,17 @@ import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModuleIO extends SwerveModuleIO {
     private final TalonFX steerMotor, driveMotor;
-    private final String name;
 
     public TrihardSwerveModuleIO(TrihardSwerveModuleConstants.TrihardSwerveModules module) {
+        super(module.name());
         final TrihardSwerveModuleConstants moduleConstants = module.swerveModuleConstants;
 
         this.steerMotor = moduleConstants.steerMotor;
         this.driveMotor = moduleConstants.driveMotor;
-        this.name = module.name();
     }
 
     @Override
     protected void updateInputs(SwerveModuleInputsAutoLogged inputs) {
-        if (inputs.name.equals(""))
-            inputs.name = name;
-
         inputs.steerAngleDegrees = getAngleDegrees();
         inputs.steerAppliedVoltage = steerMotor.getSupplyVoltage().getValue();
         inputs.drivePositionRevolutions = driveMotor.getPosition().getValue();
