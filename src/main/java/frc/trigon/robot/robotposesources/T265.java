@@ -18,7 +18,8 @@ public class T265 extends RobotPoseSourceIO {
     @Override
     protected void updateInputs(RobotPoseSourceInputsAutoLogged inputs) {
         inputs.hasResult = canUseJsonDump();
-        inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(getCameraPose());
+        if (inputs.hasResult)
+            inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(getCameraPose());
         inputs.lastResultTimestamp = jsonDump.getLastChange();
     }
 

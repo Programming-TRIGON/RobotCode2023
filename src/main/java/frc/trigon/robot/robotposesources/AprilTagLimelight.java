@@ -12,7 +12,8 @@ public class AprilTagLimelight extends RobotPoseSourceIO {
     @Override
     protected void updateInputs(RobotPoseSourceInputsAutoLogged inputs) {
         inputs.hasResult = fiducialLimelight.hasResults();
-        inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(fiducialLimelight.getRobotPoseFromJsonDump());
+        if (inputs.hasResult)
+            inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(fiducialLimelight.getRobotPoseFromJsonDump());
         inputs.lastResultTimestamp = fiducialLimelight.getLastResultTimestamp();
     }
 }

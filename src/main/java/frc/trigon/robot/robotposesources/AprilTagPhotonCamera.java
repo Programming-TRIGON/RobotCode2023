@@ -31,7 +31,8 @@ public class AprilTagPhotonCamera extends RobotPoseSourceIO {
     @Override
     protected void updateInputs(RobotPoseSourceInputsAutoLogged inputs) {
         inputs.hasResult = photonCamera.getLatestResult().hasTargets();
-        inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(getCameraPose());
+        if (inputs.hasResult)
+            inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(getCameraPose());
         inputs.lastResultTimestamp = photonCamera.getLatestResult().getTimestampSeconds();
     }
 
