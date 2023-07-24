@@ -57,10 +57,10 @@ public class CommandsConstants {
             TURN_TO_FEEDER_WITH_MANUAL_DRIVE_COMMAND = SwerveCommands.getFieldRelativeOpenLoopSupplierDriveCommand(
                     () -> DRIVER_CONTROLLER.getLeftY() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
                     () -> DRIVER_CONTROLLER.getLeftX() / OperatorConstants.STICKS_DIVIDER / calculateShiftModeValue(),
-                    () -> Rotation2d.fromDegrees(DriverStation.getAlliance().equals(DriverStation.Alliance.Blue) ? 90 : -90)
+                    () -> Rotation2d.fromDegrees(AllianceUtilities.isBlueAlliance() ? 90 : -90)
             ),
             COLLECT_FROM_FEEDER_WITH_MANUAL_DRIVE_COMMAND = new ParallelCommandGroup(
-//                    TURN_TO_FEEDER_WITH_MANUAL_DRIVE_COMMAND,
+                    TURN_TO_FEEDER_WITH_MANUAL_DRIVE_COMMAND,
                     GRIPPER.getSlowCollectCommand(),
                     ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_FEEDER, true, 0.5, 0.5)
             ),
