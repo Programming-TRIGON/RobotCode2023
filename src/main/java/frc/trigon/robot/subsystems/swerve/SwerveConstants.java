@@ -85,4 +85,9 @@ public abstract class SwerveConstants {
      * @return the tolerance for rotation velocity in radians per second
      */
     protected abstract double getRotationVelocityTolerance();
+
+    /**
+     * @return the swerve's robot side length in meters
+     */
+    protected abstract double getRobotSideLength();
 }

@@ -151,6 +151,11 @@ public class TestingSwerveConstants extends SwerveConstants {
     }
 
     @Override
+    protected double getRobotSideLength() {
+        return SIDE_LENGTH_METERS;
+    }
+
+    @Override
     protected Translation2d[] getModuleLocations() {
         return LOCATIONS;
     }

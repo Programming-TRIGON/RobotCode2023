@@ -12,8 +12,8 @@ import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.trigon.robot.commands.AlignToReflectorCommand;
 import frc.trigon.robot.commands.Commands;
-import frc.trigon.robot.components.CollectionCamera;
-import frc.trigon.robot.components.ReflectionLimelight;
+import frc.trigon.robot.components.cameras.ReflectionLimelight;
+import frc.trigon.robot.components.cameras.collectioncamera.CollectionCamera;
 import frc.trigon.robot.constants.AutonomousConstants;
 import frc.trigon.robot.constants.CameraConstants;
 import frc.trigon.robot.constants.CommandsConstants;
@@ -32,7 +32,6 @@ public class RobotContainer {
     public static final ReflectionLimelight REFLECTION_LIMELIGHT = new ReflectionLimelight("limelight");
     public static final CollectionCamera COLLECTION_CAMERA = new CollectionCamera("limelight-collection");
 
-    // Subsystems TODO: make them not singletons
     public static final Swerve SWERVE = Swerve.getInstance();
     public static final Arm ARM = Arm.getInstance();
     public static final Gripper GRIPPER = Gripper.getInstance();
@@ -153,7 +152,7 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);//,CameraConstants.t265);
+        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);//,CameraConstants.T265);
     }
 
     private void setupArmBrakeModeWithUserButtonCommands() {

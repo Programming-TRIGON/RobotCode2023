@@ -11,7 +11,6 @@ import frc.trigon.robot.utilities.Conversions;
 
 public class SimulationSwerveModuleIO extends SwerveModuleIO {
     private final DCMotorSim driveMotor, steerMotor;
-    private boolean brake = true;
     private double driveAppliedVoltage, steerAppliedVoltage;
     private SwerveModuleInputsAutoLogged lastInputs = new SwerveModuleInputsAutoLogged();
 
@@ -43,8 +42,7 @@ public class SimulationSwerveModuleIO extends SwerveModuleIO {
     protected void setTargetOpenLoopVelocity(double velocity) {
         final double power = velocity / SimulationSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
         final double voltage = power * SimulationSwerveModuleConstants.MAX_MOTOR_VOLTAGE;
-        driveAppliedVoltage = voltageToMaxedVoltage(voltage);
-        driveMotor.setInputVoltage(driveAppliedVoltage);
+        setDriveVoltage(voltage);
     }
 
     @Override
@@ -54,35 +52,18 @@ public class SimulationSwerveModuleIO extends SwerveModuleIO {
 
     @Override
     protected void setTargetAngle(Rotation2d angle) {
-        final double pidCalculation = SimulationSwerveModuleConstants.STEER_MOTOR_PID_CONTROLLER.calculate(
+        final double pidOutput = SimulationSwerveModuleConstants.STEER_MOTOR_PID_CONTROLLER.calculate(
                 MathUtil.inputModulus(lastInputs.steerAngleDegrees, 0, 360),
                 MathUtil.inputModulus(scope(angle), 0, 360)
         );
 
-//        System.out.println("Current: " + MathUtil.inputModulus(lastInputs.steerAngleDegrees, 0, 360));
-//        System.out.println("Target: " + MathUtil.inputModulus(angle.getDegrees(), 0, 360));
-//        System.out.println("Pid calc: " + pidCalculation);
-        steerAppliedVoltage = voltageToMaxedVoltage(pidCalculation);
-        steerMotor.setInputVoltage(steerAppliedVoltage);
+        setSteerVoltage(pidOutput);
     }
 
     @Override
     protected void stop() {
-        if (brake) {
-            driveAppliedVoltage = -lastInputs.driveVelocityMetersPerSecond / SimulationSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND * SimulationSwerveModuleConstants.MAX_MOTOR_VOLTAGE;
-            driveMotor.setInputVoltage(driveAppliedVoltage);
-        } else {
-            driveAppliedVoltage = 0;
-            driveMotor.setInputVoltage(0);
-        }
-
-        steerAppliedVoltage = 0;
-        steerMotor.setInputVoltage(0);
-    }
-
-    @Override
-    protected void setBrake(boolean brake) {
-        this.brake = brake;
+        setDriveVoltage(0);
+        setSteerVoltage(0);
     }
 
     private double voltageToMaxedVoltage(double voltage) {
@@ -91,6 +72,16 @@ public class SimulationSwerveModuleIO extends SwerveModuleIO {
                 -SimulationSwerveModuleConstants.MAX_MOTOR_VOLTAGE,
                 SimulationSwerveModuleConstants.MAX_MOTOR_VOLTAGE
         );
+    }
+
+    private void setDriveVoltage(double voltage) {
+        driveAppliedVoltage = voltageToMaxedVoltage(voltage);
+        driveMotor.setInputVoltage(driveAppliedVoltage);
+    }
+
+    private void setSteerVoltage(double voltage) {
+        steerAppliedVoltage = voltageToMaxedVoltage(voltage);
+        steerMotor.setInputVoltage(steerAppliedVoltage);
     }
 
     private double scope(Rotation2d targetRotation2d) {

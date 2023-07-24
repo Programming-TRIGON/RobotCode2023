@@ -6,26 +6,19 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
 
-public class T265 extends RelativeRobotPoseSource {
+public class T265 extends RobotPoseSourceIO {
     private static final NetworkTable NETWORK_TABLE = NetworkTableInstance.getDefault().getTable("T265");
-    private final String name;
     private final NetworkTableEntry jsonDump;
     private static final short CONFIDENCE_THRESHOLD = 2;
 
-    public T265(String name, Transform3d cameraToRobotCenter) {
-        super(cameraToRobotCenter);
-        this.name = name;
-
+    protected T265(String name) {
         jsonDump = NETWORK_TABLE.getEntry(name + "/jsonDump");
     }
 
     @Override
     protected void updateInputs(RobotPoseSourceInputsAutoLogged inputs) {
-        if (inputs.name.equals(""))
-            inputs.name = name;
-
         inputs.hasResult = canUseJsonDump();
-        inputs.cameraPose = getCameraPose();
+        inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(getCameraPose());
         inputs.lastResultTimestamp = jsonDump.getLastChange();
     }
 

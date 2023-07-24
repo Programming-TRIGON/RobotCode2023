@@ -1,15 +1,10 @@
-package frc.trigon.robot.components;
+package frc.trigon.robot.components.cameras;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
-public class ReflectionLimelight implements Sendable, Loggable {
-    private final NetworkTableEntry tv, tx, ty, ts, ta, ledMode, driverCam, pipeline, snapshot;
+public class ReflectionLimelight {
+    private final LoggedDashboardNumber tv, tx, ty, ts, ta, ledMode, driverCam, pipeline, snapshot;
 
     /**
      * Constructs a new Limelight.
@@ -17,17 +12,15 @@ public class ReflectionLimelight implements Sendable, Loggable {
      * @param hostname the name of the Limelight
      */
     public ReflectionLimelight(String hostname) {
-        NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
-
-        tv = networkTable.getEntry("tv");
-        tx = networkTable.getEntry("tx");
-        ty = networkTable.getEntry("ty");
-        ts = networkTable.getEntry("ts");
-        ta = networkTable.getEntry("ta");
-        ledMode = networkTable.getEntry("ledMode");
-        driverCam = networkTable.getEntry("camMode");
-        pipeline = networkTable.getEntry("pipeline");
-        snapshot = networkTable.getEntry("snapshot");
+        tv = new LoggedDashboardNumber(hostname + "/tv");
+        tx = new LoggedDashboardNumber(hostname + "/tx");
+        ty = new LoggedDashboardNumber(hostname + "/ty");
+        ts = new LoggedDashboardNumber(hostname + "/ts");
+        ta = new LoggedDashboardNumber(hostname + "/ta");
+        ledMode = new LoggedDashboardNumber(hostname + "/ledMode");
+        driverCam = new LoggedDashboardNumber(hostname + "/camMode");
+        pipeline = new LoggedDashboardNumber(hostname + "/pipeline");
+        snapshot = new LoggedDashboardNumber(hostname + "/snapshot");
     }
 
     /**
@@ -35,7 +28,7 @@ public class ReflectionLimelight implements Sendable, Loggable {
      */
     @Log
     public double getTy() {
-        return ty.getDouble(0);
+        return ty.get();
     }
 
     /**
@@ -43,21 +36,21 @@ public class ReflectionLimelight implements Sendable, Loggable {
      */
     @Log
     public double getTx() {
-        return tx.getDouble(0);
+        return tx.get();
     }
 
     /**
      * @return target's skew (-90 degrees to 0 degrees)
      */
     public double getTs() {
-        return ts.getDouble(0);
+        return ts.get();
     }
 
     /**
      * @return target's area (0% of image to 100% of image)
      */
     public double getTa() {
-        return ta.getDouble(0);
+        return ta.get();
     }
 
     /**
@@ -65,14 +58,14 @@ public class ReflectionLimelight implements Sendable, Loggable {
      */
     @Log
     public boolean hasTarget() {
-        return tv.getDouble(0) == 1;
+        return tv.get() == 1;
     }
 
     /**
      * @return true if the driver cam is used, false if the vision cam is used
      */
     public boolean isDriverCam() {
-        return driverCam.getDouble(0) == 1;
+        return driverCam.get() == 1;
     }
 
     /**
@@ -81,14 +74,14 @@ public class ReflectionLimelight implements Sendable, Loggable {
      * @param useDriverCam true for driver camera, false for vision processing
      */
     public void setDriverCam(boolean useDriverCam) {
-        driverCam.setNumber(useDriverCam ? 1 : 0);
+        driverCam.set(useDriverCam ? 1 : 0);
     }
 
     /**
      * @return the current LedMode
      */
     public LedMode getLedMode() {
-        return LedMode.getLedModeFromValue(ledMode.getDouble(0));
+        return LedMode.getLedModeFromValue(ledMode.get());
     }
 
     /**
@@ -97,14 +90,14 @@ public class ReflectionLimelight implements Sendable, Loggable {
      * @param mode the wanted LedMode
      */
     public void setLedMode(LedMode mode) {
-        ledMode.setNumber(mode.index);
+        ledMode.set(mode.index);
     }
 
     /**
      * @return the current pipeline (0-9)
      */
     public double getPipeline() {
-        return pipeline.getDouble(0);
+        return pipeline.get();
     }
 
     /**
@@ -113,22 +106,14 @@ public class ReflectionLimelight implements Sendable, Loggable {
      * @param pipeline (0-9)
      */
     public void setPipeline(int pipeline) {
-        this.pipeline.setNumber(pipeline);
+        this.pipeline.set(pipeline);
     }
 
     /**
      * Takes a snapshot (To test the vision pipelines on stored snapshots).
      */
     public void takeSnapshot() {
-        snapshot.setNumber(1);
-    }
-
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("tx", this::getTx, null);
-        builder.addDoubleProperty("ty", this::getTy, null);
-        builder.addDoubleProperty("ts", this::getTs, null);
-        builder.addBooleanProperty("tv", this::hasTarget, null);
+        snapshot.set(1);
     }
 
     public enum LedMode {
@@ -150,8 +135,8 @@ public class ReflectionLimelight implements Sendable, Loggable {
          * @return the LedMode with the given value. (If there is no LedMode with that value, returns null)
          */
         public static LedMode getLedModeFromValue(double value) {
-            for(LedMode currentMode : values()) {
-                if(currentMode.index == value) {
+            for (LedMode currentMode : values()) {
+                if (currentMode.index == value) {
                     return currentMode;
                 }
             }

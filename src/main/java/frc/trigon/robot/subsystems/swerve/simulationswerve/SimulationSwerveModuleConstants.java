@@ -21,7 +21,7 @@ public class SimulationSwerveModuleConstants {
             REAR_LEFT_ID = 2,
             REAR_RIGHT_ID = 3;
     static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.21564, 2.7054, 0.38437);
-    private static final double DRIVE_MOMENT_OF_INERTIA = 0.1;
+    private static final double DRIVE_MOMENT_OF_INERTIA = 0.03;
     private static final DCMotorSim
             FRONT_LEFT_DRIVE_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), DRIVE_GEAR_RATIO, DRIVE_MOMENT_OF_INERTIA),
             FRONT_RIGHT_DRIVE_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), DRIVE_GEAR_RATIO, DRIVE_MOMENT_OF_INERTIA),
@@ -29,7 +29,7 @@ public class SimulationSwerveModuleConstants {
             REAR_RIGHT_DRIVE_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), DRIVE_GEAR_RATIO, DRIVE_MOMENT_OF_INERTIA);
 
     static final PIDController STEER_MOTOR_PID_CONTROLLER = new PIDController(0.025, 0, 0);
-    private static final double STEER_MOMENT_OF_INERTIA = 0.1;
+    private static final double STEER_MOMENT_OF_INERTIA = 0.03;
     private static final DCMotorSim
             FRONT_LEFT_STEER_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), STEER_GEAR_RATIO, STEER_MOMENT_OF_INERTIA),
             FRONT_RIGHT_STEER_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), STEER_GEAR_RATIO, STEER_MOMENT_OF_INERTIA),

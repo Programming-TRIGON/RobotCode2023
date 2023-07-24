@@ -35,8 +35,8 @@ public class SimulationArmConstants {
             );
 
     static final PIDController
-            FIRST_JOINT_CONTROLLER = new PIDController(0.1, 0, 0),
-            SECOND_JOINT_CONTROLLER = new PIDController(0.1, 0, 0);
+            FIRST_JOINT_CONTROLLER = new PIDController(0.5, 0, 0),
+            SECOND_JOINT_CONTROLLER = new PIDController(0.5, 0, 0);
 
     static {
         FIRST_JOINT_CONTROLLER.enableContinuousInput(0, 360);

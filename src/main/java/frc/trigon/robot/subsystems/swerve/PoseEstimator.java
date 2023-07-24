@@ -41,7 +41,7 @@ public class PoseEstimator extends SubsystemBase {
                 PoseEstimatorConstants.STATES_AMBIGUITY,
                 PoseEstimatorConstants.VISION_CALCULATIONS_AMBIGUITY
         );
-        
+
         putAprilTagsOnFieldWidget();
     }
 
@@ -55,7 +55,6 @@ public class PoseEstimator extends SubsystemBase {
         if (didAllianceChange())
             updateFieldWidget();
 
-        // TODO: find the akit replacement for this
         SmartDashboard.putData("field", field);
     }
 
@@ -83,7 +82,11 @@ public class PoseEstimator extends SubsystemBase {
      * @return the estimated pose of the robot, relative to the current driver station
      */
     public Pose2d getCurrentPose() {
-        return AllianceUtilities.toAlliancePose(swerveDrivePoseEstimator.getEstimatedPosition());
+        Pose2d estimatedPose = swerveDrivePoseEstimator.getEstimatedPosition();
+        if (PoseEstimatorConstants.LIMIT_POSITION)
+            estimatedPose = limitPosition(estimatedPose);
+
+        return AllianceUtilities.toAlliancePose(estimatedPose);
     }
 
     /**
@@ -120,6 +123,15 @@ public class PoseEstimator extends SubsystemBase {
         );
 
         configureRelativePoseSources(currentPose);
+    }
+
+    private Pose2d limitPosition(Pose2d pose2d) {
+        final Pose2d newPose = PoseEstimatorConstants.POSE_LIMITER.limitPose(pose2d);
+        if (newPose.equals(pose2d))
+            return pose2d;
+
+        resetPose(AllianceUtilities.toAlliancePose(newPose));
+        return newPose;
     }
 
     private void configureRelativePoseSources(Pose2d currentPose) {

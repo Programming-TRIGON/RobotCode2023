@@ -4,7 +4,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import frc.trigon.robot.robotposesources.AprilTagPhotonCamera;
+import frc.trigon.robot.robotposesources.PoseSourceConstants;
+import frc.trigon.robot.robotposesources.RelativeRobotPoseSource;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
 
 public class CameraConstants {
@@ -26,12 +27,16 @@ public class CameraConstants {
                     )
             )
     );
-    public static final RobotPoseSource FORWARD_LIMELIGHT = ConfigurationConstants.IS_REPLAY ?
-            new RobotPoseSource(FORWARD_LIMELIGHT_TO_ROBOT) :
-            new AprilTagPhotonCamera(
+    public static final RobotPoseSource
+            FORWARD_LIMELIGHT = new RobotPoseSource(
+                    PoseSourceConstants.RobotPoseSourceType.PHOTON_CAMERA,
                     "limelight-forward",
                     FORWARD_LIMELIGHT_TO_ROBOT
+            ),
+            T265 = new RelativeRobotPoseSource(
+                    PoseSourceConstants.RelativeRobotPoseSourceType.T265,
+                    "908412110743",
+                    new Transform3d()
             );
-//    public static final T265 t265 = new T265("908412110743", new Transform3d());
 
 }

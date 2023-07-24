@@ -67,7 +67,14 @@ public class ArmConstants {
             (FIRST_JOINT_LENGTH + SECOND_JOINT_LENGTH) / 100,
             FIRST_JOINT_HEIGHT / 100
     );
+
     static final MechanismLigament2d
+            TARGET_FIRST_JOINT_LIGAMENT = ARM_PIVOT_ROOT.append(
+                    new MechanismLigament2d("TargetFirstJoint", FIRST_JOINT_LENGTH /100, FIRST_JOINT_CLOSED, 10, new Color8Bit(Color.kGray))
+            ),
+            TARGET_SECOND_JOINT_LIGAMENT = TARGET_FIRST_JOINT_LIGAMENT.append(
+                    new MechanismLigament2d("TargetSecondJoint", SECOND_JOINT_LENGTH / 100, SECOND_JOINT_CLOSED, 8, new Color8Bit(Color.kGray))
+            ),
             FIRST_JOINT_LIGAMENT = ARM_PIVOT_ROOT.append(
                 new MechanismLigament2d("FirstJoint", FIRST_JOINT_LENGTH /100, FIRST_JOINT_CLOSED, 10, new Color8Bit(Color.kRed))
             ),

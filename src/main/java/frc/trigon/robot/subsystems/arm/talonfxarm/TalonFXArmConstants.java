@@ -47,15 +47,6 @@ public class TalonFXArmConstants {
     private static final boolean SECOND_JOINT_SENSOR_PHASE = false;
 
     private static final double
-            //Old ks = 1.0169
-            //New ks = -2.5756
-            //Old kv = 0.53077
-            //New kv = 6.6399
-            //Old ka = 0.2618
-            //New ka = 0.74055
-            //Old kg = 0.71665
-            //New kg = 1.0697
-            // TODO: Check if these values need conversion
             FIRST_JOINT_KS = 1.0169,
             FIRST_JOINT_KV = 0.53077,
             FIRST_JOINT_KA = 0.2618,

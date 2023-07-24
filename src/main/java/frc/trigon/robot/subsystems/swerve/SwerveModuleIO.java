@@ -90,8 +90,8 @@ public class SwerveModuleIO {
         return Rotation2d.fromDegrees(swerveModuleInputs.steerAngleDegrees);
     }
 
-    private String getLoggingPath() {
-        return "Swerve/" + name;
+    protected String getLoggingPath() {
+        return "Swerve/" + name + "/";
     }
 
     /**

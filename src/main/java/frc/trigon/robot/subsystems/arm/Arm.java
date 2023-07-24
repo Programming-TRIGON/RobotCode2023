@@ -23,6 +23,7 @@ public class Arm extends SubsystemBase {
     private double lastFirstJointProfileGenerationTimestamp, lastSecondJointProfileGenerationTimestamp;
     private double lastFirstJointSpeedFactor, lastSecondJointSpeedFactor;
     private String firstJointToMove = "";
+    private double firstJointTargetAngle, secondJointTargetAngle;
 
     private Arm() {
         armIO = generateIO();
@@ -55,14 +56,15 @@ public class Arm extends SubsystemBase {
      *
      * @param state                  the target state
      * @param byOrder                whether to move the arm by order
-     * @param firstMotorSpeedFactor  the speed factor of the first motor
-     * @param secondMotorSpeedFactor the speed factor of the second motor
+     * @param firstJointSpeedFactor  the speed factor of the first joint
+     * @param secondJointSpeedFactor the speed factor of the second joint
      * @return the command
      */
-    public CommandBase getGoToStateCommand(ArmConstants.ArmStates state, boolean byOrder, double firstMotorSpeedFactor, double secondMotorSpeedFactor) {
+    public CommandBase getGoToStateCommand(ArmConstants.ArmStates state, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
         return new StartEndCommand(
-                () -> setTargetState(state, byOrder, firstMotorSpeedFactor, secondMotorSpeedFactor),
-                () -> {},
+                () -> setTargetState(state, byOrder, firstJointSpeedFactor, secondJointSpeedFactor),
+                () -> {
+                },
                 this
         );
     }
@@ -90,7 +92,8 @@ public class Arm extends SubsystemBase {
     public Command getGoToPositionCommand(double firstJointAngle, double secondJointAngle, boolean byOrder, double firstJointSpeedFactor, double secondJointSpeedFactor) {
         return new StartEndCommand(
                 () -> setTargetState(firstJointAngle, secondJointAngle, byOrder, firstJointSpeedFactor, secondJointSpeedFactor),
-                () -> {},
+                () -> {
+                },
                 this
         );
     }
@@ -140,6 +143,8 @@ public class Arm extends SubsystemBase {
     }
 
     private void updateMechanism() {
+        ArmConstants.TARGET_FIRST_JOINT_LIGAMENT.setAngle(firstJointTargetAngle);
+        ArmConstants.TARGET_SECOND_JOINT_LIGAMENT.setAngle(secondJointTargetAngle);
         ArmConstants.FIRST_JOINT_LIGAMENT.setAngle(getFirstJointMotorAngle().getDegrees());
         ArmConstants.SECOND_JOINT_LIGAMENT.setAngle(getSecondJointMotorAngle().getDegrees());
 
@@ -211,6 +216,7 @@ public class Arm extends SubsystemBase {
         }
 
         armIO.setTargetFirstJointPosition(targetState.position, targetState.velocity);
+        firstJointTargetAngle = targetState.position;
         Logger.getInstance().recordOutput(getLoggingPath() + "firstJointPositionSetpoint", targetState.position);
         Logger.getInstance().recordOutput(getLoggingPath() + "firstJointVelocitySetpoint", targetState.velocity);
     }
@@ -231,6 +237,7 @@ public class Arm extends SubsystemBase {
         }
 
         armIO.setTargetSecondJointPosition(targetState.position, targetState.velocity);
+        secondJointTargetAngle = targetState.position;
         Logger.getInstance().recordOutput(getLoggingPath() + "secondJointPositionSetpoint", targetState.position);
         Logger.getInstance().recordOutput(getLoggingPath() + "secondJointVelocitySetpoint", targetState.velocity);
     }
@@ -283,15 +290,15 @@ public class Arm extends SubsystemBase {
 
     private Pose3d getFirstJointComponentPose() {
         return new Pose3d(
-                new Translation3d(0, 0, ArmConstants.FIRST_JOINT_HEIGHT),
-                new Rotation3d(0, getFirstJointMotorAngle().getRadians(), 0)
+                new Translation3d(0, 0, ArmConstants.FIRST_JOINT_HEIGHT / 100),
+                new Rotation3d(0, getFirstJointMotorAngle().unaryMinus().getRadians(), 0)
         );
     }
 
     private Pose3d getSecondJointComponentPose() {
         return new Pose3d(
-                new Translation3d(getSecondJointLocationRelativeToGround().getX(), 0, getSecondJointLocationRelativeToGround().getY()),
-                new Rotation3d(0, 0, getSecondJointLocationRelativeToGround().getRotation().getRadians())
+                new Translation3d(getSecondJointPoseRelativeToGround().getX() / 100, 0, getSecondJointPoseRelativeToGround().getY() / 100),
+                new Rotation3d(0, getSecondJointPoseRelativeToGround().getRotation().unaryMinus().getRadians(), 0)
         );
     }
 
@@ -316,15 +323,12 @@ public class Arm extends SubsystemBase {
     }
 
     private Translation2d getCurrentEndEffectorLocation() {
-        final Transform2d secondJointAngleTransform = new Transform2d(new Translation2d(), getSecondJointMotorAngle());
-        final Pose2d secondJointLocation = getSecondJointLocationRelativeToGround().plus(secondJointAngleTransform);
-
-        return secondJointLocation.plus(ArmConstants.SECOND_JOINT_TO_END_EFFECTOR).getTranslation();
+        return getSecondJointPoseRelativeToGround().plus(ArmConstants.SECOND_JOINT_TO_END_EFFECTOR).getTranslation();
     }
 
-    private Pose2d getSecondJointLocationRelativeToGround() {
+    private Pose2d getSecondJointPoseRelativeToGround() {
         final Pose2d firstJointPose = new Pose2d(new Translation2d(0, ArmConstants.FIRST_JOINT_HEIGHT), getFirstJointMotorAngle());
-        return firstJointPose.plus(ArmConstants.FIRST_JOINT_TO_SECOND_JOINT);
+        return firstJointPose.plus(ArmConstants.FIRST_JOINT_TO_SECOND_JOINT).plus(new Transform2d(new Translation2d(), getSecondJointMotorAngle()));
     }
 
     private Rotation2d getFirstJointMotorAngle() {
@@ -359,7 +363,7 @@ public class Arm extends SubsystemBase {
                 }
         );
     }
-    
+
     private String getLoggingPath() {
         return "Arm/";
     }

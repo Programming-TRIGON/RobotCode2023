@@ -28,4 +28,13 @@ public class PoseSourceConstants {
             e.printStackTrace();
         }
     }
+
+    public enum RelativeRobotPoseSourceType {
+        T265
+    }
+
+    public enum RobotPoseSourceType {
+        PHOTON_CAMERA,
+        LIMELIGHT
+    }
 }

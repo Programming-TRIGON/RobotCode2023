@@ -73,7 +73,7 @@ public class SwerveCommands {
      */
     public static SequentialCommandGroup getFollowPathGroupCommand(List<PathPlannerTrajectory> pathGroup, Map<String, Command> eventMap) {
         final PathPlannerTrajectory lastPath = pathGroup.get(pathGroup.size() - 1);
-        final Command initializeDriveAndPutShowCommand = new InstantCommand(() -> {
+        final Command initializeDriveAndShowTargetCommand = new InstantCommand(() -> {
             initializeDrive(false);
             addTargetPoseToField(lastPath, true);
         });
@@ -89,7 +89,7 @@ public class SwerveCommands {
                 SWERVE
         );
 
-        return initializeDriveAndPutShowCommand.andThen(swerveAutoBuilder.fullAuto(pathGroup));
+        return initializeDriveAndShowTargetCommand.andThen(swerveAutoBuilder.fullAuto(pathGroup));
     }
 
     /**

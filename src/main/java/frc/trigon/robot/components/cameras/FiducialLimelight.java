@@ -1,16 +1,16 @@
-package frc.trigon.robot.components;
+package frc.trigon.robot.components.cameras;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
+import org.littletonrobotics.junction.networktables.LoggedDashboardString;
 
 public class FiducialLimelight {
     private final String hostname;
-    private final NetworkTableEntry tv, json, ledMode, driverCam, pipeline, snapshot;
+    private final LoggedDashboardNumber tv, pipeline, ledMode, driverCam, snapshot;
+    private final LoggedDashboardString json;
 
     /**
      * Constructs a new Limelight.
@@ -19,14 +19,13 @@ public class FiducialLimelight {
      */
     public FiducialLimelight(String hostname) {
         this.hostname = hostname;
-        final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable(hostname);
 
-        tv = networkTable.getEntry("tv");
-        json = networkTable.getEntry("json");
-        ledMode = networkTable.getEntry("ledMode");
-        driverCam = networkTable.getEntry("camMode");
-        pipeline = networkTable.getEntry("pipeline");
-        snapshot = networkTable.getEntry("snapshot");
+        tv = new LoggedDashboardNumber(hostname + "/tv");
+        json = new LoggedDashboardString(hostname + "/json");
+        pipeline = new LoggedDashboardNumber(hostname + "/pipeline");
+        ledMode = new LoggedDashboardNumber(hostname + "/ledMode");
+        driverCam = new LoggedDashboardNumber(hostname + "/camMode");
+        snapshot = new LoggedDashboardNumber(hostname + "/snapshot");
     }
 
     /**
@@ -40,7 +39,7 @@ public class FiducialLimelight {
      * @return true if the limelight has any visible targets, false otherwise
      */
     public boolean hasResults() {
-        return tv.getDouble(0) > 0;
+        return tv.get() > 0;
     }
 
     /**
@@ -83,7 +82,7 @@ public class FiducialLimelight {
      * @return true if the driver cam is used, false if the vision cam is used
      */
     public boolean isDriverCam() {
-        return driverCam.getDouble(0) == 1;
+        return driverCam.get() == 1;
     }
 
     /**
@@ -92,14 +91,14 @@ public class FiducialLimelight {
      * @param useDriverCam true for driver camera, false for vision processing
      */
     public void setCam(boolean useDriverCam) {
-        driverCam.setNumber(useDriverCam ? 1 : 0);
+        driverCam.set(useDriverCam ? 1 : 0);
     }
 
     /**
      * @return the current LedMode
      */
     public LedMode getLedMode() {
-        return LedMode.getLedModeFromValue((int) ledMode.getDouble(0));
+        return LedMode.getLedModeFromValue((int) ledMode.get());
     }
 
     /**
@@ -108,14 +107,14 @@ public class FiducialLimelight {
      * @param mode the wanted LedMode
      */
     public void setLedMode(LedMode mode) {
-        ledMode.setNumber(mode.index);
+        ledMode.set(mode.index);
     }
 
     /**
      * @return the current pipeline (0-9)
      */
     public double getPipeline() {
-        return pipeline.getDouble(0);
+        return pipeline.get();
     }
 
     /**
@@ -124,14 +123,14 @@ public class FiducialLimelight {
      * @param pipeline (0-9)
      */
     public void setPipeline(int pipeline) {
-        this.pipeline.setNumber(pipeline);
+        this.pipeline.set(pipeline);
     }
 
     /**
      * Takes a snapshot (To test the vision pipelines on stored snapshots).
      */
     public void takeSnapshot() {
-        snapshot.setNumber(1);
+        snapshot.set(1);
     }
 
     /**
@@ -156,7 +155,7 @@ public class FiducialLimelight {
      * @return the json dump of the Limelight
      */
     public LimelightJsonDump getJsonDump() {
-        final String jsonString = json.getString("");
+        final String jsonString = json.get();
         if (jsonString.isEmpty())
             return new LimelightJsonDump();
 
