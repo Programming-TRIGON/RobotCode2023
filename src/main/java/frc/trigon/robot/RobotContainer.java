@@ -152,7 +152,7 @@ public class RobotContainer {
     }
 
     private void setPoseEstimatorPoseSources() {
-        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT);//,CameraConstants.T265);
+        poseEstimator.addRobotPoseSources(CameraConstants.FORWARD_LIMELIGHT, CameraConstants.T265);
     }
 
     private void setupArmBrakeModeWithUserButtonCommands() {

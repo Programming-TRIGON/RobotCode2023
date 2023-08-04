@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RelativeRobotPoseSource;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
@@ -36,7 +37,7 @@ public class CameraConstants {
             T265 = new RelativeRobotPoseSource(
                     PoseSourceConstants.RelativeRobotPoseSourceType.T265,
                     "908412110743",
-                    new Transform3d()
+                    new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(180)))
             );
 
 }

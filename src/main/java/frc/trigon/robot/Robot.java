@@ -9,9 +9,9 @@ import frc.trigon.robot.constants.ConfigurationConstants;
 import frc.trigon.robot.constants.OperatorConstants;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.utilities.FilesHandler;
-import io.github.oblarg.oblog.Logger;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
@@ -19,10 +19,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import java.io.IOException;
 
 public class Robot extends LoggedRobot {
+    public static final boolean IS_REAL = Robot.isReal();
+    private final Logger logger = Logger.getInstance();
     private RobotContainer robotContainer;
     private CommandBase autonomousCommand;
-    private final org.littletonrobotics.junction.Logger logger = org.littletonrobotics.junction.Logger.getInstance();
-    public static final boolean IS_REAL = Robot.isReal();
 
     @Override
     public void robotInit() {
@@ -33,14 +33,11 @@ public class Robot extends LoggedRobot {
         recordBuild();
 
         PathPlannerServer.startServer(5811);
-        Logger.configureLoggingAndConfig(robotContainer, false);
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
-        Logger.updateEntries();
     }
 
     @Override
@@ -65,6 +62,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void teleopInit() {
         robotContainer.teleopInit();
+        autonomousCommand.cancel();
     }
 
     @Override

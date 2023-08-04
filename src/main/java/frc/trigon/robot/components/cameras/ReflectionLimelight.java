@@ -1,6 +1,5 @@
 package frc.trigon.robot.components.cameras;
 
-import io.github.oblarg.oblog.annotations.Log;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 public class ReflectionLimelight {
@@ -26,7 +25,6 @@ public class ReflectionLimelight {
     /**
      * @return the vertical offset from the crosshair to the target (-20.5 degrees to 20.5 degrees)
      */
-    @Log
     public double getTy() {
         return ty.get();
     }
@@ -34,7 +32,6 @@ public class ReflectionLimelight {
     /**
      * @return the horizontal offset from the crosshair to the target (-27 degrees to 27 degrees)
      */
-    @Log
     public double getTx() {
         return tx.get();
     }
@@ -56,7 +53,6 @@ public class ReflectionLimelight {
     /**
      * @return true if the limelight has any valid targets, false otherwise
      */
-    @Log
     public boolean hasTarget() {
         return tv.get() == 1;
     }

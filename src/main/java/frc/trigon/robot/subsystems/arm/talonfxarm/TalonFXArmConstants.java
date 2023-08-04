@@ -85,11 +85,11 @@ public class TalonFXArmConstants {
             SECOND_JOINT_P = 0.4,
             SECOND_JOINT_I = 0.4 * 0.0006666666667,
             SECOND_JOINT_D = 0,
-            SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.5;
+            SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.5  * 12;
 
     private static final double
-            FIRST_JOINT_ENCODER_OFFSET = 0.3576660166015625,
-            SECOND_JOINT_ENCODER_OFFSET = -536;
+            FIRST_JOINT_ENCODER_OFFSET = Conversions.degreesToRevolutions(126.123047), // 0.3576660166015625
+            SECOND_JOINT_ENCODER_OFFSET = Conversions.degreesToMagTicks(-47.812500); // -536
 
     static {
         configureEncoders();
@@ -135,8 +135,9 @@ public class TalonFXArmConstants {
         secondJointMotorConfig.MotorOutput.NeutralMode = SECOND_JOINT_NEUTRAL_MODE;
         // TODO: check this (voltage)
         secondJointMotorConfig.MotorOutput.DutyCycleNeutralDeadband = SECOND_JOINT_NEUTRAL_DEADBAND;
-        secondJointMotorConfig.Voltage.PeakForwardVoltage = SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT * 12;
-        secondJointMotorConfig.Voltage.PeakReverseVoltage = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT * 12;
+        secondJointMotorConfig.Voltage.PeakForwardVoltage = SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
+        secondJointMotorConfig.Voltage.PeakReverseVoltage = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
+        // TODO: do this for every motor
         secondJointMotorConfig.Audio.BeepOnBoot = false;
 
         SECOND_JOINT_MOTOR.getConfigurator().apply(secondJointMotorConfig);
@@ -171,5 +172,6 @@ public class TalonFXArmConstants {
         firstJointMasterMotorConfig.MotorOutput.DutyCycleNeutralDeadband = FIRST_JOINT_NEUTRAL_DEADBAND;
 
         FIRST_JOINT_MASTER_MOTOR.getConfigurator().apply(firstJointMasterMotorConfig);
+        FIRST_JOINT_MASTER_MOTOR.getVelocity().setUpdateFrequency(50);
     }
 }

@@ -40,7 +40,6 @@ public class TalonFXArmIO extends ArmIO {
 
         lastInputs = inputs;
     }
-
     @Override
     public void setTargetFirstJointPosition(double position, double velocity) {
         final double feedforward = TalonFXArmConstants.FIRST_JOINT_FEEDFORWARD.calculate(
@@ -64,7 +63,7 @@ public class TalonFXArmIO extends ArmIO {
     @Override
     public void setTargetSecondJointPosition(double position, double velocity) {
         final double feedforward = TalonFXArmConstants.SECOND_JOINT_FEEDFORWARD.calculate(
-                Units.degreesToRadians(position),
+                Units.degreesToRadians(position + lastInputs.secondJointPositionDegrees),
                 Units.degreesToRadians(velocity)
         );
 

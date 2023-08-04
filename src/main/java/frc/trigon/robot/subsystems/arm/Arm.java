@@ -170,6 +170,8 @@ public class Arm extends SubsystemBase {
             firstJointToMove = getFirstJointMotorError() > 0 ? "first" : "second";
         else
             firstJointToMove = "";
+
+        Logger.getInstance().recordOutput("firstJointToMove", firstJointToMove);
     }
 
     private void setTargetMotorPositions() {

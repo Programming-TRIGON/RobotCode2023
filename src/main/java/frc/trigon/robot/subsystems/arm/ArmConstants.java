@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class ArmConstants {
-    public static final double SECOND_JOINT_GEAR_RATIO = 163.6626506024096;
+    public static final double SECOND_JOINT_GEAR_RATIO = 156.6862745098039; // 163.6626506024096
     static final double MINIMUM_END_EFFECTOR_HEIGHT = 20;
     public static final double
             FIRST_JOINT_HEIGHT = 101.91482,
@@ -37,11 +37,11 @@ public class ArmConstants {
     static final boolean DEFAULT_NEUTRAL_MODE = true;
 
     private static final double
-            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 1600,
+            FIRST_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 200,
             SECOND_JOINT_MAX_SPEED_DEGREES_PER_SECOND = 720;
 
     private static final double
-            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 1600,
+            FIRST_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 975.2,
             SECOND_JOINT_MAX_ACCELERATION_DEGREES_PER_SECOND_SQUARED = 180;
 
     static final TrapezoidProfile.Constraints
