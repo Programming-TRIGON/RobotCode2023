@@ -1,4 +1,4 @@
-package frc.trigon.robot.subsystems.swerve;
+package frc.trigon.robot.subsystems.poseestimator;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,7 +11,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RelativeRobotPoseSource;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
+import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.utilities.AllianceUtilities;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +58,7 @@ public class PoseEstimator extends SubsystemBase {
             updateFieldWidget();
 
         SmartDashboard.putData("field", field);
+        Logger.getInstance().recordOutput("RobotPosition", getCurrentPose());
     }
 
     /**

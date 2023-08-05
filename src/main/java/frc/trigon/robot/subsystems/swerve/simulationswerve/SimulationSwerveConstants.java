@@ -63,7 +63,7 @@ public class SimulationSwerveConstants extends SwerveConstants {
     }
 
     @Override
-    protected SwerveDriveKinematics getKinematics() {
+    public SwerveDriveKinematics getKinematics() {
         return KINEMATICS;
     }
 
@@ -133,7 +133,7 @@ public class SimulationSwerveConstants extends SwerveConstants {
     }
 
     @Override
-    protected double getRobotSideLength() {
+    public double getRobotSideLength() {
         return SIDE_LENGTH_METERS;
     }
 

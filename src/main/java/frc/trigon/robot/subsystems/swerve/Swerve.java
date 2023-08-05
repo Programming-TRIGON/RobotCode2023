@@ -109,6 +109,18 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
+     * @return the swerve's module's positions
+     */
+    public SwerveModulePosition[] getModulePositions() {
+        final SwerveModulePosition[] swerveModulePositions = new SwerveModulePosition[modulesIO.length];
+
+        for (int i = 0; i < modulesIO.length; i++)
+            swerveModulePositions[i] = modulesIO[i].getCurrentPosition();
+
+        return swerveModulePositions;
+    }
+
+    /**
      * Locks the swerve, so it'll be hard to move it.
      */
     void lockSwerve() {
@@ -157,18 +169,6 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
-     * @return the swerve's module's positions
-     */
-    SwerveModulePosition[] getModulePositions() {
-        final SwerveModulePosition[] swerveModulePositions = new SwerveModulePosition[modulesIO.length];
-
-        for (int i = 0; i < modulesIO.length; i++)
-            swerveModulePositions[i] = modulesIO[i].getCurrentPosition();
-
-        return swerveModulePositions;
-    }
-
-    /**
      * Sets whether the swerve drive should be in closed loop control, or in open loop control.
      *
      * @param closedLoop true if the drive motor should be in closed loop control, false if it should be in open loop control
@@ -210,7 +210,6 @@ public class Swerve extends SubsystemBase {
         Logger.getInstance().recordOutput("Swerve/Velocity/rot", getCurrentVelocity().omegaRadiansPerSecond);
         Logger.getInstance().recordOutput("Swerve/Velocity/x", getCurrentVelocity().vxMetersPerSecond);
         Logger.getInstance().recordOutput("Swerve/Velocity/y", getCurrentVelocity().vyMetersPerSecond);
-        Logger.getInstance().recordOutput("RobotPosition", PoseEstimator.getInstance().getCurrentPose());
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {

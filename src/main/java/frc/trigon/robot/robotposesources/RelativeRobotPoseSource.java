@@ -20,7 +20,7 @@ public class RelativeRobotPoseSource extends RobotPoseSource {
     @Override
     public Pose2d getRobotPose() {
         final Pose2d startRelativePose = super.getRobotPose();
-        final Translation2d rotatedTranslation = startRelativePose.getTranslation().rotateBy(difference.getRotation());
+        final Translation2d rotatedTranslation = startRelativePose.getTranslation().rotateBy(difference.getRotation().unaryMinus());
         final Translation2d subtractedTranslation = rotatedTranslation.minus(difference.getTranslation());
         final Rotation2d subtractedAngle = startRelativePose.getRotation().minus(difference.getRotation());
 
@@ -36,7 +36,7 @@ public class RelativeRobotPoseSource extends RobotPoseSource {
     public void setRelativePose(Pose2d pose) {
         final Pose2d startRelativePose = super.getRobotPose();
         final Rotation2d angleDifference = startRelativePose.getRotation().minus(pose.getRotation());
-        final Translation2d rotatedTranslation = startRelativePose.getTranslation().rotateBy(angleDifference);
+        final Translation2d rotatedTranslation = startRelativePose.getTranslation().rotateBy(angleDifference.unaryMinus());
         final Translation2d translationDifference = rotatedTranslation.minus(pose.getTranslation());
 
         difference = new Pose2d(translationDifference, angleDifference);

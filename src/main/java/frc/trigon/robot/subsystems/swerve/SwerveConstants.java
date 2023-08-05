@@ -7,6 +7,16 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
 public abstract class SwerveConstants {
     /**
+     * @return the swerve's profiled pid controller for rotation
+     */
+    public abstract ProfiledPIDController getRotationController();
+
+    /**
+     * @return the swerve's robot side length in meters
+     */
+    public abstract double getRobotSideLength();
+
+    /**
      * @return the swerve's module location
      */
     protected abstract Translation2d[] getModuleLocations();
@@ -19,7 +29,7 @@ public abstract class SwerveConstants {
     /**
      * @return the swerve's kinematics
      */
-    protected abstract SwerveDriveKinematics getKinematics();
+    public abstract SwerveDriveKinematics getKinematics();
 
     /**
      * @return the swerve's drive neutral deadband
@@ -62,11 +72,6 @@ public abstract class SwerveConstants {
     protected abstract double getBrakeTimeSeconds();
 
     /**
-     * @return the swerve's profiled pid controller for rotation
-     */
-    public abstract ProfiledPIDController getRotationController();
-
-    /**
      * @return the tolerance for translation in meters
      */
     protected abstract double getTranslationTolerance();
@@ -85,9 +90,4 @@ public abstract class SwerveConstants {
      * @return the tolerance for rotation velocity in radians per second
      */
     protected abstract double getRotationVelocityTolerance();
-
-    /**
-     * @return the swerve's robot side length in meters
-     */
-    protected abstract double getRobotSideLength();
 }

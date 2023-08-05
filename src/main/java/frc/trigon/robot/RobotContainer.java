@@ -22,7 +22,7 @@ import frc.trigon.robot.subsystems.arm.Arm;
 import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
-import frc.trigon.robot.subsystems.swerve.PoseEstimator;
+import frc.trigon.robot.subsystems.poseestimator.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;

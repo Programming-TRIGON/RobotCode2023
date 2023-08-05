@@ -26,8 +26,8 @@ public class TrihardSwerveModuleIO extends SwerveModuleIO {
         inputs.steerAngleDegrees = getAngleDegrees();
         inputs.steerAppliedVoltage = steerMotor.getSupplyVoltage().getValue();
         inputs.drivePositionRevolutions = driveMotor.getPosition().getValue();
-        inputs.driveDistanceMeters = Conversions.revolutionsToDistance(inputs.drivePositionRevolutions, TrihardSwerveModuleConstants.WHEEL_DIAMETER_METERS);
-        inputs.driveVelocityMetersPerSecond = Conversions.revolutionsToDistance(inputs.driveVelocityRevolutionsPerSecond, TrihardSwerveModuleConstants.WHEEL_DIAMETER_METERS);
+        inputs.driveDistanceMeters = driveMotorValueToDistance(inputs.drivePositionRevolutions);
+        inputs.driveVelocityMetersPerSecond = driveMotorValueToDistance(inputs.driveVelocityRevolutionsPerSecond);
         inputs.driveVelocityRevolutionsPerSecond = driveMotor.getVelocity().getValue();
         inputs.driveAppliedVoltage = driveMotor.getSupplyVoltage().getValue();
     }
@@ -80,6 +80,11 @@ public class TrihardSwerveModuleIO extends SwerveModuleIO {
         final double motorDegrees = Conversions.revolutionsToDegrees(motorRevolutions);
 
         return Conversions.motorToSystem(motorDegrees, TrihardSwerveModuleConstants.STEER_GEAR_RATIO);
+    }
+
+    private double driveMotorValueToDistance(double value) {
+        final double systemRevolutions = Conversions.motorToSystem(value, TrihardSwerveModuleConstants.DRIVE_GEAR_RATIO);
+        return Conversions.revolutionsToDistance(systemRevolutions, TrihardSwerveModuleConstants.WHEEL_DIAMETER_METERS);
     }
 
     private double scope(Rotation2d targetRotation2d) {

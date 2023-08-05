@@ -20,7 +20,7 @@ import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.gripper.Gripper;
 import frc.trigon.robot.subsystems.leds.LedStrip;
 import frc.trigon.robot.subsystems.leds.commands.MovingColorsLedCommand;
-import frc.trigon.robot.subsystems.swerve.PoseEstimator;
+import frc.trigon.robot.subsystems.poseestimator.PoseEstimator;
 import frc.trigon.robot.subsystems.swerve.Swerve;
 import frc.trigon.robot.subsystems.swerve.SwerveCommands;
 import frc.trigon.robot.utilities.AllianceUtilities;
@@ -70,7 +70,8 @@ public class CommandsConstants {
                     () -> 0
             ),
             RESET_HEADING_COMMAND = new InstantCommand(
-                    () -> POSE_ESTIMATOR.resetPose(setRotation(POSE_ESTIMATOR.getCurrentPose(), new Rotation2d()))
+//                    () -> POSE_ESTIMATOR.resetPose(setRotation(POSE_ESTIMATOR.getCurrentPose(), new Rotation2d()))
+                    () -> POSE_ESTIMATOR.resetPose(new Pose2d(5, 5, new Rotation2d()))
             ),
             TOGGLE_FIELD_AND_SELF_DRIVEN_COMMAND = new InstantCommand(
                     CommandsConstants::toggleFieldAndSelfDrivenAngle

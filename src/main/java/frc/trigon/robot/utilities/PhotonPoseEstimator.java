@@ -30,7 +30,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.trigon.robot.subsystems.swerve.PoseEstimator;
+import frc.trigon.robot.subsystems.poseestimator.PoseEstimator;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.VisionEstimation;

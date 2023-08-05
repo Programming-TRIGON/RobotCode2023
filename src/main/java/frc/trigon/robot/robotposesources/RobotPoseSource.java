@@ -63,10 +63,7 @@ public class RobotPoseSource extends SubsystemBase {
         if (cameraPose == null)
             return lastRobotPose;
 
-        lastRobotPose = new Pose3d(
-                cameraPose.getTranslation().plus(cameraToRobotCenter.getTranslation()),
-                cameraPose.getRotation().plus(cameraToRobotCenter.getRotation())
-        ).toPose2d();
+        lastRobotPose = cameraPose.transformBy(cameraToRobotCenter).toPose2d();
         return lastRobotPose;
     }
 

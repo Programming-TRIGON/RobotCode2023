@@ -89,13 +89,13 @@ public class TrihardSwerveConstants extends SwerveConstants {
     }
 
     @Override
-    protected SwerveModuleIO[] getModulesIO() {
-        return MODULES_IO;
+    public SwerveDriveKinematics getKinematics() {
+        return KINEMATICS;
     }
 
     @Override
-    protected SwerveDriveKinematics getKinematics() {
-        return KINEMATICS;
+    protected SwerveModuleIO[] getModulesIO() {
+        return MODULES_IO;
     }
 
     @Override
@@ -164,7 +164,7 @@ public class TrihardSwerveConstants extends SwerveConstants {
     }
 
     @Override
-    protected double getRobotSideLength() {
+    public double getRobotSideLength() {
         return SIDE_LENGTH_METERS;
     }
 
