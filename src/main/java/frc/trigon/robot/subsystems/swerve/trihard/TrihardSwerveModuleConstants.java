@@ -62,10 +62,10 @@ public class TrihardSwerveModuleConstants {
             REAR_LEFT_ENCODER_CHANNEL = REAR_LEFT_ID + ENCODER_CHANNEL_OFFSET,
             REAR_RIGHT_ENCODER_CHANNEL = REAR_RIGHT_ID + ENCODER_CHANNEL_OFFSET;
     private static final double
-            FRONT_LEFT_ENCODER_OFFSET = 0.869906,
-            FRONT_RIGHT_ENCODER_OFFSET = 0.819552,
-            REAR_LEFT_ENCODER_OFFSET = 0.415410,
-            REAR_RIGHT_ENCODER_OFFSET = 0.918484;
+            FRONT_LEFT_ENCODER_OFFSET = 0.867176,
+            FRONT_RIGHT_ENCODER_OFFSET = 0.329025 + 0.5,
+            REAR_LEFT_ENCODER_OFFSET = 0.408762,
+            REAR_RIGHT_ENCODER_OFFSET = 0.424818 + 0.5;
     private static final DutyCycleEncoder
             FRONT_LEFT_ENCODER = new DutyCycleEncoder(FRONT_LEFT_ENCODER_CHANNEL),
             FRONT_RIGHT_ENCODER = new DutyCycleEncoder(FRONT_RIGHT_ENCODER_CHANNEL),

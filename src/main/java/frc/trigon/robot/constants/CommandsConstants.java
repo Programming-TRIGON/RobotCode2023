@@ -140,7 +140,10 @@ public class CommandsConstants {
             ).deadlineWith(Commands.fakeStaticColor(Color.kLightPink)).ignoringDisable(true);
 
     private static void preloadCurrentAuto() {
-        final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.getSelected(), AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
+        final String selected = RobotContainer.AUTONOMOUS_PATH_NAME_CHOOSER.getSelected();
+        if (selected == null)
+            return;
+        final List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(selected, AutonomousConstants.AUTONOMOUS_PATH_CONSTRAINS);
         final Pose2d initialPose = pathGroup.get(0).getInitialHolonomicPose();
         final Pose2d initialAlliancePose = new Pose2d(
                 initialPose.getX(),
@@ -196,6 +199,7 @@ public class CommandsConstants {
     }
 
     private static double calculateShiftModeValue() {
+//        final double squaredShiftModeValue = Math.pow(1, 2);
         final double squaredShiftModeValue = Math.pow(DRIVER_CONTROLLER.getRightTriggerAxis(), 2);
 
         return 1 - squaredShiftModeValue * OperatorConstants.MINIMUM_SHIFT_VALUE_COEFFICIENT;

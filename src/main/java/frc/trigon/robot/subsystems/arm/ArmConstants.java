@@ -2,18 +2,26 @@ package frc.trigon.robot.subsystems.arm;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.SensorCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.CANCoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.trigon.robot.utilities.Conversions;
 import frc.trigon.robot.utilities.CurrentWatcher;
 
 public class ArmConstants {
+    private static final double FIRST_JOINT_CLOSED = -79, SECOND_JOINT_CLOSED = 156;
     static final double MINIMUM_END_EFFECTOR_HEIGHT = 20;
 
     static final double
@@ -23,6 +31,30 @@ public class ArmConstants {
     static final Transform2d
             FIRST_JOINT_TO_SECOND_JOINT = new Transform2d(new Translation2d(FIRST_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0)),
             SECOND_JOINT_TO_END_EFFECTOR = new Transform2d(new Translation2d(SECOND_JOINT_LENGTH, 0), Rotation2d.fromDegrees(0));
+
+    static final Mechanism2d ARM_MECHANISM = new Mechanism2d(
+            (FIRST_JOINT_LENGTH + SECOND_JOINT_LENGTH) * 2 / 100,
+            (FIRST_JOINT_LENGTH + SECOND_JOINT_LENGTH) * 2 / 100
+    );
+    private static final MechanismRoot2d ARM_PIVOT_ROOT = ARM_MECHANISM.getRoot(
+            "ArmPivot",
+            (FIRST_JOINT_LENGTH + SECOND_JOINT_LENGTH) / 100,
+            FIRST_JOINT_HEIGHT / 100
+    );
+
+    static final MechanismLigament2d
+            TARGET_FIRST_JOINT_LIGAMENT = ARM_PIVOT_ROOT.append(
+            new MechanismLigament2d("TargetFirstJoint", FIRST_JOINT_LENGTH /100, FIRST_JOINT_CLOSED, 10, new Color8Bit(Color.kGray))
+    ),
+            TARGET_SECOND_JOINT_LIGAMENT = TARGET_FIRST_JOINT_LIGAMENT.append(
+                    new MechanismLigament2d("TargetSecondJoint", SECOND_JOINT_LENGTH / 100, SECOND_JOINT_CLOSED, 8, new Color8Bit(Color.kGray))
+            ),
+            FIRST_JOINT_LIGAMENT = ARM_PIVOT_ROOT.append(
+                    new MechanismLigament2d("FirstJoint", FIRST_JOINT_LENGTH /100, FIRST_JOINT_CLOSED, 10, new Color8Bit(Color.kRed))
+            ),
+            SECOND_JOINT_LIGAMENT = FIRST_JOINT_LIGAMENT.append(
+                    new MechanismLigament2d("SecondJoint", SECOND_JOINT_LENGTH / 100, SECOND_JOINT_CLOSED, 8, new Color8Bit(Color.kBlue))
+            );
 
     static final double RETRACTED_DEGREES = 130;
     private static final int
@@ -135,10 +167,9 @@ public class ArmConstants {
             );
 
     private static final double
-            FIRST_JOINT_ENCODER_OFFSET = 128.759766,
+            FIRST_JOINT_ENCODER_OFFSET = 219.550781 - 90 - 5,
             SECOND_JOINT_ENCODER_OFFSET = -1250;
 
-    private static final double FIRST_JOINT_CLOSED = -79, SECOND_JOINT_CLOSED = 156;
 
     static {
         FIRST_JOINT_MASTER_MOTOR.configFactoryDefault();
@@ -158,8 +189,9 @@ public class ArmConstants {
         SECOND_JOINT_ENCODER.setInverted(SECOND_JOINT_SENSOR_PHASE);
 
 
-        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-        SECOND_JOINT_ENCODER.setSelectedSensorPosition(Conversions.offsetRead(SECOND_JOINT_ENCODER.getSensorCollection().getPulseWidthPosition(), Conversions.degreesToMagTicks(133.287109)));
+        SECOND_JOINT_ENCODER.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 1000);
+        final SensorCollection sensorCollection = SECOND_JOINT_ENCODER.getSensorCollection();
+        sensorCollection.setPulseWidthPosition((int) MathUtil.inputModulus(Conversions.offsetRead(sensorCollection.getPulseWidthPosition(), Conversions.degreesToMagTicks(-42.802734 - 5)), -Conversions.MAG_TICKS / 2, Conversions.MAG_TICKS / 2), 0);
 
         SECOND_JOINT_ENCODER.configClosedloopRamp(1);
         SECOND_JOINT_ENCODER.configOpenloopRamp(1);

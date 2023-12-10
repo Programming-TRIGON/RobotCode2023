@@ -13,6 +13,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -27,8 +28,7 @@ public class Arm extends LoggableSubsystemBase {
             secondJointMotor = ArmConstants.SECOND_JOINT_MOTOR;
     private TrapezoidProfile firstJointMotorProfile, secondJointMotorProfile;
     private double lastFirstJointProfileGenerationTimestamp, lastSecondJointProfileGenerationTimestamp;
-    @Log
-    private double secondJointSetpoint;
+    private double firstJointSetpoint, secondJointSetpoint;
     @Log
     private boolean firstMotorAtGoal, secondMotorAtGoal, firstMotorVelocityAtGoal, secondMotorVelocityAtGoal;
     private double lastFirstJointSpeedFactor, lastSecondJointSpeedFactor;
@@ -45,6 +45,13 @@ public class Arm extends LoggableSubsystemBase {
     @Override
     public void periodic() {
         setTargetMotorPositions();
+
+        ArmConstants.TARGET_FIRST_JOINT_LIGAMENT.setAngle(firstJointSetpoint);
+        ArmConstants.TARGET_SECOND_JOINT_LIGAMENT.setAngle(secondJointSetpoint);
+        ArmConstants.FIRST_JOINT_LIGAMENT.setAngle(getFirstJointMotorAngle().getDegrees());
+        ArmConstants.SECOND_JOINT_LIGAMENT.setAngle(getSecondJointMotorAngle().getDegrees());
+
+        SmartDashboard.putData("ArmMechanism", ArmConstants.ARM_MECHANISM);
     }
 
     /**
@@ -203,6 +210,7 @@ public class Arm extends LoggableSubsystemBase {
         final double targetMagPosition = Conversions.degreesToMagTicks(targetState.position);
 
         setTargetMotorPositionWithFeedforward(firstJointMotor, targetMagPosition, feedforward);
+        firstJointSetpoint = targetState.position;
     }
 
     private void setSecondJointPositionFromProfile() {
@@ -317,12 +325,12 @@ public class Arm extends LoggableSubsystemBase {
         return feedforward.calculate(Units.degreesToRadians(position), Units.degreesToRadians(velocity));
     }
 
-    @Log(name = "First Motor Position")
+    @Log(name = "First Motor Position", methodName = "getDegrees")
     private Rotation2d getFirstJointMotorAngle() {
         return Rotation2d.fromDegrees(Conversions.magTicksToDegrees(firstJointMotor.getSelectedSensorPosition()));
     }
 
-    @Log(name = "Second Motor Position")
+    @Log(name = "Second Motor Position", methodName = "getDegrees")
     private Rotation2d getSecondJointMotorAngle() {
         return Rotation2d.fromDegrees(Conversions.magTicksToDegrees(secondJointMotor.getSelectedSensorPosition()));
     }

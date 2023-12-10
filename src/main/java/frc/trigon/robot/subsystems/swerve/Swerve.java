@@ -11,6 +11,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.trigon.robot.subsystems.LoggableSubsystemBase;
 import frc.trigon.robot.utilities.AllianceUtilities;
 import io.github.oblarg.oblog.annotations.Log;
@@ -129,7 +130,7 @@ public abstract class Swerve extends LoggableSubsystemBase {
     /**
      * @return the acceleration of the gyro in the y-axis
      */
-    @Log(name="yAccel")
+    @Log(name = "yAccel")
     public short getGyroYAcceleration() {
         return getGyroAccelerometer()[1];
     }
@@ -184,6 +185,11 @@ public abstract class Swerve extends LoggableSubsystemBase {
                 rotation.getRadians()
         );
         selfRelativeDrive(chassisSpeeds);
+    }
+
+    @Override
+    public void periodic() {
+        putSwerveModuleStatesOnDashboard("currentStates", getCurrentStates());
     }
 
     /**
@@ -253,6 +259,16 @@ public abstract class Swerve extends LoggableSubsystemBase {
     protected void setTargetModuleStates(SwerveModuleState[] swerveModuleStates) {
         for (int i = 0; i < getModules().length; i++)
             getModules()[i].setTargetState(swerveModuleStates[i]);
+        putSwerveModuleStatesOnDashboard("targetStates",swerveModuleStates);
+    }
+
+    private void putSwerveModuleStatesOnDashboard(String key, SwerveModuleState[] swerveModuleStates) {
+        double[] data = new double[swerveModuleStates.length * 2];
+        for (int i = 0; i < swerveModuleStates.length; i++) {
+            data[i * 2] = swerveModuleStates[i].angle.getRadians();
+            data[i * 2 + 1] = swerveModuleStates[i].speedMetersPerSecond;
+        }
+        SmartDashboard.putNumberArray(key, data);
     }
 
     private short[] getGyroAccelerometer() {
@@ -293,5 +309,15 @@ public abstract class Swerve extends LoggableSubsystemBase {
                 Math.abs(chassisSpeeds.vxMetersPerSecond) <= getDriveNeutralDeadband() &&
                         Math.abs(chassisSpeeds.vyMetersPerSecond) <= getDriveNeutralDeadband() &&
                         Math.abs(chassisSpeeds.omegaRadiansPerSecond) <= getRotationNeutralDeadband();
+    }
+
+    private SwerveModuleState[] getCurrentStates() {
+        final SwerveModule[] modules = getModules();
+        final SwerveModuleState[] states = new SwerveModuleState[modules.length];
+
+        for (int i = 0; i < modules.length; i++)
+            states[i] = modules[i].getCurrentState();
+
+        return states;
     }
 }
