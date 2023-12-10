@@ -10,24 +10,28 @@ import org.littletonrobotics.junction.Logger;
  */
 public class RobotPoseSource extends SubsystemBase {
     protected final String name;
-    private final RobotPoseSourceInputsAutoLogged robotPoseSourceInputs = new RobotPoseSourceInputsAutoLogged();
-    private final Transform3d cameraToRobotCenter;
-    private RobotPoseSourceIO robotPoseSourceIO;
+    protected final RobotPoseSourceInputsAutoLogged robotPoseSourceInputs = new RobotPoseSourceInputsAutoLogged();
+    private final RobotPoseSourceIO robotPoseSourceIO;
     private double lastUpdatedTimestamp;
-    private Pose2d lastRobotPose = new Pose2d();
+    protected Pose2d lastRobotPose = new Pose2d();
+    private Transform3d cameraToRobotCenter;
 
     public RobotPoseSource(PoseSourceConstants.RobotPoseSourceType robotPoseSourceType, String name, Transform3d cameraToRobotCenter) {
         this.cameraToRobotCenter = cameraToRobotCenter;
         this.name = name;
         robotPoseSourceIO = generateIO(robotPoseSourceType);
+
+        if (robotPoseSourceType == PoseSourceConstants.RobotPoseSourceType.PHOTON_CAMERA)
+            this.cameraToRobotCenter = new Transform3d();
     }
 
-    protected RobotPoseSource(RobotPoseSourceIO robotPoseSourceIO, String name, Transform3d cameraToRobotCenter) {
-        this.cameraToRobotCenter = cameraToRobotCenter;
-        this.name = name;
-        this.robotPoseSourceIO = robotPoseSourceIO;
-    }
-
+    /**
+     * Converts a 3d pose to a double array with the pose's values.
+     * The array is in the following order: {x, y, z, rotationX, rotationY, rotationZ}.
+     *
+     * @param pose the pose to convert
+     * @return the converted pose
+     */
     public static double[] pose3dToDoubleArray(Pose3d pose) {
         if (pose == null)
             return null;
@@ -67,14 +71,6 @@ public class RobotPoseSource extends SubsystemBase {
         return lastRobotPose;
     }
 
-    private boolean isNewTimestamp() {
-        if (lastUpdatedTimestamp == getLastResultTimestamp())
-            return false;
-
-        lastUpdatedTimestamp = getLastResultTimestamp();
-        return true;
-    }
-
     /**
      * @return the last result's timestamp
      */
@@ -89,11 +85,7 @@ public class RobotPoseSource extends SubsystemBase {
         return name;
     }
 
-    protected void setRobotPoseSourceIO(RobotPoseSourceIO robotPoseSourceIO) {
-        this.robotPoseSourceIO = robotPoseSourceIO;
-    }
-
-    private Pose3d doubleArrayToPose3d(double[] doubleArray) {
+    protected Pose3d doubleArrayToPose3d(double[] doubleArray) {
         if (doubleArray == null)
             return null;
 
@@ -101,6 +93,14 @@ public class RobotPoseSource extends SubsystemBase {
                 new Translation3d(doubleArray[0], doubleArray[1], doubleArray[2]),
                 new Rotation3d(doubleArray[3], doubleArray[4], doubleArray[5])
         );
+    }
+
+    private boolean isNewTimestamp() {
+        if (lastUpdatedTimestamp == getLastResultTimestamp())
+            return false;
+
+        lastUpdatedTimestamp = getLastResultTimestamp();
+        return true;
     }
 
     private RobotPoseSourceIO generateIO(PoseSourceConstants.RobotPoseSourceType robotPoseSourceType) {
@@ -112,6 +112,8 @@ public class RobotPoseSource extends SubsystemBase {
                 return new AprilTagLimelight(name);
             case PHOTON_CAMERA:
                 return new AprilTagPhotonCamera(name, cameraToRobotCenter);
+            case T265:
+                return new T265(name);
             default:
                 return new RobotPoseSourceIO();
         }

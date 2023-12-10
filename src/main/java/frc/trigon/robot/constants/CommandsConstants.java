@@ -70,8 +70,7 @@ public class CommandsConstants {
                     () -> 0
             ),
             RESET_HEADING_COMMAND = new InstantCommand(
-//                    () -> POSE_ESTIMATOR.resetPose(setRotation(POSE_ESTIMATOR.getCurrentPose(), new Rotation2d()))
-                    () -> POSE_ESTIMATOR.resetPose(new Pose2d(5, 5, new Rotation2d()))
+                    () -> POSE_ESTIMATOR.resetPose(CameraConstants.T265.getRobotPose())
             ),
             TOGGLE_FIELD_AND_SELF_DRIVEN_COMMAND = new InstantCommand(
                     CommandsConstants::toggleFieldAndSelfDrivenAngle

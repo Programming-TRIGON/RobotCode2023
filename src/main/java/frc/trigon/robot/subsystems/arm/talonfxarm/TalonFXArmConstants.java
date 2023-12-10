@@ -1,15 +1,17 @@
 package frc.trigon.robot.subsystems.arm.talonfxarm;
 
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
-import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TalonFXArmConstants {
@@ -20,9 +22,8 @@ public class TalonFXArmConstants {
             FIRST_JOINT_FOLLOWER_MOTOR_ID = 10,
             SECOND_JOINT_MOTOR_ID = 11;
 
-    static final TalonFX
-            FIRST_JOINT_MASTER_MOTOR = new TalonFX(FIRST_JOINT_MASTER_MOTOR_ID),
-            SECOND_JOINT_MOTOR = new TalonFX(SECOND_JOINT_MOTOR_ID);
+    static final TalonFX FIRST_JOINT_MASTER_MOTOR = new TalonFX(FIRST_JOINT_MASTER_MOTOR_ID);
+    static final WPI_TalonFX SECOND_JOINT_MOTOR = new WPI_TalonFX(SECOND_JOINT_MOTOR_ID);
     private static final TalonFX FIRST_JOINT_FOLLOWER_MOTOR = new TalonFX(FIRST_JOINT_FOLLOWER_MOTOR_ID);
     private static final CANcoder
             FIRST_JOINT_ENCODER = new CANcoder(FIRST_JOINT_MASTER_MOTOR_ID);
@@ -37,12 +38,12 @@ public class TalonFXArmConstants {
 
     private static final InvertedValue
             FIRST_JOINT_MASTER_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive,
-            FIRST_JOINT_FOLLOWER_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive,
-            SECOND_JOINT_MOTOR_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive;
+            FIRST_JOINT_FOLLOWER_INVERTED_VALUE = InvertedValue.CounterClockwise_Positive;
+    private static final boolean SECOND_JOINT_MOTOR_INVERTED = false;
     private static final SensorDirectionValue FIRST_JOINT_SENSOR_DIRECTION_VALUE = SensorDirectionValue.CounterClockwise_Positive;
     static final NeutralModeValue
-            FIRST_JOINT_NEUTRAL_MODE = NeutralModeValue.Brake,
-            SECOND_JOINT_NEUTRAL_MODE = NeutralModeValue.Brake;
+            FIRST_JOINT_NEUTRAL_MODE = NeutralModeValue.Brake;
+    static final NeutralMode SECOND_JOINT_NEUTRAL_MODE = NeutralMode.Brake;
 
     private static final boolean SECOND_JOINT_SENSOR_PHASE = false;
 
@@ -82,14 +83,14 @@ public class TalonFXArmConstants {
             FIRST_JOINT_D = 0;
 
     private static final double
-            SECOND_JOINT_P = 0.4,
-            SECOND_JOINT_I = 0.4 * 0.0006666666667,
+            SECOND_JOINT_P = 1.5,
+            SECOND_JOINT_I = 0.001,
             SECOND_JOINT_D = 0,
-            SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.5  * 12;
+            SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT = 0.5;
 
     private static final double
-            FIRST_JOINT_ENCODER_OFFSET = Conversions.degreesToRevolutions(126.123047), // 0.3576660166015625
-            SECOND_JOINT_ENCODER_OFFSET = Conversions.degreesToMagTicks(-47.812500); // -536
+            FIRST_JOINT_ENCODER_OFFSET = Conversions.degreesToRevolutions(231.679688 - 360 - 90 - 12.744141), // 0.3576660166015625
+            SECOND_JOINT_ENCODER_OFFSET = Conversions.degreesToMagTicks(-45.175781); // -536
 
     static {
         configureEncoders();
@@ -103,8 +104,8 @@ public class TalonFXArmConstants {
         final CANcoderConfiguration firstJointEncoderConfig = new CANcoderConfiguration();
 
         firstJointEncoderConfig.MagnetSensor.SensorDirection = FIRST_JOINT_SENSOR_DIRECTION_VALUE;
-        firstJointEncoderConfig.MagnetSensor.MagnetOffset = FIRST_JOINT_ENCODER_OFFSET;
         firstJointEncoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+        firstJointEncoderConfig.MagnetSensor.MagnetOffset = FIRST_JOINT_ENCODER_OFFSET;
         FIRST_JOINT_ENCODER.getConfigurator().apply(firstJointEncoderConfig);
 
         SECOND_JOINT_ENCODER.configFactoryDefault();
@@ -125,26 +126,40 @@ public class TalonFXArmConstants {
     }
 
     private static void configureSecondJointMotor() {
-        final TalonFXConfiguration secondJointMotorConfig = new TalonFXConfiguration();
+        SECOND_JOINT_MOTOR.configFactoryDefault();
 
-        secondJointMotorConfig.Slot0.kP = SECOND_JOINT_P;
-        secondJointMotorConfig.Slot0.kI = SECOND_JOINT_I;
-        secondJointMotorConfig.Slot0.kD = SECOND_JOINT_D;
+        SECOND_JOINT_MOTOR.setInverted(SECOND_JOINT_MOTOR_INVERTED);
+        SECOND_JOINT_MOTOR.configRemoteFeedbackFilter(SECOND_JOINT_ENCODER, 0);
+        SECOND_JOINT_MOTOR.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
 
-        secondJointMotorConfig.MotorOutput.Inverted = SECOND_JOINT_MOTOR_INVERTED_VALUE;
-        secondJointMotorConfig.MotorOutput.NeutralMode = SECOND_JOINT_NEUTRAL_MODE;
-        // TODO: check this (voltage)
-        secondJointMotorConfig.MotorOutput.DutyCycleNeutralDeadband = SECOND_JOINT_NEUTRAL_DEADBAND;
-        secondJointMotorConfig.Voltage.PeakForwardVoltage = SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
-        secondJointMotorConfig.Voltage.PeakReverseVoltage = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
-        // TODO: do this for every motor
-        secondJointMotorConfig.Audio.BeepOnBoot = false;
+        SECOND_JOINT_MOTOR.config_kP(0, SECOND_JOINT_P);
+        SECOND_JOINT_MOTOR.config_kI(0, SECOND_JOINT_I);
+        SECOND_JOINT_MOTOR.config_kD(0, SECOND_JOINT_D);
+        SECOND_JOINT_MOTOR.configClosedLoopPeakOutput(0, SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT);
 
-        SECOND_JOINT_MOTOR.getConfigurator().apply(secondJointMotorConfig);
+        SECOND_JOINT_MOTOR.setNeutralMode(SECOND_JOINT_NEUTRAL_MODE);
+        SECOND_JOINT_MOTOR.configNeutralDeadband(SECOND_JOINT_NEUTRAL_DEADBAND);
 
-        final double absoluteMotorMagTicks = Conversions.systemToMotor(SECOND_JOINT_ENCODER.getSelectedSensorPosition(), ArmConstants.SECOND_JOINT_GEAR_RATIO);
-        final double absoluteMotorRevolutions = Conversions.magTicksToRevolutions(absoluteMotorMagTicks);
-        SECOND_JOINT_MOTOR.setRotorPosition(absoluteMotorRevolutions);
+//        final TalonFXConfiguration secondJointMotorConfig = new TalonFXConfiguration();
+//
+//        secondJointMotorConfig.Slot0.kP = SECOND_JOINT_P;
+//        secondJointMotorConfig.Slot0.kI = SECOND_JOINT_I;
+//        secondJointMotorConfig.Slot0.kD = SECOND_JOINT_D;
+//
+//        secondJointMotorConfig.MotorOutput.Inverted = SECOND_JOINT_MOTOR_INVERTED_VALUE;
+//        secondJointMotorConfig.MotorOutput.NeutralMode = SECOND_JOINT_NEUTRAL_MODE;
+//        // TODO: check this (voltage)
+//        secondJointMotorConfig.MotorOutput.DutyCycleNeutralDeadband = SECOND_JOINT_NEUTRAL_DEADBAND;
+//        secondJointMotorConfig.Voltage.PeakForwardVoltage = SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
+//        secondJointMotorConfig.Voltage.PeakReverseVoltage = -SECOND_JOINT_PEAK_CLOSED_LOOP_OUTPUT;
+//        // TODO: do this for every motor
+//        secondJointMotorConfig.Audio.BeepOnBoot = false;
+//
+//        SECOND_JOINT_MOTOR.getConfigurator().apply(secondJointMotorConfig);
+//
+//        final double absoluteMotorMagTicks = Conversions.systemToMotor(SECOND_JOINT_ENCODER.getSelectedSensorPosition(), ArmConstants.SECOND_JOINT_GEAR_RATIO);
+//        final double absoluteMotorRevolutions = Conversions.magTicksToRevolutions(absoluteMotorMagTicks);
+//        SECOND_JOINT_MOTOR.setRotorPosition(absoluteMotorRevolutions);
     }
 
     private static void configureFirstJointFollowerMotor() {
@@ -154,7 +169,7 @@ public class TalonFXArmConstants {
         firstJointFollowerMotorConfig.Audio.BeepOnBoot = false;
 
         FIRST_JOINT_FOLLOWER_MOTOR.getConfigurator().apply(firstJointFollowerMotorConfig);
-//        FIRST_JOINT_FOLLOWER_MOTOR.setControl(new StrictFollower(FIRST_JOINT_MASTER_MOTOR.getDeviceID()));
+        FIRST_JOINT_FOLLOWER_MOTOR.setControl(new Follower(FIRST_JOINT_MASTER_MOTOR.getDeviceID(), false));
     }
 
     private static void configureFirstJointMasterMotor() {

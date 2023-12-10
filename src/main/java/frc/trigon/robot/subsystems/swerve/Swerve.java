@@ -210,6 +210,8 @@ public class Swerve extends SubsystemBase {
         Logger.getInstance().recordOutput("Swerve/Velocity/rot", getCurrentVelocity().omegaRadiansPerSecond);
         Logger.getInstance().recordOutput("Swerve/Velocity/x", getCurrentVelocity().vxMetersPerSecond);
         Logger.getInstance().recordOutput("Swerve/Velocity/y", getCurrentVelocity().vyMetersPerSecond);
+        Logger.getInstance().recordOutput("Swerve/moduleStates", getModuleStates());
+        Logger.getInstance().recordOutput("Swerve/targetStates", getTargetModuleStates());
     }
 
     private void selfRelativeDrive(ChassisSpeeds chassisSpeeds) {
@@ -227,6 +229,15 @@ public class Swerve extends SubsystemBase {
 
         for (int i = 0; i < modulesIO.length; i++)
             states[i] = modulesIO[i].getCurrentState();
+
+        return states;
+    }
+
+    private SwerveModuleState[] getTargetModuleStates() {
+        final SwerveModuleState[] states = new SwerveModuleState[modulesIO.length];
+
+        for (int i = 0; i < modulesIO.length; i++)
+            states[i] = modulesIO[i].getTargetState();
 
         return states;
     }

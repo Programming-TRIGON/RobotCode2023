@@ -13,7 +13,7 @@ public class SimulationSwerveModuleConstants {
             DRIVE_GEAR_RATIO = 8.14,
             STEER_GEAR_RATIO = 12.8;
     static final double WHEEL_DIAMETER_METERS = 0.1016;
-    static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 4;
+    static final double MAX_THEORETICAL_SPEED_METERS_PER_SECOND = 3;
 
     static final int
             FRONT_LEFT_ID = 0,
@@ -28,7 +28,7 @@ public class SimulationSwerveModuleConstants {
             REAR_LEFT_DRIVE_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), DRIVE_GEAR_RATIO, DRIVE_MOMENT_OF_INERTIA),
             REAR_RIGHT_DRIVE_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), DRIVE_GEAR_RATIO, DRIVE_MOMENT_OF_INERTIA);
 
-    static final PIDController STEER_MOTOR_PID_CONTROLLER = new PIDController(0.025, 0, 0);
+    static final PIDController STEER_MOTOR_PID_CONTROLLER = new PIDController(0.2, 0, 0);
     private static final double STEER_MOMENT_OF_INERTIA = 0.03;
     private static final DCMotorSim
             FRONT_LEFT_STEER_MOTOR = new DCMotorSim(DCMotor.getFalcon500(1), STEER_GEAR_RATIO, STEER_MOMENT_OF_INERTIA),

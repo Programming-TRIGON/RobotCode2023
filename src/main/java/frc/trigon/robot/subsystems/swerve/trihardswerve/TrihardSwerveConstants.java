@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -24,6 +25,10 @@ public class TrihardSwerveConstants extends SwerveConstants {
     static final double
             SIDE_LENGTH_METERS = 0.7,
             DISTANCE_FROM_CENTER_OF_BASE = SIDE_LENGTH_METERS / 2;
+    private static final double RATE_LIMIT = 5.5;
+    static final SlewRateLimiter
+            X_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT),
+            Y_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT);
     private static final Translation2d[] LOCATIONS = {
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(0).location,
             TrihardSwerveModuleConstants.TrihardSwerveModules.fromId(1).location,
@@ -39,7 +44,7 @@ public class TrihardSwerveConstants extends SwerveConstants {
     private static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(LOCATIONS);
     private static final PIDConstants
             TRANSLATION_PID_CONSTANTS = new PIDConstants(3, 0, 0),
-            ROTATION_PID_CONSTANTS = new PIDConstants(3, 22, 0),
+            ROTATION_PID_CONSTANTS = new PIDConstants(5, 0, 0),
             AUTO_ROTATION_PID_CONSTANTS = new PIDConstants(3, 0.0008, 0.5);
     private static final int PIGEON_ID = 0;
     static final Pigeon2 GYRO = new Pigeon2(PIGEON_ID);
@@ -161,6 +166,16 @@ public class TrihardSwerveConstants extends SwerveConstants {
     @Override
     protected double getRotationVelocityTolerance() {
         return ROTATION_VELOCITY_TOLERANCE;
+    }
+
+    @Override
+    protected SlewRateLimiter getXSlewRateLimiter() {
+        return X_SLEW_RATE_LIMITER;
+    }
+
+    @Override
+    protected SlewRateLimiter getYSlewRateLimiter() {
+        return Y_SLEW_RATE_LIMITER;
     }
 
     @Override

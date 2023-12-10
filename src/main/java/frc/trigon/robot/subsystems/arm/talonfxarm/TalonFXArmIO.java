@@ -1,11 +1,12 @@
 package frc.trigon.robot.subsystems.arm.talonfxarm;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
-import frc.trigon.robot.subsystems.arm.ArmConstants;
 import frc.trigon.robot.subsystems.arm.ArmIO;
 import frc.trigon.robot.subsystems.arm.ArmInputsAutoLogged;
 import frc.trigon.robot.utilities.Conversions;
@@ -13,9 +14,8 @@ import frc.trigon.robot.utilities.CurrentWatcher;
 import org.littletonrobotics.junction.Logger;
 
 public class TalonFXArmIO extends ArmIO {
-    private final TalonFX
-            firstJointMotor = TalonFXArmConstants.FIRST_JOINT_MASTER_MOTOR,
-            secondJointMotor = TalonFXArmConstants.SECOND_JOINT_MOTOR;
+    private final TalonFX firstJointMotor = TalonFXArmConstants.FIRST_JOINT_MASTER_MOTOR;
+    private final WPI_TalonFX secondJointMotor = TalonFXArmConstants.SECOND_JOINT_MOTOR;
     private ArmInputsAutoLogged lastInputs = new ArmInputsAutoLogged();
 
     @Override
@@ -31,12 +31,11 @@ public class TalonFXArmIO extends ArmIO {
                 "Arm/secondJointEncoderDegrees",
                 Conversions.magTicksToDegrees(TalonFXArmConstants.SECOND_JOINT_ENCODER.getSelectedSensorPosition())
         );
-        inputs.secondJointPositionDegrees = secondJointValueToSystemDegrees(secondJointMotor.getPosition().getValue());
-        inputs.secondJointVelocityDegreesPerSecond = secondJointValueToSystemDegrees(secondJointMotor.getVelocity().getValue());
-        inputs.secondJointStatorCurrent = secondJointMotor.getStatorCurrent().getValue();
-        inputs.secondJointSupplyCurrent = secondJointMotor.getSupplyCurrent().getValue();
-        inputs.secondJointAppliedVoltage = secondJointMotor.getSupplyVoltage().getValue();
-        inputs.secondJointClosedLoopOutput = secondJointMotor.getClosedLoopOutput().getValue();
+        inputs.secondJointPositionDegrees = Conversions.magTicksToDegrees(secondJointMotor.getSelectedSensorPosition());
+        inputs.secondJointVelocityDegreesPerSecond = getSecondJointVelocityDegreesPerSecond();
+        inputs.secondJointStatorCurrent = secondJointMotor.getStatorCurrent();
+        inputs.secondJointSupplyCurrent = secondJointMotor.getSupplyCurrent();
+        inputs.secondJointAppliedVoltage = secondJointMotor.getMotorOutputVoltage();
 
         lastInputs = inputs;
     }
@@ -63,38 +62,39 @@ public class TalonFXArmIO extends ArmIO {
     @Override
     public void setTargetSecondJointPosition(double position, double velocity) {
         final double feedforward = TalonFXArmConstants.SECOND_JOINT_FEEDFORWARD.calculate(
-                Units.degreesToRadians(position + lastInputs.secondJointPositionDegrees),
+                Units.degreesToRadians(position),
                 Units.degreesToRadians(velocity)
         );
 
         Logger.getInstance().recordOutput("Arm/secondff", feedforward);
-        position = Conversions.systemToMotor(position, ArmConstants.SECOND_JOINT_GEAR_RATIO);
+//        position = Conversions.systemToMotor(position, ArmConstants.SECOND_JOINT_GEAR_RATIO);
+//
+//        final PositionVoltage positionVoltage = new PositionVoltage(
+//                Conversions.degreesToRevolutions(position),
+//                TalonFXArmConstants.USE_FOC,
+//                feedforward,
+//                0,
+//                false
+//        );
 
-        final PositionVoltage positionVoltage = new PositionVoltage(
-                Conversions.degreesToRevolutions(position),
-                TalonFXArmConstants.USE_FOC,
-                feedforward,
-                0,
-                false
-        );
-
-        secondJointMotor.setControl(positionVoltage);
+//        secondJointMotor.set(ControlMode.Position, Conversions.degreesToMagTicks(position), DemandType.ArbitraryFeedForward, feedforward);
     }
 
     @Override
     public void setNeutralMode(boolean brake) {
         final NeutralModeValue mode = brake ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-        final MotorOutputConfigs
-                firstMotorConfig = new MotorOutputConfigs(),
-                secondMotorConfig = new MotorOutputConfigs();
+        final NeutralMode neutralMode = brake ? NeutralMode.Brake : NeutralMode.Coast;
+        final MotorOutputConfigs motorConfig = new MotorOutputConfigs();
 
-        firstJointMotor.getConfigurator().refresh(firstMotorConfig);
-        firstMotorConfig.NeutralMode = mode;
-        firstJointMotor.getConfigurator().apply(firstMotorConfig);
+        firstJointMotor.getConfigurator().refresh(motorConfig);
+        motorConfig.NeutralMode = mode;
+        firstJointMotor.getConfigurator().apply(motorConfig);
 
-        secondJointMotor.getConfigurator().refresh(secondMotorConfig);
-        secondMotorConfig.NeutralMode = mode;
-        secondJointMotor.getConfigurator().apply(secondMotorConfig);
+        secondJointMotor.setNeutralMode(neutralMode);
+
+//        secondJointMotor.getConfigurator().refresh(secondMotorConfig);
+//        secondMotorConfig.NeutralMode = mode;
+//        secondJointMotor.getConfigurator().apply(secondMotorConfig);
     }
 
     @Override
@@ -124,9 +124,9 @@ public class TalonFXArmIO extends ArmIO {
         secondJointMotor.stopMotor();
     }
 
-    private double secondJointValueToSystemDegrees(double value) {
-        final double systemRevolutions = Conversions.motorToSystem(value, ArmConstants.SECOND_JOINT_GEAR_RATIO);
-
-        return Conversions.revolutionsToDegrees(systemRevolutions);
+    private double getSecondJointVelocityDegreesPerSecond() {
+        final double velocityMagTicksPer100MS = secondJointMotor.getSelectedSensorVelocity();
+        final double velocityDegreesPer100MS = Conversions.magTicksToDegrees(velocityMagTicksPer100MS);
+        return Conversions.perHundredMsToPerSecond(velocityDegreesPer100MS);
     }
 }

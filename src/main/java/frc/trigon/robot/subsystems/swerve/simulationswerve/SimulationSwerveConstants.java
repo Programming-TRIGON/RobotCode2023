@@ -2,6 +2,7 @@ package frc.trigon.robot.subsystems.swerve.simulationswerve;
 
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -9,6 +10,10 @@ import frc.trigon.robot.subsystems.swerve.SwerveConstants;
 import frc.trigon.robot.subsystems.swerve.SwerveModuleIO;
 
 public class SimulationSwerveConstants extends SwerveConstants {
+    private static final double RATE_LIMIT = 5.5;
+    static final SlewRateLimiter
+            X_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT),
+            Y_SLEW_RATE_LIMITER = new SlewRateLimiter(RATE_LIMIT);
     private static final double BRAKE_TIME_SECONDS = 4;
     private static final double
             MAX_SPEED_METERS_PER_SECOND = 4.25,
@@ -140,5 +145,15 @@ public class SimulationSwerveConstants extends SwerveConstants {
     @Override
     protected Translation2d[] getModuleLocations() {
         return LOCATIONS;
+    }
+
+    @Override
+    protected SlewRateLimiter getXSlewRateLimiter() {
+        return X_SLEW_RATE_LIMITER;
+    }
+
+    @Override
+    protected SlewRateLimiter getYSlewRateLimiter() {
+        return Y_SLEW_RATE_LIMITER;
     }
 }

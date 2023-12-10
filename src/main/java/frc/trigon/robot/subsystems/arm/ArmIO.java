@@ -17,7 +17,6 @@ public class ArmIO {
         public double secondJointStatorCurrent = 0;
         public double secondJointSupplyCurrent = 0;
         public double secondJointAppliedVoltage = 0;
-        public double secondJointClosedLoopOutput = 0;
     }
 
     /**

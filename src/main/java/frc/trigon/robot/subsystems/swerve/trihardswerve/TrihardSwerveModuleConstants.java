@@ -11,6 +11,7 @@ import frc.trigon.robot.constants.ConfigurationConstants;
 import frc.trigon.robot.utilities.Conversions;
 
 public class TrihardSwerveModuleConstants {
+    static final double VOLTAGE_COMPENSATION_SATURATION = 16;
     static final double
             DRIVE_GEAR_RATIO = 8.14,
             STEER_GEAR_RATIO = 12.8;
@@ -33,7 +34,7 @@ public class TrihardSwerveModuleConstants {
             DRIVE_OPEN_LOOP_RAMP_RATE = 0.1,
             DRIVE_CLOSED_LOOP_RAMP_RATE = 0.2;
     static final SimpleMotorFeedforward DRIVE_FEEDFORWARD = new SimpleMotorFeedforward(0.21564, 2.7054, 0.38437);
-    static final boolean DRIVE_MOTOR_FOC = false;
+    static final boolean DRIVE_MOTOR_FOC = true;
     private static final TalonFX
             FRONT_LEFT_DRIVE_MOTOR = new TalonFX(FRONT_LEFT_DRIVE_MOTOR_ID),
             FRONT_RIGHT_DRIVE_MOTOR = new TalonFX(FRONT_RIGHT_DRIVE_MOTOR_ID),
@@ -64,10 +65,10 @@ public class TrihardSwerveModuleConstants {
             REAR_LEFT_ENCODER_CHANNEL = REAR_LEFT_ID + ENCODER_CHANNEL_OFFSET,
             REAR_RIGHT_ENCODER_CHANNEL = REAR_RIGHT_ID + ENCODER_CHANNEL_OFFSET;
     private static final double
-            FRONT_LEFT_ENCODER_OFFSET = Conversions.degreesToRevolutions(314.270782),
-            FRONT_RIGHT_ENCODER_OFFSET = Conversions.degreesToRevolutions(275.310516),
-            REAR_LEFT_ENCODER_OFFSET = Conversions.degreesToRevolutions(144.058228),
-            REAR_RIGHT_ENCODER_OFFSET = Conversions.degreesToRevolutions(324.707794);
+            FRONT_LEFT_ENCODER_OFFSET = Conversions.degreesToRevolutions(311.064148),
+            FRONT_RIGHT_ENCODER_OFFSET = Conversions.degreesToRevolutions(299.171448),
+            REAR_LEFT_ENCODER_OFFSET = Conversions.degreesToRevolutions(504.691315),
+            REAR_RIGHT_ENCODER_OFFSET = Conversions.degreesToRevolutions(-31.997681);
     private static final DutyCycleEncoder
             FRONT_LEFT_ENCODER = new DutyCycleEncoder(FRONT_LEFT_ENCODER_CHANNEL),
             FRONT_RIGHT_ENCODER = new DutyCycleEncoder(FRONT_RIGHT_ENCODER_CHANNEL),

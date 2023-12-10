@@ -1,10 +1,6 @@
 package frc.trigon.robot.constants;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.*;
 import frc.trigon.robot.robotposesources.PoseSourceConstants;
 import frc.trigon.robot.robotposesources.RelativeRobotPoseSource;
 import frc.trigon.robot.robotposesources.RobotPoseSource;
@@ -33,11 +29,11 @@ public class CameraConstants {
                     PoseSourceConstants.RobotPoseSourceType.PHOTON_CAMERA,
                     "limelight-forward",
                     FORWARD_LIMELIGHT_TO_ROBOT
-            ),
-            T265 = new RelativeRobotPoseSource(
-                    PoseSourceConstants.RelativeRobotPoseSourceType.T265,
+            );
+    public static final RelativeRobotPoseSource T265 = new RelativeRobotPoseSource(
+                    PoseSourceConstants.RobotPoseSourceType.T265,
                     "908412110743",
-                    new Transform3d(new Translation3d(), new Rotation3d(0, 0, Units.degreesToRadians(180)))
+                    new Transform2d(new Translation2d(-0.1, 0), Rotation2d.fromDegrees(180))
             );
 
 }

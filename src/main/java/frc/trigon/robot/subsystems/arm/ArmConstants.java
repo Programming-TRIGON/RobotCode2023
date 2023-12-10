@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class ArmConstants {
-    public static final double SECOND_JOINT_GEAR_RATIO = 156.6862745098039; // 163.6626506024096
+    public static final double SECOND_JOINT_GEAR_RATIO = 393.75; // 163.6626506024096
     static final double MINIMUM_END_EFFECTOR_HEIGHT = 20;
     public static final double
             FIRST_JOINT_HEIGHT = 101.91482,

@@ -69,7 +69,7 @@ public class Commands {
      * @return a command that places a cone at the middle note, for autonomous mode
      */
     public static SequentialCommandGroup getPlaceConeAtMidForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),
@@ -86,7 +86,7 @@ public class Commands {
      * @return a command that places a cone at the high node, for autonomous mode
      */
     public static CommandBase getPlaceCubeAtHighForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
@@ -101,7 +101,7 @@ public class Commands {
      * @return a command that places a cube at the high node
      */
     public static CommandBase getPlaceCubeAtHighCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
@@ -117,7 +117,7 @@ public class Commands {
      * @return a command that places a cube at the high node, for autonomous mode
      */ 
     public static CommandBase getPlaceCubeAtHighCommandForAuto() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HIGH).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
@@ -130,7 +130,7 @@ public class Commands {
      * @return a command that places a cube at the middle node
      */
     public static CommandBase getPlaceCubeAtMidCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE, false, 1.5, 1.5).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
@@ -144,7 +144,7 @@ public class Commands {
      * @return a command that places a cube at the middle node, for autonomous mode
      */
     public static CommandBase getPlaceCubeAtMidForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_MIDDLE).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
@@ -157,7 +157,7 @@ public class Commands {
      * @return a command that places a cube at the hybrid node
      */
     public static CommandBase getPlaceCubeAtHybridCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CUBE_HYBRID).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
@@ -170,7 +170,7 @@ public class Commands {
      * @return a command that places a cone at the hybrid node
      */
     public static CommandBase getPlaceConeAtHybridCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HYBRID).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen)),
@@ -183,7 +183,7 @@ public class Commands {
      * @return a command that places a cone at the high node, for autonomous mode
      */
     public static CommandBase getPlaceConeAtHighForAutoCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0).withTimeout(0.1).alongWith(
@@ -200,11 +200,11 @@ public class Commands {
      * @return a command that places a cone at the high node
      */
     public static CommandBase getPlaceConeAtHighCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> -0.15, () -> 0, () -> 0)).withTimeout(0.1).alongWith(
-                        ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 2, 2)
+                        ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_HIGH, true, 1, 2)
                                 .until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kDarkGreen))),
                 new ProxyCommand(SwerveCommands.getSelfRelativeOpenLoopSupplierDriveCommand(() -> 0.07, () -> 0, () -> 0)).withTimeout(0.23),
                 getWaitForContinueCommand(),
@@ -268,7 +268,7 @@ public class Commands {
      * @return a command that places a cone at the middle node
      */
     public static SequentialCommandGroup getPlaceConeAtMidCommand() {
-        AtomicReference<Double> startTime = new AtomicReference<>((double) 0);
+        AtomicReference<Double> startTime = new AtomicReference<>(0.0);
         return new SequentialCommandGroup(
                 runOnce(() -> startTime.set(Timer.getFPGATimestamp())),
                 ARM.getGoToStateCommand(ArmConstants.ArmStates.CONE_MIDDLE_1, true, 2, 1.5).until(ARM::atGoal).deadlineWith(fakeStaticColor(Color.kRed)),

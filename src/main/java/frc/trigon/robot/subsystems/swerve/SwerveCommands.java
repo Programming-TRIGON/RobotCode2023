@@ -400,7 +400,10 @@ public class SwerveCommands {
         final double xMeterPerSecond = x * SWERVE.getConstants().getMaxSpeedMetersPerSecond();
         final double yMeterPerSecond = y * SWERVE.getConstants().getMaxSpeedMetersPerSecond();
 
-        return new Translation2d(xMeterPerSecond, yMeterPerSecond);
+        return new Translation2d(
+                SWERVE.getConstants().getXSlewRateLimiter().calculate(xMeterPerSecond),
+                SWERVE.getConstants().getYSlewRateLimiter().calculate(yMeterPerSecond)
+        );
     }
 
     public static CommandBase getBalanceCommand() {

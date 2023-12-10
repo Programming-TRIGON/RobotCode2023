@@ -2,6 +2,7 @@ package frc.trigon.robot.subsystems.swerve;
 
 import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 
@@ -90,4 +91,14 @@ public abstract class SwerveConstants {
      * @return the tolerance for rotation velocity in radians per second
      */
     protected abstract double getRotationVelocityTolerance();
+
+    /**
+     * @return the slew rate limiter for the x asis
+     */
+    protected abstract SlewRateLimiter getXSlewRateLimiter();
+
+    /**
+     * @return the slew rate limiter for the y asis
+     */
+    protected abstract SlewRateLimiter getYSlewRateLimiter();
 }

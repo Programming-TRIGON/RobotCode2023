@@ -29,12 +29,9 @@ public class PoseSourceConstants {
         }
     }
 
-    public enum RelativeRobotPoseSourceType {
-        T265
-    }
-
     public enum RobotPoseSourceType {
         PHOTON_CAMERA,
-        LIMELIGHT
+        LIMELIGHT,
+        T265
     }
 }

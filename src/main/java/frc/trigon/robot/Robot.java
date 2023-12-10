@@ -35,6 +35,8 @@ public class Robot extends LoggedRobot {
         PathPlannerServer.startServer(5811);
     }
 
+//    double y, x;
+
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();

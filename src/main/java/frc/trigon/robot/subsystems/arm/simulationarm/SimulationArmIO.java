@@ -23,7 +23,7 @@ public class SimulationArmIO extends ArmIO {
         secondJointSimulation.setState(VecBuilder.fill(Units.degreesToRadians(ArmConstants.SECOND_JOINT_CLOSED), 0.0));
     }
     
-    private double firstJointPIDOutput, secondJointPIDOutput;
+    private double firstJointPIDOutput;
 
     @Override
     public void updateInputs(ArmInputsAutoLogged inputs) {
@@ -42,7 +42,6 @@ public class SimulationArmIO extends ArmIO {
         inputs.secondJointVelocityDegreesPerSecond = Units.radiansToDegrees(secondJointSimulation.getVelocityRadPerSec());
         inputs.secondJointStatorCurrent = secondJointSimulation.getCurrentDrawAmps();
         inputs.secondJointSupplyCurrent = inputs.secondJointStatorCurrent;
-        inputs.secondJointClosedLoopOutput = secondJointPIDOutput;
 
         lastInputs = inputs;
     }
@@ -61,12 +60,12 @@ public class SimulationArmIO extends ArmIO {
     @Override
     public void setTargetSecondJointPosition(double position, double velocity) {
         final double scopedPosition = MathUtil.inputModulus(position, 0, 360);
-        secondJointPIDOutput = SimulationArmConstants.SECOND_JOINT_CONTROLLER.calculate(
+        final double pidOutput = SimulationArmConstants.SECOND_JOINT_CONTROLLER.calculate(
                 lastInputs.secondJointPositionDegrees,
                 scopedPosition
         );
 
-        setSecondJointVoltage(secondJointPIDOutput);
+        setSecondJointVoltage(pidOutput);
     }
 
     @Override

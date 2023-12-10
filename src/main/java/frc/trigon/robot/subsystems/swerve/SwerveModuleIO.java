@@ -10,7 +10,8 @@ public class SwerveModuleIO {
     private final SwerveModuleInputsAutoLogged swerveModuleInputs = new SwerveModuleInputsAutoLogged();
     private final String name;
     private boolean driveMotorClosedLoop = false;
-    private double targetVelocity, targetAngle;
+    private double targetVelocity;
+    private Rotation2d targetAngle = new Rotation2d();
 
     public SwerveModuleIO(String name) {
         this.name = name;
@@ -44,7 +45,7 @@ public class SwerveModuleIO {
         targetState = SwerveModuleState.optimize(targetState, getCurrentAngle());
         setTargetAngle(targetState.angle);
         setTargetVelocity(targetState.speedMetersPerSecond);
-        targetAngle = targetState.angle.getDegrees();
+        targetAngle = targetState.angle;
         targetVelocity = targetState.speedMetersPerSecond;
     }
 
@@ -63,6 +64,13 @@ public class SwerveModuleIO {
     }
 
     /**
+     * @return the current state of the module
+     */
+    SwerveModuleState getTargetState() {
+        return new SwerveModuleState(targetVelocity, targetAngle);
+    }
+
+    /**
      * @return the module's current drive distance in meters
      */
     double getDriveDistance() {
@@ -70,8 +78,7 @@ public class SwerveModuleIO {
     }
 
     private void updateNetworkTables() {
-        Logger.getInstance().recordOutput(getLoggingPath() + "/targetAngle", targetAngle);
-        Logger.getInstance().recordOutput(getLoggingPath() + "/targetVelocity", targetVelocity);
+        Logger.getInstance().recordOutput(getLoggingPath() + "/targetState", getTargetState());
     }
 
     /**

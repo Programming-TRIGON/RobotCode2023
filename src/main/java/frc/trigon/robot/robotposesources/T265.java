@@ -5,16 +5,13 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.trigon.robot.utilities.JsonHandler;
-import org.littletonrobotics.junction.Logger;
 
 public class T265 extends RobotPoseSourceIO {
     private static final NetworkTable NETWORK_TABLE = NetworkTableInstance.getDefault().getTable("T265");
     private static final short CONFIDENCE_THRESHOLD = 2;
-    private final String name;
     private final NetworkTableEntry jsonDump;
 
     protected T265(String name) {
-        this.name = name;
         jsonDump = NETWORK_TABLE.getEntry(name + "/jsonDump");
     }
 
@@ -23,7 +20,7 @@ public class T265 extends RobotPoseSourceIO {
         inputs.hasResult = canUseJsonDump();
         if (inputs.hasResult)
             inputs.cameraPose = RobotPoseSource.pose3dToDoubleArray(getCameraPose());
-        inputs.lastResultTimestamp = (double) jsonDump.getLastChange() / 1000000;
+        inputs.lastResultTimestamp = jsonDump.getLastChange() / 1000000.0;
     }
 
     private Pose3d getCameraPose() {
@@ -44,7 +41,8 @@ public class T265 extends RobotPoseSourceIO {
     private Pose3d t265PoseToWPIPose(Pose3d t265Pose) {
         final CoordinateSystem eusCoordinateSystem = new CoordinateSystem(CoordinateAxis.E(), CoordinateAxis.U(), CoordinateAxis.S());
         final Pose3d convertedPose = CoordinateSystem.convert(t265Pose, eusCoordinateSystem, CoordinateSystem.NWU());
-        final Rotation3d convertedRotation = convertedPose.getRotation().plus(new Rotation3d(0, 0, Math.toRadians(90)));
+        // TODO: check this!
+        final Rotation3d convertedRotation = new Rotation3d(0, convertedPose.getRotation().getY(), convertedPose.getRotation().getZ() + Math.toRadians(90));
 
         return new Pose3d(convertedPose.getTranslation(), convertedRotation);
     }
@@ -61,7 +59,6 @@ public class T265 extends RobotPoseSourceIO {
         final T265JsonDump jsonDump = getJsonDump();
 
         try {
-            Logger.getInstance().recordOutput(name + "/confidence", jsonDump.confidence);
             return jsonDump.confidence >= CONFIDENCE_THRESHOLD && jsonDump.translation.length == 3 && jsonDump.rotation.length == 4;
         } catch(NullPointerException e) {
             return false;

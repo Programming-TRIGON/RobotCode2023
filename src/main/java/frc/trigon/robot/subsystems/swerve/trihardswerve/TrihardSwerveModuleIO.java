@@ -3,6 +3,7 @@ package frc.trigon.robot.subsystems.swerve.trihardswerve;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -35,7 +36,12 @@ public class TrihardSwerveModuleIO extends SwerveModuleIO {
     @Override
     protected void setTargetOpenLoopVelocity(double velocity) {
         final double power = velocity / TrihardSwerveModuleConstants.MAX_THEORETICAL_SPEED_METERS_PER_SECOND;
-        driveMotor.set(power);
+        final VoltageOut request = new VoltageOut(
+                power * TrihardSwerveModuleConstants.VOLTAGE_COMPENSATION_SATURATION,
+                driveMotor.getDeviceID() == 1 || driveMotor.getDeviceID() == 2,
+                false
+        );
+        driveMotor.setControl(request);
     }
 
     @Override
